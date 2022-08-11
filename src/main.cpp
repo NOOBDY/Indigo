@@ -3,12 +3,14 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include <spdlog/spdlog.h>
+#include "log.hpp"
 
 int main(int, char **) {
+    Log::Init();
+
     glewExperimental = true;
     if (!glfwInit()) {
-        std::cerr << "Failed to Initialize GLFW\n";
+        LOG_ERROR("Failed to Initialize GLFW");
         return -1;
     }
 
@@ -20,24 +22,23 @@ int main(int, char **) {
     GLFWwindow *window = glfwCreateWindow(1024, 768, "Placeholder", NULL, NULL);
 
     if (!window) {
-        std::cerr << "Failed to Create Window\n";
+        LOG_ERROR("Failed to Create Window");
         glfwTerminate();
         return -1;
     }
 
     glfwMakeContextCurrent(window);
 
-    spdlog::info("OpenGL Info:");
-    spdlog::info("  Vendor: {}", glGetString(GL_VENDOR));
-    spdlog::info("  Renderer: {}", glGetString(GL_RENDERER));
-    spdlog::info("  Version: {}", glGetString(GL_VERSION));
-
     glewExperimental = true;
     if (glewInit() != GLEW_OK) {
-        std::cerr << "Failed to Initialize GLEW\n";
+        LOG_ERROR("Failed to Initialize GLEW\n");
         glfwTerminate();
         return -1;
     }
+
+    LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
+    LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
+    LOG_INFO("Version: {}", glGetString(GL_VERSION));
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
