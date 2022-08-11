@@ -11,6 +11,7 @@ set(LIB
     ${OPENGL_LIBRARY}
     glfw
     glew_220
+    spdlog::spdlog
 )
 
 add_definitions(
@@ -24,5 +25,6 @@ target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo PRIVATE
     lib/glew-2.2.0/include/
     lib/glfw-3.3.8/include/
+    lib/spdlog-1.10.0/include/
     include
 )

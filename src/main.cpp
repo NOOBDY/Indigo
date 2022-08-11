@@ -3,6 +3,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <spdlog/spdlog.h>
+
 int main(int, char **) {
     glewExperimental = true;
     if (!glfwInit()) {
@@ -25,6 +27,11 @@ int main(int, char **) {
 
     glfwMakeContextCurrent(window);
 
+    spdlog::info("OpenGL Info:");
+    spdlog::info("  Vendor: {}", glGetString(GL_VENDOR));
+    spdlog::info("  Renderer: {}", glGetString(GL_RENDERER));
+    spdlog::info("  Version: {}", glGetString(GL_VERSION));
+
     glewExperimental = true;
     if (glewInit() != GLEW_OK) {
         std::cerr << "Failed to Initialize GLEW\n";
@@ -33,6 +40,8 @@ int main(int, char **) {
     }
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    glClearColor(0.102f, 0.02f, 0.478f, 1.0f);
 
     do {
         glClear(GL_COLOR_BUFFER_BIT);

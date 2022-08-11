@@ -27,3 +27,7 @@ target_link_libraries(glew_220
     ${OPENGL_LIBRARY}
     ${EXTRA_LIBS}
 )
+
+# spdlog
+
+add_subdirectory(spdlog-1.10.0)
