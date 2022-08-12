@@ -15,7 +15,7 @@ int main(int, char **) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(1024, 768, "Placeholder", NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(1024, 768, "Indigo main", NULL, NULL);
 
     if (!window) {
         std::cerr << "Failed to Create Window\n";
