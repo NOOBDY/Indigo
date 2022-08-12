@@ -27,8 +27,8 @@ add_executable(Indigo
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE
     lib/glew-2.2.0/include/
-    lib/glfw-3.3.8/include/
-    lib/spdlog-1.10.0/include/
+    lib/glfw/include/
+    lib/spdlog/include/
 )
 target_include_directories(Indigo PRIVATE
     include/
