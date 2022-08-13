@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.20)
 project(Indigo VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -10,9 +10,15 @@ add_subdirectory(lib)
 set(LIB
     ${OPENGL_LIBRARY}
     glfw
-    glew_220
+    GLEW
     spdlog::spdlog
 )
+
+link_directories(
+    lib/glew/lib/
+)
+
+set(GLFW_USE_WAYLAND ON)
 
 add_definitions(
     -DGLEW_STATIC
@@ -32,4 +38,7 @@ target_include_directories(Indigo SYSTEM PRIVATE
 )
 target_include_directories(Indigo PRIVATE
     include/
+)
+target_compile_definitions(Indigo PRIVATE
+    -DGLFW_USE_WAYLAND=ON
 )

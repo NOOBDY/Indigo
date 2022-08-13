@@ -30,8 +30,11 @@ int main(int, char **) {
     glfwMakeContextCurrent(window);
 
     glewExperimental = true;
-    if (glewInit() != GLEW_OK) {
+    const GLenum glewStatus = glewInit();
+    if (glewStatus != GLEW_OK) {
         LOG_ERROR("Failed to Initialize GLEW\n");
+        LOG_ERROR("Error Code {}: {}", glewStatus,
+                  glewGetErrorString(glewStatus));
         glfwTerminate();
         return -1;
     }

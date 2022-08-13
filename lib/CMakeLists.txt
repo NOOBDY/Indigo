@@ -8,25 +8,28 @@ set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
+set(GLFW_USE_WAYLAND ON)
+set(GLFW_BUILD_X11 OFF)
+
 add_subdirectory(glfw)
 
 # GLEW
 
-set(GLEW_SOURCE
-    glew-2.2.0/src/glew.c
-)
+# set(GLEW_SOURCE
+#     glew-2.2.0/src/glew.c
+# )
 
-include_directories(
-    glew-2.2.0/include
-)
+# include_directories(
+#     glew-2.2.0/include
+# )
 
-add_library(glew_220 STATIC
-    ${GLEW_SOURCE}
-)
-target_link_libraries(glew_220
-    ${OPENGL_LIBRARY}
-    ${EXTRA_LIBS}
-)
+# add_library(glew_220 STATIC
+#     ${GLEW_SOURCE}
+# )
+# target_link_libraries(glew_220
+#     ${OPENGL_LIBRARY}
+#     ${EXTRA_LIBS}
+# )
 
 # spdlog
 
