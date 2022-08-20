@@ -33,3 +33,6 @@ target_include_directories(Indigo SYSTEM PRIVATE
 target_include_directories(Indigo PRIVATE
     include/
 )
+target_compile_options(Indigo PRIVATE
+    -Wall -pedantic
+)
