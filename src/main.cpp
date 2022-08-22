@@ -1,17 +1,14 @@
 #include <iostream>
 #include <string>
-#include <filesystem>
 
 using String = std::string;
-
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include "log.hpp"
+#include "window.hpp"
 
 int main(int, char **) {
     Log::Init();
@@ -19,27 +16,9 @@ int main(int, char **) {
     Assimp::Importer importer;
 
     glewExperimental = true;
-    if (!glfwInit()) {
-        LOG_ERROR("Failed to Initialize GLFW");
-        return -1;
-    }
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    Window window(1024, 768);
 
-    GLFWwindow *window = glfwCreateWindow(1024, 768, "Indigo main", NULL, NULL);
-
-    if (!window) {
-        LOG_ERROR("Failed to Create Window");
-        glfwTerminate();
-        return -1;
-    }
-
-    glfwMakeContextCurrent(window);
-
-    glewExperimental = true;
     if (glewInit() != GLEW_OK) {
         LOG_ERROR("Failed to Initialize GLEW\n");
         glfwTerminate();
@@ -49,8 +28,6 @@ int main(int, char **) {
     LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
     LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
     LOG_INFO("Version: {}", glGetString(GL_VERSION));
-
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     glClearColor(0.102f, 0.02f, 0.478f, 1.0f);
 
@@ -76,8 +53,8 @@ int main(int, char **) {
     do {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
-    } while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-             glfwWindowShouldClose(window) == 0);
+    } while (window.GetKey(GLFW_KEY_ESCAPE) &&
+             glfwWindowShouldClose(window.GetWindow()) == 0);
 }
