@@ -31,3 +31,13 @@ target_link_libraries(glew_220
 # spdlog
 
 add_subdirectory(spdlog)
+
+# assimp
+
+set(BUILD_SHARED_LIBS OFF)
+set(ASSIMP_NO_EXPORT ON)
+set(ASSIMP_INSTALL OFF)
+set(ASSIMP_WARNINGS_AS_ERRORS OFF)
+set(ASSIMP_BUILD_TESTS OFF)
+
+add_subdirectory(assimp)

@@ -1,12 +1,22 @@
 #include <iostream>
+#include <string>
+#include <filesystem>
+
+using String = std::string;
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "log.hpp"
 
 int main(int, char **) {
     Log::Init();
+
+    Assimp::Importer importer;
 
     glewExperimental = true;
     if (!glfwInit()) {
@@ -43,6 +53,25 @@ int main(int, char **) {
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
 
     glClearColor(0.102f, 0.02f, 0.478f, 1.0f);
+
+    const String filepath = "../assets/sphere.obj";
+
+    const aiScene *scene =
+        importer.ReadFile(filepath, aiProcessPreset_TargetRealtime_Fast);
+
+    if (!scene) {
+        LOG_ERROR("Failed Loading File: '{}'", filepath);
+        glfwTerminate();
+        return -1;
+    }
+
+    LOG_INFO("Loading File: '{}'", filepath);
+
+    if (scene->HasMeshes()) {
+        aiMesh *mesh = scene->mMeshes[0];
+
+        LOG_INFO("Loading {} Vertices", mesh->mNumVertices);
+    }
 
     do {
         glClear(GL_COLOR_BUFFER_BIT);
