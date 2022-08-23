@@ -12,6 +12,7 @@ using String = std::string;
 
 int main(int, char **) {
     Log::Init();
+    Log::SetLevel(Log::DEBUG);
 
     Assimp::Importer importer;
 
