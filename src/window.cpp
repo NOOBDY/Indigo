@@ -12,6 +12,8 @@ void GLFWErrorCallback(int, const char *err_str) {
 }
 
 Window::Window(int width, int height, const char *title) : m_Window(NULL) {
+    LOG_TRACE("Creating Window");
+
     glfwSetErrorCallback(GLFWErrorCallback);
 
     if (glfwInit() != GLFW_TRUE) {
@@ -37,7 +39,7 @@ Window::Window(int width, int height, const char *title) : m_Window(NULL) {
 }
 
 Window::~Window() {
-    LOG_INFO("Deleting Window");
+    LOG_TRACE("Deleting Window");
     m_Window = NULL;
     glfwTerminate();
 }
