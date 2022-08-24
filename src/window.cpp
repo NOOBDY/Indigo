@@ -43,3 +43,7 @@ Window::~Window() {
     m_Window = NULL;
     glfwTerminate();
 }
+
+bool Window::GetKey(int key) {
+    return glfwGetKey(m_Window, key) != GLFW_PRESS;
+}

@@ -17,7 +17,7 @@ public:
     GLuint GetProgramID() const { return m_ProgramID; }
 
 private:
-    std::string LoadFile(const std::string &filepath);
+    std::string LoadShaderFile(const std::string &filepath);
     void CompileShader(const GLuint shaderID, const std::string &shaderSrc);
     void LinkProgram();
 

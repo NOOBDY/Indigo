@@ -33,7 +33,7 @@ void Program::Unbind() const {
     glUseProgram(0);
 }
 
-std::string Program::LoadFile(const std::string &filepath) {
+std::string Program::LoadShaderFile(const std::string &filepath) {
     std::string source;
     std::ifstream stream(filepath, std::ios::in);
 
@@ -54,7 +54,7 @@ std::string Program::LoadFile(const std::string &filepath) {
 
 void Program::CompileShader(const GLuint shaderID,
                             const std::string &shaderFilepath) {
-    std::string shaderSrc = LoadFile(shaderFilepath);
+    std::string shaderSrc = LoadShaderFile(shaderFilepath);
     const char *srcPtr = shaderSrc.c_str();
 
     LOG_TRACE("Compiling Shader: '{}'", shaderFilepath);

@@ -18,7 +18,8 @@ public:
      * work before everything is structured
      */
     GLFWwindow *GetWindow() { return m_Window; }
-    bool GetKey(int key) { return glfwGetKey(m_Window, key) != GLFW_PRESS; }
+
+    bool GetKey(int key);
 
 private:
     GLFWwindow *m_Window;
