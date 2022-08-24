@@ -23,9 +23,14 @@ add_executable(Indigo
     src/main.cpp
     src/log.cpp
     src/window.cpp
+    src/program.cpp
 
     include/log.hpp
     include/window.hpp
+    include/program.hpp
+
+    assets/shaders/base.vert
+    assets/shaders/base.frag
 )
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE
