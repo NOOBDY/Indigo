@@ -4,6 +4,7 @@
 #include "window.hpp"
 #include "program.hpp"
 #include "vertex_buffer.hpp"
+#include "index_buffer.hpp"
 
 int main(int, char **) {
     Log::Init();
@@ -30,17 +31,21 @@ int main(int, char **) {
     Program program("../assets/shaders/base.vert",
                     "../assets/shaders/base.frag");
     // clang-format off
-    std::vector<float> triangle = {
+    std::vector<float> square = {
         -1.0f, -1.0f, 0.0f,
          1.0f, -1.0f, 0.0f,
         -1.0f,  1.0f, 0.0f,
-         1.0f, -1.0f, 0.0f,
          1.0f,  1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f,
+    };
+
+    std::vector<uint32_t> index = {
+        0, 1, 2,
+        1, 2, 3,
     };
     // clang-format on
 
-    VertexBuffer vertexBuffer(&triangle[0], triangle.size() * sizeof(float));
+    VertexBuffer vertexBuffer(&square[0], square.size() * sizeof(float));
+    IndexBuffer indexBuffer(&index[0], index.size() * sizeof(uint32_t));
 
     GLenum err;
 
@@ -60,7 +65,11 @@ int main(int, char **) {
             (void *)0          //
         );
 
-        glDrawArrays(GL_TRIANGLES, 0, triangle.size() / 3);
+        indexBuffer.Bind();
+
+        glDrawElements(GL_TRIANGLES, indexBuffer.GetCount(), GL_UNSIGNED_INT,
+                       (void *)0);
+
         glDisableVertexAttribArray(0);
 
         glfwSwapBuffers(window.GetWindow());
