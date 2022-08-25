@@ -1,22 +1,23 @@
-#include <iostream>
+#include <vector>
 
 #include "log.hpp"
 #include "window.hpp"
 #include "program.hpp"
+#include "vertex_buffer.hpp"
 
 int main(int, char **) {
     Log::Init();
-    Log::SetLevel(Log::DEBUG);
+    Log::SetLevel(Log::TRACE);
 
     Window window(1024, 768);
 
     if (glewInit() != GLEW_OK) {
         LOG_ERROR("Failed to Initialize GLEW\n");
-        glfwTerminate();
         return -1;
     }
 
     glClearColor(0.102f, 0.02f, 0.478f, 1.0f);
+    glEnable(GL_DEBUG_OUTPUT);
 
     GLuint vertexArrayID;
     glGenVertexArrays(1, &vertexArrayID);
@@ -29,17 +30,17 @@ int main(int, char **) {
     Program program("../assets/shaders/base.vert",
                     "../assets/shaders/base.frag");
     // clang-format off
-    static const GLfloat triangle[] = {
+    std::vector<float> triangle = {
         -1.0f, -1.0f, 0.0f,
-        1.0f,  -1.0f, 0.0f,
-        0.0f,  1.0f,  0.0f,
+         1.0f, -1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
+         1.0f, -1.0f, 0.0f,
+         1.0f,  1.0f, 0.0f,
+        -1.0f,  1.0f, 0.0f,
     };
     // clang-format on
 
-    GLuint vertexBuffer;
-    glGenBuffers(1, &vertexBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
+    VertexBuffer vertexBuffer(&triangle[0], triangle.size() * sizeof(float));
 
     GLenum err;
 
@@ -49,7 +50,7 @@ int main(int, char **) {
         program.Bind();
 
         glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+        vertexBuffer.Bind();
         glVertexAttribPointer( //
             0,                 //
             3,                 //
@@ -59,7 +60,7 @@ int main(int, char **) {
             (void *)0          //
         );
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_TRIANGLES, 0, triangle.size() / 3);
         glDisableVertexAttribArray(0);
 
         glfwSwapBuffers(window.GetWindow());
@@ -74,6 +75,5 @@ int main(int, char **) {
     } while (window.GetKey(GLFW_KEY_ESCAPE) &&
              glfwWindowShouldClose(window.GetWindow()) == 0);
 
-    glDeleteBuffers(1, &vertexBuffer);
     glDeleteVertexArrays(1, &vertexArrayID);
 }

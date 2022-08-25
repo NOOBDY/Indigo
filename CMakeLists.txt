@@ -26,10 +26,12 @@ add_executable(Indigo
     src/log.cpp
     src/window.cpp
     src/program.cpp
+    src/vertex_buffer.cpp
 
     include/log.hpp
     include/window.hpp
     include/program.hpp
+    include/vertex_buffer.hpp
 
     assets/shaders/base.vert
     assets/shaders/base.frag
