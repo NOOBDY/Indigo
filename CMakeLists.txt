@@ -25,12 +25,14 @@ add_executable(Indigo
     src/main.cpp
     src/log.cpp
     src/window.cpp
+    src/renderer.cpp
     src/program.cpp
     src/vertex_buffer.cpp
     src/index_buffer.cpp
 
     include/log.hpp
     include/window.hpp
+    include/renderer.hpp
     include/program.hpp
     include/vertex_buffer.hpp
     include/index_buffer.hpp

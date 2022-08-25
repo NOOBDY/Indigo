@@ -2,6 +2,7 @@
 
 #include "log.hpp"
 #include "window.hpp"
+#include "renderer.hpp"
 #include "program.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
@@ -12,21 +13,12 @@ int main(int, char **) {
 
     Window window(1024, 768);
 
-    if (glewInit() != GLEW_OK) {
-        LOG_ERROR("Failed to Initialize GLEW\n");
-        return -1;
-    }
-
-    glClearColor(0.102f, 0.02f, 0.478f, 1.0f);
-    glEnable(GL_DEBUG_OUTPUT);
+    Renderer::Init();
+    Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
 
     GLuint vertexArrayID;
     glGenVertexArrays(1, &vertexArrayID);
     glBindVertexArray(vertexArrayID);
-
-    LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
-    LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
-    LOG_INFO("Version: {}", glGetString(GL_VERSION));
 
     Program program("../assets/shaders/base.vert",
                     "../assets/shaders/base.frag");
@@ -47,10 +39,8 @@ int main(int, char **) {
     VertexBuffer vertexBuffer(&square[0], square.size() * sizeof(float));
     IndexBuffer indexBuffer(&index[0], index.size() * sizeof(uint32_t));
 
-    GLenum err;
-
     do {
-        glClear(GL_COLOR_BUFFER_BIT);
+        Renderer::Clear();
 
         program.Bind();
 
@@ -74,13 +64,6 @@ int main(int, char **) {
 
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
-
-        err = glGetError();
-
-        if (err != GL_NO_ERROR) {
-            LOG_ERROR("GL Error 0x{:x}: {}", err, gluErrorString(err));
-            break;
-        }
     } while (window.GetKey(GLFW_KEY_ESCAPE) &&
              glfwWindowShouldClose(window.GetWindow()) == 0);
 
