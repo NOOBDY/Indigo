@@ -3,21 +3,21 @@
 #include "log.hpp"
 
 VertexBuffer::VertexBuffer(const float vertices[], const int size) {
+    LOG_TRACE("Creating Vertex Buffer");
     glCreateBuffers(1, &m_BufferID);
-    LOG_TRACE("Creating Vertex Buffer: 0x{:04x}", m_BufferID);
     glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
     glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer() {
-    LOG_TRACE("Deleting Vertex Buffer: 0x{:04x}", m_BufferID);
+    LOG_TRACE("Deleting Vertex Buffer");
     glDeleteBuffers(1, &m_BufferID);
 }
 
-void VertexBuffer::Bind() {
+void VertexBuffer::Bind() const {
     glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 }
 
-void VertexBuffer::Unbind() {
+void VertexBuffer::Unbind() const {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }

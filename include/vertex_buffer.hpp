@@ -8,8 +8,8 @@ public:
     VertexBuffer(const float vertices[], const int size);
     ~VertexBuffer();
 
-    void Bind();
-    void Unbind();
+    void Bind() const;
+    void Unbind() const;
 
 private:
     GLuint m_BufferID;
