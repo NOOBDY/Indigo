@@ -5,9 +5,10 @@
 IndexBuffer::IndexBuffer(const uint32_t indices[], const int size) {
     LOG_TRACE("Creating Index Buffer");
     m_Count = size / sizeof(int);
-    glCreateBuffers(1, &m_BufferID);
+    glCreateBuffers(1, &m_BufferID); // glCreateBuffers is exclusive to GL ^4.5
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, size, indices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 IndexBuffer::~IndexBuffer() {

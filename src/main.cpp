@@ -64,8 +64,7 @@ int main(int, char **) {
 
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
-    } while (window.GetKey(GLFW_KEY_ESCAPE) &&
-             glfwWindowShouldClose(window.GetWindow()) == 0);
+    } while (!window.ShouldClose());
 
     glDeleteVertexArrays(1, &vertexArrayID);
 }

@@ -24,6 +24,7 @@ private:
 private:
     GLuint m_ProgramID;
 
+    // perhaps can change this into a vector of shaders
     GLuint m_VertexShaderID;
     GLuint m_FragmentShaderID;
 };

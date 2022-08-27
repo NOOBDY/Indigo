@@ -4,9 +4,14 @@
 
 #include "log.hpp"
 
-void OpenGLErrorCallback(GLenum source, GLenum type, GLuint id, GLenum severity,
-                         GLsizei length, const GLchar *message,
-                         const void *userParam) {
+/**
+ * Debug message handling callback function for OpenGL
+ *
+ * This will be called when there is an error for OpenGL
+ */
+void OpenGLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
+                                GLenum severity, GLsizei length,
+                                const GLchar *message, const void *userParam) {
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
     case GL_DEBUG_SEVERITY_MEDIUM:
@@ -29,9 +34,9 @@ void Renderer::Init() {
 
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-    glDebugMessageCallback(OpenGLErrorCallback, 0);
+    glDebugMessageCallback(OpenGLDebugMessageCallback, 0);
 
-    LOG_TRACE("Successfully initialized OpenGL");
+    LOG_TRACE("Successfully Initialized OpenGL");
     LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
     LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
     LOG_INFO("Version: {}", glGetString(GL_VERSION));

@@ -86,6 +86,14 @@ void Program::LinkProgram() {
     glAttachShader(m_ProgramID, m_FragmentShaderID);
     glLinkProgram(m_ProgramID);
 
+    /*
+     * The error handling here seems redundant but
+     * the linking process doesn't seem to happen until
+     * the program enters the rendering loop. So it's
+     * better to handle it here for better tracing.
+     * Also, glGetProgramInfoLog produces better error
+     * messages than the general OpenGLDebugMessageCallback
+     */
     GLint status = GL_FALSE;
 
     glGetProgramiv(m_ProgramID, GL_LINK_STATUS, &status);

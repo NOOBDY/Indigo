@@ -17,9 +17,10 @@ public:
      * Band-aid function to make the program
      * work before everything is structured
      */
-    GLFWwindow *GetWindow() { return m_Window; }
+    GLFWwindow *GetWindow() const { return m_Window; }
 
-    bool GetKey(int key);
+    bool GetKey(int key) const;
+    bool ShouldClose() const;
 
 private:
     GLFWwindow *m_Window;
