@@ -14,6 +14,7 @@ set(LIB
     glfw
     glew_220
     spdlog::spdlog
+    glm::glm
     assimp
 )
 
@@ -45,6 +46,7 @@ target_include_directories(Indigo SYSTEM PRIVATE
     lib/glew-2.2.0/include/
     lib/glfw/include/
     lib/spdlog/include/
+    lib/glm/include/
     lib/assimp/include/
 )
 target_include_directories(Indigo PRIVATE
