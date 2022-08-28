@@ -18,3 +18,12 @@ void Camera::UpdateProjection() {
 void Camera::UpdateView() {
     m_View = glm::lookAt(m_Position, m_Target, glm::vec3(0, 1, 0));
 }
+
+void Camera::SetViewportSize(float width, float height) {
+    m_ViewportWidth = width;
+    m_ViewportHeight = height;
+
+    m_AspectRatio = width / height;
+
+    UpdateProjection();
+}

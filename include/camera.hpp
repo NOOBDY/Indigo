@@ -15,6 +15,8 @@ public:
     void UpdateProjection();
     void UpdateView();
 
+    void SetViewportSize(float width, float height);
+
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 

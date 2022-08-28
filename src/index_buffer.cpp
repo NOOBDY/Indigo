@@ -2,7 +2,7 @@
 
 #include "log.hpp"
 
-IndexBuffer::IndexBuffer(const uint32_t indices[], const int size) {
+IndexBuffer::IndexBuffer(const int indices[], const int size) {
     LOG_TRACE("Creating Index Buffer");
     m_Count = size / sizeof(int);
     glCreateBuffers(1, &m_BufferID); // glCreateBuffers is exclusive to GL ^4.5

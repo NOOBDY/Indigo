@@ -48,14 +48,14 @@ int main(int, char **) {
          1.0f,  1.0f, 0.0f,
     };
 
-    std::vector<uint32_t> index = {
+    std::vector<int> index = {
         0, 1, 2,
         1, 2, 3,
     };
     // clang-format on
 
     VertexBuffer vertexBuffer(&square[0], square.size() * sizeof(float));
-    IndexBuffer indexBuffer(&index[0], index.size() * sizeof(uint32_t));
+    IndexBuffer indexBuffer(&index[0], index.size() * sizeof(int));
 
     do {
         Renderer::Clear();

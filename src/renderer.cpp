@@ -14,13 +14,17 @@ void OpenGLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
                                 const GLchar *message, const void *userParam) {
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
-    case GL_DEBUG_SEVERITY_MEDIUM:
         LOG_ERROR("{}", message);
         throw;
-    case GL_DEBUG_SEVERITY_LOW:
+    case GL_DEBUG_SEVERITY_MEDIUM:
         LOG_WARN("{}", message);
-    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
         LOG_INFO("{}", message);
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        LOG_DEBUG("{}", message);
+        break;
     }
 }
 
@@ -29,7 +33,6 @@ void Renderer::Init() {
 
     if (glewInit() != GLEW_OK) {
         LOG_ERROR("Failed to Initialize GLEW\n");
-        throw;
     }
 
     glEnable(GL_DEBUG_OUTPUT);
