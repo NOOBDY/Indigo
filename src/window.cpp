@@ -11,7 +11,7 @@ void GLFWErrorCallback(int, const char *err_str) {
     LOG_ERROR("{}", err_str);
 }
 
-Window::Window(int width, int height, const char *title) : m_Window(NULL) {
+Window::Window(int width, int height, const char *title) {
     LOG_TRACE("Creating Window");
 
     glfwSetErrorCallback(GLFWErrorCallback);
@@ -44,6 +44,13 @@ Window::~Window() {
     LOG_TRACE("Deleting Window");
     m_Window = NULL;
     glfwTerminate();
+}
+
+float Window::GetAspectRatio() const {
+    int width, height;
+    glfwGetWindowSize(m_Window, &width, &height);
+
+    return (float)width / height;
 }
 
 bool Window::GetKey(int key) const {

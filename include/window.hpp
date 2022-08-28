@@ -10,7 +10,7 @@
  */
 class Window {
 public:
-    Window(int width = 1024, int height = 768, const char *title = "Indigo");
+    Window(int width = 1280, int height = 720, const char *title = "Indigo");
     ~Window();
 
     /**
@@ -19,6 +19,7 @@ public:
      */
     GLFWwindow *GetWindow() const { return m_Window; }
 
+    float GetAspectRatio() const;
     bool GetKey(int key) const;
     bool ShouldClose() const;
 
