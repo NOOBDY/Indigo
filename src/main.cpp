@@ -10,6 +10,7 @@
 #include "camera.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
+#include "uniform_buffer.hpp"
 
 int main(int, char **) {
     Log::Init();
@@ -26,9 +27,8 @@ int main(int, char **) {
     Program program("../assets/shaders/base.vert",
                     "../assets/shaders/base.frag");
 
-    GLuint matrixID = glGetUniformLocation(program.GetProgramID(), "MVP");
-    GLuint diffuseColorID =
-        glGetUniformLocation(program.GetProgramID(), "diffuseColor");
+    UniformBuffer matrices(sizeof(glm::mat4), 0);
+    UniformBuffer data(sizeof(glm::vec3), 1);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
@@ -77,16 +77,18 @@ int main(int, char **) {
 
         model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(0, 1, 0));
         glm::mat4 MVP1 = camera.GetViewProjection() * model1;
-        glUniformMatrix4fv(matrixID, 1, GL_FALSE, &MVP1[0][0]);
-        glUniform3fv(diffuseColorID, 1, &color1[0]);
+
+        matrices.SetData(0, sizeof(glm::mat4), &MVP1[0][0]);
+        data.SetData(0, sizeof(glm::vec3), &color1[0]);
 
         glDrawElements(GL_TRIANGLES, indexBuffer.GetCount(), GL_UNSIGNED_INT,
                        (void *)0);
 
         model2 = glm::rotate(model2, glm::radians(-3.0f), glm::vec3(0, 0, 1));
         glm::mat4 MVP2 = camera.GetViewProjection() * model2;
-        glUniformMatrix4fv(matrixID, 1, GL_FALSE, &MVP2[0][0]);
-        glUniform3fv(diffuseColorID, 1, &color2[0]);
+
+        matrices.SetData(0, sizeof(glm::mat4), &MVP2[0][0]);
+        data.SetData(0, sizeof(glm::vec3), &color2[0]);
 
         glDrawElements(GL_TRIANGLES, indexBuffer.GetCount(), GL_UNSIGNED_INT,
                        (void *)0);

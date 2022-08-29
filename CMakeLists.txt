@@ -31,6 +31,7 @@ add_executable(Indigo
     src/camera.cpp
     src/vertex_buffer.cpp
     src/index_buffer.cpp
+    src/uniform_buffer.cpp
 
     include/log.hpp
     include/window.hpp
@@ -39,6 +40,7 @@ add_executable(Indigo
     include/camera.hpp
     include/vertex_buffer.hpp
     include/index_buffer.hpp
+    include/uniform_buffer.hpp
 
     assets/shaders/base.vert
     assets/shaders/base.frag
