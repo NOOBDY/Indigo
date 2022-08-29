@@ -5,9 +5,7 @@
 VertexBuffer::VertexBuffer(const float vertices[], const int size) {
     LOG_TRACE("Creating Vertex Buffer");
     glCreateBuffers(1, &m_BufferID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
-    glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glNamedBufferData(m_BufferID, size, vertices, GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer() {
@@ -16,9 +14,11 @@ VertexBuffer::~VertexBuffer() {
 }
 
 void VertexBuffer::Bind() const {
+    LOG_TRACE("Binding Vertex Buffer");
     glBindBuffer(GL_ARRAY_BUFFER, m_BufferID);
 }
 
 void VertexBuffer::Unbind() const {
+    LOG_TRACE("Unbinding Vertex Buffer");
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
