@@ -1,0 +1,38 @@
+#ifndef VERTEX_ARRAY_HPP
+#define VERTEX_ARRAY_HPP
+
+#include <vector>
+#include <memory>
+
+#include <GL/glew.h>
+
+#include "vertex_buffer.hpp"
+#include "index_buffer.hpp"
+
+class VertexArray {
+public:
+    VertexArray();
+    ~VertexArray();
+
+    void Bind() const;
+    void Unbind() const;
+
+    void AddVertexBuffer(const std::shared_ptr<VertexBuffer> vb);
+    void SetIndexBuffer(const std::shared_ptr<IndexBuffer> ib);
+
+    const std::vector<std::shared_ptr<VertexBuffer>> GetVertexBuffers() const {
+        return m_Buffers;
+    }
+    const std::shared_ptr<IndexBuffer> GetIndexBuffer() const {
+        return m_IndexBuffer;
+    }
+
+private:
+    GLuint m_ArrayID;
+
+    unsigned int m_BufferIndex = 0;
+    std::vector<std::shared_ptr<VertexBuffer>> m_Buffers;
+    std::shared_ptr<IndexBuffer> m_IndexBuffer;
+};
+
+#endif

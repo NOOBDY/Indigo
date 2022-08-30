@@ -5,7 +5,7 @@
 
 class IndexBuffer {
 public:
-    IndexBuffer(const int indices[], const int size);
+    IndexBuffer(const unsigned int indices[], const unsigned int count);
     ~IndexBuffer();
 
     void Bind() const;

@@ -29,6 +29,7 @@ add_executable(Indigo
     src/renderer.cpp
     src/program.cpp
     src/camera.cpp
+    src/vertex_array.cpp
     src/vertex_buffer.cpp
     src/index_buffer.cpp
     src/uniform_buffer.cpp
@@ -38,6 +39,7 @@ add_executable(Indigo
     include/renderer.hpp
     include/program.hpp
     include/camera.hpp
+    include/vertex_array.hpp
     include/vertex_buffer.hpp
     include/index_buffer.hpp
     include/uniform_buffer.hpp
