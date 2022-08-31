@@ -53,6 +53,7 @@ target_include_directories(Indigo SYSTEM PRIVATE
     lib/glfw/include/
     lib/spdlog/include/
     lib/glm/include/
+    lib/stb/
     lib/assimp/include/
 )
 target_include_directories(Indigo PRIVATE
