@@ -1,8 +1,10 @@
 #version 460 core
 
 layout (location = 0) in vec3 vertPos;
+layout (location = 1) in vec2 vertUV;
 
-out vec3 fragColor;
+out vec3 pos;
+out vec2 UV;
 
 layout (std140, binding = 0) uniform Matrices {
     mat4 MVP;
@@ -11,5 +13,6 @@ layout (std140, binding = 0) uniform Matrices {
 void main() {
     gl_Position = MVP * vec4(vertPos, 1);
 
-    fragColor = vertPos;
+    pos = vertPos;
+    UV = vertUV;
 }

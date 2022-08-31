@@ -33,6 +33,7 @@ add_executable(Indigo
     src/vertex_buffer.cpp
     src/index_buffer.cpp
     src/uniform_buffer.cpp
+    src/texture.cpp
 
     include/log.hpp
     include/window.hpp
@@ -43,6 +44,7 @@ add_executable(Indigo
     include/vertex_buffer.hpp
     include/index_buffer.hpp
     include/uniform_buffer.hpp
+    include/texture.hpp
 
     assets/shaders/base.vert
     assets/shaders/base.frag

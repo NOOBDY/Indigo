@@ -33,6 +33,11 @@ void Program::Unbind() const {
     glUseProgram(0);
 }
 
+void Program::SetInt(const std::string &name, int value) {
+    GLuint location = glGetUniformLocation(m_ProgramID, name.c_str());
+    glUniform1i(location, value);
+}
+
 std::string Program::LoadShaderFile(const std::string &filepath) {
     std::string source;
     std::ifstream stream(filepath, std::ios::in);

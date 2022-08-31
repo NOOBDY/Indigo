@@ -35,6 +35,10 @@ void Renderer::Init() {
         LOG_ERROR("Failed to Initialize GLEW\n");
     }
 
+    glEnable(GL_DEPTH_TEST);
+
+    glEnable(GL_CULL_FACE);
+
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(OpenGLDebugMessageCallback, 0);
@@ -50,5 +54,5 @@ void Renderer::ClearColor(float r, float g, float b, float a) {
 }
 
 void Renderer::Clear() {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }

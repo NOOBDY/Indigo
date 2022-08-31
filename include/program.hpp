@@ -14,6 +14,8 @@ public:
     void Bind() const;
     void Unbind() const;
 
+    void SetInt(const std::string &name, int value);
+
     GLuint GetProgramID() const { return m_ProgramID; }
 
 private:
