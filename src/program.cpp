@@ -25,7 +25,7 @@ Program::~Program() {
     glDeleteProgram(m_ProgramID);
 }
 
-void Program::Bind() const {
+void Program::Use() const {
     glUseProgram(m_ProgramID);
 }
 

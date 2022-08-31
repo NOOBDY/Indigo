@@ -12,6 +12,9 @@ public:
     Texture(const std::string &textureFilepath);
     ~Texture();
 
+    /**
+     * Bind texture to slot set in `program.SetInt()`
+     */
     void Bind(unsigned int slot);
 
     GLuint GetTextureID() { return m_TextureID; }

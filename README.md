@@ -1,5 +1,7 @@
 # Indigo
 
+As of now, this project's structure and code in heavily borrowed from [opengl-tutorial](http://www.opengl-tutorial.org/) and the [Hazel Engine](https://github.com/TheCherno/Hazel) from the Cherno.
+
 ## Cloning
 
 To clone the project, run the following command:
@@ -16,6 +18,8 @@ git submodule init
 git submodule update
 ```
 
+> Some of these submodules are quite large (notedly assimp), but it would require too much work to create those from scratch. It is possible to switch to lighter alternatives but it isn't an urgent issue so they will have to do it for now.
+
 ## Building
 
 You will need a system with CMake set up and have suitable compilers installed (GCC and Clang are tested)
@@ -31,4 +35,4 @@ Alternatively, you can use the [CMake Tools Extension](https://marketplace.visua
 
 ## Contributing
 
-TBA
+Make sure to format the code with `clang-format`. This project currently doesn't follow any major project's styling conventions so some observations might be needed.

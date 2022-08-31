@@ -14,6 +14,9 @@ public:
     void Bind() const;
     void Unbind() const;
 
+    /**
+     * Map the sampler name in the shader to a texture slot
+     */
     void SetInt(const std::string &name, int value);
 
     GLuint GetProgramID() const { return m_ProgramID; }
