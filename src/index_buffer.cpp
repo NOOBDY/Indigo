@@ -1,7 +1,5 @@
 #include "index_buffer.hpp"
 
-#include "log.hpp"
-
 IndexBuffer::IndexBuffer(const unsigned int indices[],
                          const unsigned int count) {
     LOG_TRACE("Creating Index Buffer");

@@ -1,8 +1,8 @@
-#include <vector>
-#include <memory>
+#include "pch.hpp"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -78,6 +78,8 @@ int main(int, char **) {
     glm::mat4 model2 = glm::mat4(1.0f);
     glm::vec3 color2(0.0f, 0.8f, 0.8f);
     model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
+
+    LOG_DEBUG("{}", glm::to_string(model2));
 
     const aiScene *scene2 = importer.ReadFile(
         "../assets/suzanne.obj", aiProcessPreset_TargetRealtime_Fast);

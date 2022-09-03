@@ -1,7 +1,5 @@
 #include "window.hpp"
 
-#include "log.hpp"
-
 /**
  * Error handling callback function for GLFW
  *

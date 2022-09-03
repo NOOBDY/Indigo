@@ -61,6 +61,9 @@ target_include_directories(Indigo SYSTEM PRIVATE
 target_include_directories(Indigo PRIVATE
     include/
 )
+target_precompile_headers(Indigo PRIVATE
+    include/pch.hpp
+)
 target_compile_options(Indigo PRIVATE
     -Wall -pedantic
 )

@@ -1,6 +1,5 @@
 #include "camera.hpp"
 
-#include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)

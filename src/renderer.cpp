@@ -1,9 +1,5 @@
 #include "renderer.hpp"
 
-#include <GL/glew.h>
-
-#include "log.hpp"
-
 /**
  * Debug message handling callback function for OpenGL
  *
