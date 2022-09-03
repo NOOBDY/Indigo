@@ -14,6 +14,7 @@ set(LIB
     glfw
     glew_220
     spdlog::spdlog
+    glm::glm
     assimp
 )
 
@@ -24,14 +25,37 @@ add_definitions(
 add_executable(Indigo
     src/main.cpp
     src/log.cpp
+    src/window.cpp
+    src/renderer.cpp
+    src/program.cpp
+    src/camera.cpp
+    src/vertex_array.cpp
+    src/vertex_buffer.cpp
+    src/index_buffer.cpp
+    src/uniform_buffer.cpp
+    src/texture.cpp
 
     include/log.hpp
+    include/window.hpp
+    include/renderer.hpp
+    include/program.hpp
+    include/camera.hpp
+    include/vertex_array.hpp
+    include/vertex_buffer.hpp
+    include/index_buffer.hpp
+    include/uniform_buffer.hpp
+    include/texture.hpp
+
+    assets/shaders/base.vert
+    assets/shaders/base.frag
 )
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE
     lib/glew-2.2.0/include/
     lib/glfw/include/
     lib/spdlog/include/
+    lib/glm/include/
+    lib/stb/
     lib/assimp/include/
 )
 target_include_directories(Indigo PRIVATE

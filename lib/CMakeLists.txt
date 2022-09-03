@@ -32,6 +32,10 @@ target_link_libraries(glew_220
 
 add_subdirectory(spdlog)
 
+# glm
+
+add_subdirectory(glm)
+
 # assimp
 
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
