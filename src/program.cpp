@@ -86,7 +86,6 @@ void Program::CompileShader(const GLuint shaderID,
 
 void Program::LinkProgram() {
     LOG_TRACE("Linking Program");
-
     glAttachShader(m_ProgramID, m_VertexShaderID);
     glAttachShader(m_ProgramID, m_FragmentShaderID);
     glLinkProgram(m_ProgramID);
