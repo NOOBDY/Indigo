@@ -20,6 +20,14 @@ public:
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 
+    glm::vec3 GetPosition() const { return m_Position; }
+    void SetPosition(const glm::vec3 &pos) { m_Position = pos; }
+
+    glm::vec3 GetDirection() const { return m_Direction; }
+    void SetDirection(const glm::vec3 &dir) { m_Direction = dir; }
+
+    void Pan() {}
+
 private:
     float m_FOV; // measured in degrees
     float m_AspectRatio;
@@ -30,8 +38,9 @@ private:
 
     glm::mat4 m_Projection;
     glm::mat4 m_View;
+
     glm::vec3 m_Position = {0, 3, 4};
-    glm::vec3 m_Target = {0, 0, 0};
+    glm::vec3 m_Direction = {0, -3, -4};
 };
 
 #endif

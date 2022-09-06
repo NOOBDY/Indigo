@@ -3,6 +3,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -119,8 +120,24 @@ int main(int, char **) {
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
 
+    glm::vec3 pos = camera.GetPosition();
+
     do {
         Renderer::Clear();
+
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE)) {
+            glm::mat4 cameraMat =
+                glm::rotate(glm::mat4(1.0f),
+                            window.GetCursorDelta().x * -2 / window.GetWidth(),
+                            glm::vec3(0, 1, 0)) *
+                glm::translate(glm::mat4(1.0f), pos);
+
+            pos = glm::vec3(cameraMat[3]);
+        }
+
+        camera.SetPosition(pos);
+        camera.SetDirection(pos * -1.0f);
+        camera.UpdateView();
 
         //
         VertexArray vao1;
@@ -159,6 +176,7 @@ int main(int, char **) {
         glDrawElements(GL_TRIANGLES, vao2.GetIndexBuffer()->GetCount(),
                        GL_UNSIGNED_INT, (void *)0);
 
+        window.UpdateCursorPosition();
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
     } while (!window.ShouldClose());

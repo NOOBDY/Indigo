@@ -16,7 +16,9 @@ void Camera::UpdateProjection() {
 }
 
 void Camera::UpdateView() {
-    m_View = glm::lookAt(m_Position, m_Target, glm::vec3(0, 1, 0));
+    m_View =
+        glm::lookAt(m_Position, m_Position + m_Direction, glm::vec3(0, 1, 0));
+    // glm::lookAt(m_Position, glm::vec3(0.0f), glm::vec3(0, 1, 0));
 }
 
 void Camera::SetViewportSize(float width, float height) {
