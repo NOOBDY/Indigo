@@ -39,14 +39,15 @@ int main(int, char **) {
 
     Importer obj1("../assets/donut.obj");
 
-    std::shared_ptr<VertexBuffer> vertices1(
+    VertexArray vao1;
+
+    vao1.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj1.GetVertices(), 3 * sizeof(float)));
 
-    std::shared_ptr<VertexBuffer> uvs1(
+    vao1.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj1.GetUVs(), 2 * sizeof(float)));
 
-    std::shared_ptr<IndexBuffer> indices1(
-        std::make_shared<IndexBuffer>(obj1.GetIndices()));
+    vao1.SetIndexBuffer(std::make_shared<IndexBuffer>(obj1.GetIndices()));
     // end model 1
 
     // begin model 2
@@ -56,14 +57,15 @@ int main(int, char **) {
 
     Importer obj2("../assets/suzanne.obj");
 
-    std::shared_ptr<VertexBuffer> vertices2(
+    VertexArray vao2;
+
+    vao2.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj2.GetVertices(), 3 * sizeof(float)));
 
-    std::shared_ptr<VertexBuffer> uvs2(
+    vao2.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj2.GetUVs(), 2 * sizeof(float)));
 
-    std::shared_ptr<IndexBuffer> indices2(
-        std::make_shared<IndexBuffer>(obj2.GetIndices()));
+    vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
 
     Texture tex1("../assets/fabric.png");
@@ -78,10 +80,7 @@ int main(int, char **) {
         Renderer::Clear();
 
         //
-        VertexArray vao1;
-        vao1.AddVertexBuffer(vertices1);
-        vao1.AddVertexBuffer(uvs1);
-        vao1.SetIndexBuffer(indices1);
+        vao1.Bind();
 
         model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(-1, 1, 0));
         glm::mat4 MVP1 = camera.GetViewProjection() * model1;
@@ -92,15 +91,11 @@ int main(int, char **) {
         tex1.Bind(0);
         tex2.Bind(1);
 
-        glDrawElements(GL_TRIANGLES, vao1.GetIndexBuffer()->GetCount(),
-                       GL_UNSIGNED_INT, (void *)0);
+        Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         //
 
         //
-        VertexArray vao2;
-        vao2.AddVertexBuffer(vertices2);
-        vao2.AddVertexBuffer(uvs2);
-        vao2.SetIndexBuffer(indices2);
+        vao2.Bind();
 
         model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
         glm::mat4 MVP2 = camera.GetViewProjection() * model2;
@@ -111,8 +106,7 @@ int main(int, char **) {
         tex2.Bind(0);
         tex1.Bind(1);
 
-        glDrawElements(GL_TRIANGLES, vao2.GetIndexBuffer()->GetCount(),
-                       GL_UNSIGNED_INT, (void *)0);
+        Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
