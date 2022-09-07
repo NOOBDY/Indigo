@@ -1,11 +1,13 @@
 #ifndef INDEX_BUFFER_HPP
 #define INDEX_BUFFER_HPP
 
+#include <vector>
+
 #include <GL/glew.h>
 
 class IndexBuffer {
 public:
-    IndexBuffer(const unsigned int indices[], const unsigned int count);
+    IndexBuffer(const std::vector<unsigned int> &indices);
     ~IndexBuffer();
 
     void Bind() const;

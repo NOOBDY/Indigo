@@ -1,6 +1,8 @@
 #ifndef VERTEX_BUFFER_HPP
 #define VERTEX_BUFFER_HPP
 
+#include <vector>
+
 #include <GL/glew.h>
 
 /**
@@ -8,7 +10,7 @@
  */
 class VertexBuffer {
 public:
-    VertexBuffer(const float vertices[], const unsigned int size,
+    VertexBuffer(const std::vector<float> &vertices,
                  const unsigned int typeSize);
     ~VertexBuffer();
 
