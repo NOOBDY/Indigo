@@ -8,7 +8,6 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-#include "glm/fwd.hpp"
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
@@ -62,7 +61,7 @@ int main(int, char **) {
     }
 
     std::vector<unsigned int> indices1;
-    
+
     for (unsigned int i = 0; i < mesh1->mNumFaces; ++i) {
         aiFace f = mesh1->mFaces[i];
         for (unsigned int j = 0; j < f.mNumIndices; ++j) {
@@ -74,10 +73,9 @@ int main(int, char **) {
         (float *)&mesh1->mVertices[0], mesh1->mNumVertices,
         sizeof(aiVector3D)));
 
-    //normal 
+    // normal
     std::shared_ptr<VertexBuffer> vbo2(std::make_shared<VertexBuffer>(
-        (float *)&mesh1->mNormals[0], mesh1->mNumVertices,
-        sizeof(aiVector3D)));
+        (float *)&mesh1->mNormals[0], mesh1->mNumVertices, sizeof(aiVector3D)));
 
     std::shared_ptr<VertexBuffer> uv1(std::make_shared<VertexBuffer>(
         (float *)&uvs1[0], mesh1->mNumVertices, sizeof(aiVector2D)));
@@ -85,7 +83,6 @@ int main(int, char **) {
     std::shared_ptr<IndexBuffer> ibo1(
         std::make_shared<IndexBuffer>(&indices1[0], indices1.size()));
     // end model 1
-
 
     Texture tex1("../assets/fabric.png");
     Texture tex2("../assets/uv.png");
