@@ -1,9 +1,7 @@
 #ifndef VERTEX_BUFFER_HPP
 #define VERTEX_BUFFER_HPP
 
-#include <vector>
-
-#include <GL/glew.h>
+#include "pch.hpp"
 
 /**
  * Currently, vertex buffers only supports float arrays

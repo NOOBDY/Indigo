@@ -1,6 +1,8 @@
 #ifndef RENDERER_HPP
 #define RENDERER_HPP
 
+#include "pch.hpp"
+
 #include "vertex_array.hpp"
 
 class Renderer {

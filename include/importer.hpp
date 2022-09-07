@@ -1,8 +1,7 @@
 #ifndef IMPORTER_HPP
 #define IMPORTER_HPP
 
-#include <string>
-#include <vector>
+#include "pch.hpp"
 
 /**
  * Current implementation is extremely limiting

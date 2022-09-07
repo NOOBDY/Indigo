@@ -1,9 +1,7 @@
 #ifndef INDEX_BUFFER_HPP
 #define INDEX_BUFFER_HPP
 
-#include <vector>
-
-#include <GL/glew.h>
+#include "pch.hpp"
 
 class IndexBuffer {
 public:

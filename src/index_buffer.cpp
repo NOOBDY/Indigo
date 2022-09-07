@@ -1,7 +1,5 @@
 #include "index_buffer.hpp"
 
-#include "log.hpp"
-
 IndexBuffer::IndexBuffer(const std::vector<unsigned int> &indices) {
     LOG_TRACE("Creating Index Buffer");
     m_Count = indices.size();

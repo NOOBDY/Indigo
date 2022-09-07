@@ -1,9 +1,7 @@
 #ifndef PROGRAM_HPP
 #define PROGRAM_HPP
 
-#include <string>
-
-#include <GL/glew.h>
+#include "pch.hpp"
 
 class Program {
 public:

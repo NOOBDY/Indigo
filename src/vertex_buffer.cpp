@@ -1,7 +1,5 @@
 #include "vertex_buffer.hpp"
 
-#include "log.hpp"
-
 VertexBuffer::VertexBuffer(const std::vector<float> &vertices,
                            const unsigned int typeSize) {
     LOG_TRACE("Creating Vertex Buffer");
