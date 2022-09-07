@@ -12,6 +12,12 @@
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
 
+#pragma pack(16) // std140 layout pads by multiple of 16
+struct Matrices {
+    glm::mat4 model;
+    glm::mat4 viewProjection;
+};
+
 int main(int, char **) {
     Log::Init();
 
@@ -20,10 +26,10 @@ int main(int, char **) {
     Renderer::Init();
     Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
 
-    Program program("../assets/shaders/base.vert",
-                    "../assets/shaders/base.frag");
+    Program program("../assets/shaders/phong.vert",
+                    "../assets/shaders/phong.frag");
 
-    UniformBuffer matrices(sizeof(glm::mat4), 0);
+    UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer data(sizeof(glm::vec3), 1);
 
     Camera camera(45.0f, window.GetAspectRatio());
@@ -43,6 +49,9 @@ int main(int, char **) {
     vao1.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj1.GetUVs(), 2 * sizeof(float)));
 
+    vao1.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj1.GetNormals(), 3 * sizeof(float)));
+
     vao1.SetIndexBuffer(std::make_shared<IndexBuffer>(obj1.GetIndices()));
     // end model 1
 
@@ -60,6 +69,9 @@ int main(int, char **) {
 
     vao2.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj2.GetUVs(), 2 * sizeof(float)));
+
+    vao2.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj2.GetNormals(), 3 * sizeof(float)));
 
     vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
@@ -79,9 +91,11 @@ int main(int, char **) {
         vao1.Bind();
 
         model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(-1, 1, 0));
-        glm::mat4 MVP1 = camera.GetViewProjection() * model1;
 
-        matrices.SetData(0, sizeof(glm::mat4), &MVP1[0][0]);
+        Matrices mat1;
+        mat1.model = model1;
+        mat1.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat1), &mat1);
         data.SetData(0, sizeof(glm::vec3), &color1[0]);
 
         tex1.Bind(0);
@@ -94,9 +108,11 @@ int main(int, char **) {
         vao2.Bind();
 
         model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
-        glm::mat4 MVP2 = camera.GetViewProjection() * model2;
 
-        matrices.SetData(0, sizeof(glm::mat4), &MVP2[0][0]);
+        Matrices mat2;
+        mat2.model = model2;
+        mat2.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat2), &mat2);
         data.SetData(0, sizeof(glm::vec3), &color2[0]);
 
         tex2.Bind(0);
