@@ -30,7 +30,6 @@ public:
 private:
     GLuint m_ArrayID;
 
-    unsigned int m_BufferIndex = 0;
     std::vector<std::shared_ptr<VertexBuffer>> m_Buffers;
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
 };
