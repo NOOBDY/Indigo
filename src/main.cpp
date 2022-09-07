@@ -1,8 +1,5 @@
 #include "pch.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
