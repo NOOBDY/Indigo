@@ -8,8 +8,8 @@ VertexBuffer::VertexBuffer(const std::vector<float> &vertices,
     m_ComponentCount = typeSize / sizeof(float);
     m_Type = GL_FLOAT;
     glCreateBuffers(1, &m_BufferID);
-    glNamedBufferData(m_BufferID, vertices.size() * typeSize, vertices.data(),
-                      GL_STATIC_DRAW);
+    glNamedBufferData(m_BufferID, vertices.size() * sizeof(float),
+                      vertices.data(), GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer() {
