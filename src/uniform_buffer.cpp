@@ -1,5 +1,7 @@
 #include "uniform_buffer.hpp"
 
+#include "log.hpp"
+
 UniformBuffer::UniformBuffer(const int size, const int binding) {
     LOG_TRACE("Creating Uniform Buffer");
     glCreateBuffers(1, &m_BufferID);

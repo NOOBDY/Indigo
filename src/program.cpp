@@ -3,6 +3,8 @@
 #include <fstream>
 #include <sstream>
 
+#include "log.hpp"
+
 Program::Program(const std::string &vertexShaderFilepath,
                  const std::string &fragmentShaderFilepath) {
     LOG_TRACE("Creating Program");

@@ -4,6 +4,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "log.hpp"
+
 Importer::Importer(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
 

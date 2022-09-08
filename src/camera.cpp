@@ -1,5 +1,7 @@
 #include "camera.hpp"
 
+#include "log.hpp"
+
 Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)
     : m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip),
       m_FarClip(farClip) {
