@@ -3,6 +3,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "log.hpp"
+
 Texture::Texture(const std::string &textureFilepath) {
     LOG_TRACE("Creating Texture");
 

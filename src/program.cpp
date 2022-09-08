@@ -1,7 +1,10 @@
 #include "program.hpp"
 
+#include <vector>
 #include <fstream>
 #include <sstream>
+
+#include "log.hpp"
 
 Program::Program(const std::string &vertexShaderFilepath,
                  const std::string &fragmentShaderFilepath) {

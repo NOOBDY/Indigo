@@ -1,13 +1,14 @@
 #include "vertex_buffer.hpp"
 
-VertexBuffer::VertexBuffer(const std::vector<float> &vertices,
+#include "log.hpp"
+
+VertexBuffer::VertexBuffer(const float vertices[], const unsigned int size,
                            const unsigned int typeSize) {
     LOG_TRACE("Creating Vertex Buffer");
     m_ComponentCount = typeSize / sizeof(float);
     m_Type = GL_FLOAT;
     glCreateBuffers(1, &m_BufferID);
-    glNamedBufferData(m_BufferID, vertices.size() * typeSize, vertices.data(),
-                      GL_STATIC_DRAW);
+    glNamedBufferData(m_BufferID, size * typeSize, vertices, GL_STATIC_DRAW);
 }
 
 VertexBuffer::~VertexBuffer() {

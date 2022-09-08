@@ -1,7 +1,7 @@
 #ifndef UNIFORM_BUFFER_HPP
 #define UNIFORM_BUFFER_HPP
 
-#include "pch.hpp"
+#include <GL/glew.h>
 
 class UniformBuffer {
 public:

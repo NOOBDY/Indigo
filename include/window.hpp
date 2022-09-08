@@ -1,8 +1,7 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include "pch.hpp"
-
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 /**

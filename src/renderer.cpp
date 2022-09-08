@@ -1,5 +1,9 @@
 #include "renderer.hpp"
 
+#include <GL/glew.h>
+
+#include "log.hpp"
+
 /**
  * Debug message handling callback function for OpenGL
  *
@@ -51,8 +55,4 @@ void Renderer::ClearColor(float r, float g, float b, float a) {
 
 void Renderer::Clear() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-}
-
-void Renderer::Draw(const unsigned int indexCount) {
-    glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void *)0);
 }

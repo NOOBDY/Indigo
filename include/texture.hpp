@@ -1,7 +1,9 @@
 #ifndef TEXTURE_HPP
 #define TEXTURE_HPP
 
-#include "pch.hpp"
+#include <string>
+
+#include <GL/glew.h>
 
 #include "program.hpp"
 

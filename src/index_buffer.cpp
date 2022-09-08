@@ -1,11 +1,14 @@
 #include "index_buffer.hpp"
 
-IndexBuffer::IndexBuffer(const std::vector<unsigned int> &indices) {
+#include "log.hpp"
+
+IndexBuffer::IndexBuffer(const unsigned int indices[],
+                         const unsigned int count) {
     LOG_TRACE("Creating Index Buffer");
-    m_Count = indices.size();
+    m_Count = count;
     glCreateBuffers(1, &m_BufferID); // glCreateBuffers is exclusive to GL ^4.5
-    glNamedBufferData(m_BufferID, indices.size() * sizeof(unsigned int),
-                      indices.data(), GL_STATIC_DRAW);
+    glNamedBufferData(m_BufferID, count * sizeof(unsigned int), indices,
+                      GL_STATIC_DRAW);
 }
 
 IndexBuffer::~IndexBuffer() {
