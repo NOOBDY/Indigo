@@ -1,7 +1,8 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include <memory>
+#include <memory> // for circular dependency issues
+                  // pch.hpp can't be included here
 
 #include <spdlog/spdlog.h>
 

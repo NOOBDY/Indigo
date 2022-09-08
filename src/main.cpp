@@ -1,18 +1,11 @@
-#include <vector>
-#include <memory>
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include "pch.hpp"
 
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
 #include "program.hpp"
 #include "camera.hpp"
+#include "importer.hpp"
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
@@ -41,48 +34,47 @@ int main(int, char **) {
 
     Camera camera(45.0f, window.GetAspectRatio());
 
-    Assimp::Importer importer;
-
     // begin model 1
     glm::mat4 model1 = glm::mat4(1.0f);
     glm::vec3 color1(0.8f, 0.5f, 0.0f);
-    model1 = glm::translate(model1, glm::vec3(0, 0, 0));
+    model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
-    const aiScene *scene1 = importer.ReadFile(
-        "../assets/suzanne.obj", aiProcessPreset_TargetRealtime_Fast);
+    Importer obj1("../assets/donut.obj");
 
-    const aiMesh *mesh1 = scene1->mMeshes[0];
+    VertexArray vao1;
 
-    std::vector<float> uvs1;
+    vao1.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj1.GetVertices(), 3 * sizeof(float)));
 
-    for (unsigned int i = 0; i < mesh1->mNumVertices; ++i) {
-        uvs1.push_back(mesh1->mTextureCoords[0][i].x);
-        uvs1.push_back(mesh1->mTextureCoords[0][i].y);
-    }
+    vao1.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj1.GetUVs(), 2 * sizeof(float)));
 
-    std::vector<unsigned int> indices1;
+    vao1.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj1.GetNormals(), 3 * sizeof(float)));
 
-    for (unsigned int i = 0; i < mesh1->mNumFaces; ++i) {
-        aiFace f = mesh1->mFaces[i];
-        for (unsigned int j = 0; j < f.mNumIndices; ++j) {
-            indices1.push_back(f.mIndices[j]);
-        }
-    }
-
-    std::shared_ptr<VertexBuffer> vbo1(std::make_shared<VertexBuffer>(
-        (float *)&mesh1->mVertices[0], mesh1->mNumVertices,
-        sizeof(aiVector3D)));
-
-    // normal
-    std::shared_ptr<VertexBuffer> vbo2(std::make_shared<VertexBuffer>(
-        (float *)&mesh1->mNormals[0], mesh1->mNumVertices, sizeof(aiVector3D)));
-
-    std::shared_ptr<VertexBuffer> uv1(std::make_shared<VertexBuffer>(
-        (float *)&uvs1[0], mesh1->mNumVertices, sizeof(aiVector2D)));
-
-    std::shared_ptr<IndexBuffer> ibo1(
-        std::make_shared<IndexBuffer>(&indices1[0], indices1.size()));
+    vao1.SetIndexBuffer(std::make_shared<IndexBuffer>(obj1.GetIndices()));
     // end model 1
+
+    // begin model 2
+    glm::mat4 model2 = glm::mat4(1.0f);
+    glm::vec3 color2(0.0f, 0.8f, 0.8f);
+    model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
+
+    Importer obj2("../assets/suzanne.obj");
+
+    VertexArray vao2;
+
+    vao2.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj2.GetVertices(), 3 * sizeof(float)));
+
+    vao2.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj2.GetUVs(), 2 * sizeof(float)));
+
+    vao2.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj2.GetNormals(), 3 * sizeof(float)));
+
+    vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
+    // end model 2
 
     Texture tex1("../assets/fabric.png");
     Texture tex2("../assets/uv.png");
@@ -96,25 +88,37 @@ int main(int, char **) {
         Renderer::Clear();
 
         //
-        VertexArray vao1;
-        vao1.AddVertexBuffer(vbo1);
-        vao1.AddVertexBuffer(vbo2);
-        vao1.AddVertexBuffer(uv1);
-        vao1.SetIndexBuffer(ibo1);
+        vao1.Bind();
 
-        model1 = glm::rotate(model1, glm::radians(-0.05f), glm::vec3(.1, 1, 0));
+        model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(-1, 1, 0));
 
-        Matrices mat;
-        mat.model = model1;
-        mat.viewProjection = camera.GetViewProjection();
-        matrices.SetData(0, sizeof(mat), &mat);
+        Matrices mat1;
+        mat1.model = model1;
+        mat1.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat1), &mat1);
         data.SetData(0, sizeof(glm::vec3), &color1[0]);
 
         tex1.Bind(0);
         tex2.Bind(1);
 
-        glDrawElements(GL_TRIANGLES, vao1.GetIndexBuffer()->GetCount(),
-                       GL_UNSIGNED_INT, (void *)0);
+        Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+        //
+
+        //
+        vao2.Bind();
+
+        model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
+
+        Matrices mat2;
+        mat2.model = model2;
+        mat2.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat2), &mat2);
+        data.SetData(0, sizeof(glm::vec3), &color2[0]);
+
+        tex2.Bind(0);
+        tex1.Bind(1);
+
+        Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();

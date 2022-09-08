@@ -26,7 +26,7 @@ vec3 calc_light(vec3 diff_c, vec3 spec_c, float alpha, vec3 pos, vec3 eye, vec3 
 
     if(dot_ln < 0.0)
         return vec3(0.0, 0.0, 0.0);
-    
+
     if(dot_rv < 0.0)
         return power * diff_c * dot_ln;
 
@@ -44,11 +44,12 @@ vec3 phong_light(float alpha, vec3 light_pos, vec3 pos, vec3 eye, vec3 am_c, vec
 }
 
 void main() {
-        vec3 light_pos = vec3(3,0,0);
-        vec3 cam_pos = vec3(0,3,4);
+        vec3 light_pos = vec3(0, 2, 0);
+        vec3 cam_pos = vec3(0, 3, 4);
         vec3 am_c = vec3(0.702, 0.702, 0.702);
         vec3 spec_c = vec3(1.0, 1.0, 1.0);
         float max_shine = 100.0;
         vec3 color3 = phong_light(max_shine, light_pos, world_pos, cam_pos, am_c, diff_c, spec_c);
         color = vec4(color3,1.0);
+        // color = vec4(normal, 1.0);
 }

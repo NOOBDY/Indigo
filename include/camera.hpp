@@ -1,7 +1,7 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include <glm/glm.hpp>
+#include "pch.hpp"
 
 // Up:      (0, 1, 0)
 // Right:   (1, 0, 0)

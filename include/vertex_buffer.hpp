@@ -1,14 +1,14 @@
 #ifndef VERTEX_BUFFER_HPP
 #define VERTEX_BUFFER_HPP
 
-#include <GL/glew.h>
+#include "pch.hpp"
 
 /**
  * Currently, vertex buffers only supports float arrays
  */
 class VertexBuffer {
 public:
-    VertexBuffer(const float vertices[], const unsigned int size,
+    VertexBuffer(const std::vector<float> &vertices,
                  const unsigned int typeSize);
     ~VertexBuffer();
 
