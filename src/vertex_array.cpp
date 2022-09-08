@@ -1,5 +1,7 @@
 #include "vertex_array.hpp"
 
+#include "log.hpp"
+
 VertexArray::VertexArray() {
     LOG_TRACE("Creating Vertex Array");
     glCreateVertexArrays(1, &m_ArrayID);

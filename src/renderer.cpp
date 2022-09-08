@@ -1,5 +1,7 @@
 #include "renderer.hpp"
 
+#include "log.hpp"
+
 /**
  * Debug message handling callback function for OpenGL
  *
