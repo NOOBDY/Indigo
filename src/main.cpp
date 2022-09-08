@@ -1,3 +1,4 @@
+#include "glm/fwd.hpp"
 #include "pch.hpp"
 
 #include "log.hpp"
@@ -16,8 +17,19 @@
 struct Matrices {
     glm::mat4 model;
     glm::mat4 viewProjection;
+    glm::vec3 camera_pos;
 };
-
+struct light_info {
+    glm::vec3 light_pos;
+    glm::vec3 direction;
+    glm::vec3 color;
+    float power;
+    int light_type;
+};
+struct material {
+    glm::vec3 base_color;
+    float max_shine;
+};
 int main(int, char **) {
     Log::Init();
 
@@ -30,13 +42,18 @@ int main(int, char **) {
                     "../assets/shaders/phong.frag");
 
     UniformBuffer matrices(sizeof(Matrices), 0);
-    UniformBuffer data(sizeof(glm::vec3), 1);
+    UniformBuffer data(sizeof(material), 1);
+    UniformBuffer light_data(sizeof(light_info), 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
+    light_info light1 = {glm::vec3(5.0f, 0.0f, 0.0f),
+                         glm::vec3(0.0f, 1.0f, 0.0f),
+                         glm::vec3(1.0f, 1.0f, 1.0f), 1.0f};
+
     // begin model 1
     glm::mat4 model1 = glm::mat4(1.0f);
-    glm::vec3 color1(0.8f, 0.5f, 0.0f);
+    material mat_color1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
     model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
     Importer obj1("../assets/donut.obj");
@@ -57,7 +74,7 @@ int main(int, char **) {
 
     // begin model 2
     glm::mat4 model2 = glm::mat4(1.0f);
-    glm::vec3 color2(0.0f, 0.8f, 0.8f);
+    material mat_color2 = {glm::vec3(0.0f, 0.8f, 0.8f), 100.0f};
     model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
 
     Importer obj2("../assets/suzanne.obj");
@@ -96,15 +113,13 @@ int main(int, char **) {
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
-        data.SetData(0, sizeof(glm::vec3), &color1[0]);
+        data.SetData(0, sizeof(material), &mat_color1);
+        light_data.SetData(0, sizeof(light_info), &light1);
 
         tex1.Bind(0);
         tex2.Bind(1);
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
-        //
-
-        //
         vao2.Bind();
 
         model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
@@ -113,7 +128,7 @@ int main(int, char **) {
         mat2.model = model2;
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
-        data.SetData(0, sizeof(glm::vec3), &color2[0]);
+        data.SetData(0, sizeof(material), &mat_color2);
 
         tex2.Bind(0);
         tex1.Bind(1);
