@@ -12,6 +12,7 @@
 #include "index_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
+#include "transform.hpp"
 
 #pragma pack(16) // std140 layout pads by multiple of 16
 struct Matrices {
@@ -52,9 +53,17 @@ int main(int, char **) {
                          glm::vec3(1.0f, 1.0f, 1.0f), 1.0f};
 
     // begin model 1
-    glm::mat4 model1 = glm::mat4(1.0f);
+    transform test(glm::vec3(0));
+    test.update_transform(glm::vec3(0, 0, 0), glm::vec3(0), glm::vec3(.5));
+    // glm::mat4 model1 = glm::mat4(1.0f);
+    glm::mat4 model1 = test.Get_transform();
+
+    for (int i = 0; i < 4; i++) {
+        LOG_INFO("{},{},{},{}", model1[i][0], model1[i][1], model1[i][2],
+                 model1[i][3]);
+    }
     material mat_color1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    model1 = glm::translate(model1, glm::vec3(2, 0, 0));
+    // model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
     Importer obj1("../assets/donut.obj");
 
@@ -106,8 +115,11 @@ int main(int, char **) {
 
         //
         vao1.Bind();
-
-        model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(-1, 1, 0));
+        glm::vec3 temp = glm::vec3(0);
+        test.update_transform(temp, test.Get_rotation() - glm::vec3(0.1, 0, 0));
+        model1 = test.Get_transform();
+        // model1 = glm::rotate(model1, glm::radians(-.1f), glm::vec3(-1, 0,
+        // 0));
 
         Matrices mat1;
         mat1.model = model1;
@@ -122,7 +134,7 @@ int main(int, char **) {
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         vao2.Bind();
 
-        model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
+        model2 = glm::rotate(model2, glm::radians(-.1f), glm::vec3(0, 1, 0));
 
         Matrices mat2;
         mat2.model = model2;
