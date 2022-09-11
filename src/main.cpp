@@ -115,22 +115,10 @@ int main(int, char **) {
     do {
         Renderer::Clear();
 
-        //
-        vao1.Bind();
         glm::vec3 temp = glm::vec3(0);
-        test.update_transform(temp, test.Get_rotation() + glm::vec3(0.0, 1, 0));
-        LOG_INFO("{},{},{}", test.Get_rotation_vector().x,
-                 test.Get_rotation_vector().y, test.Get_rotation_vector().z);
-        // for (int i = 0; i < 4; i++) {
-        //     LOG_INFO("{},{},{},{}", model2[i][0], model2[i][1], model2[i][2],
-        //              model2[i][3]);
-        // }
-        LOG_INFO("ro");
-        LOG_INFO("{},{},{}", test.Get_rotation().x, test.Get_rotation().y,
-                 test.Get_rotation().z);
+        test.update_transform(temp,
+                              test.Get_rotation() + glm::vec3(0.1, 0.0, 0));
         model1 = test.Get_transform();
-        // model1 = glm::rotate(model1, glm::radians(-.1f), glm::vec3(-1, 0,
-        // 0));
 
         Matrices mat1;
         mat1.model = model1;

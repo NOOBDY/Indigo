@@ -7,16 +7,23 @@ transform::transform(glm::vec3 position, glm::vec3 rotate, glm::vec3 scale,
     update_transform(position, rotate, scale, transform);
 };
 
+glm::mat4 transform::rotaion_mat(glm::mat4 set_transform) {
+    if (m_rotation.x != 0.0f)
+        set_transform = glm::rotate(set_transform, glm::radians(m_rotation.x),
+                                    glm::vec3(1.f, 0.f, 0.f));
+    if (m_rotation.y != 0.0f)
+        set_transform = glm::rotate(set_transform, glm::radians(m_rotation.y),
+                                    glm::vec3(0.f, 1.f, 0.f));
+    if (m_rotation.z != 0.0f)
+        set_transform = glm::rotate(set_transform, glm::radians(m_rotation.z),
+                                    glm::vec3(0.f, 0.f, 1.f));
+    return set_transform;
+}
 glm::mat4 transform::update_mat() {
     glm::mat4 new_transform = glm::mat4(1.f);
     new_transform = glm::translate(new_transform, glm::vec3(0.f));
-    // glm::vec3 temp = glm::vec3(180.f);
-    // glm::vec3 temp = glm::mod(m_rotation, glm::vec3(360));
-
-    m_rotation_vector = m_rotation / glm::vec3(180.f);
-    // m_rotation_vector = glm::fract(m_rotation_vector);
     new_transform = glm::scale(new_transform, m_scale);
-    new_transform = glm::rotate(new_transform, 360.0f, m_rotation_vector);
+    new_transform = rotaion_mat(new_transform);
     new_transform = glm::translate(new_transform, m_position);
     return new_transform;
 }
@@ -61,7 +68,7 @@ void transform::separate_mat(glm::mat4 set_transform) {
     rot = glm::degrees(rot); // Convert to degrees, or you could multiply it by
                              // (180.f / 3.14159265358979323846f)
     m_rotation = rot;
-    m_rotation_vector = (m_rotation - glm::vec3(180.f)) / glm::vec3(180.f);
+    // m_rotation_vector = (m_rotation - glm::vec3(180.f)) / glm::vec3(180.f);
 }
 glm::mat4 transform::scale_mat() {
     glm::mat4 scale_mat = glm::mat4(0.0f);
