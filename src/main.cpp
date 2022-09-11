@@ -58,6 +58,8 @@ int main(int, char **) {
     // glm::mat4 model1 = glm::mat4(1.0f);
     glm::mat4 model1 = test.Get_transform();
 
+    glm::vec3 temp = test.Get_rotation();
+    LOG_INFO("{},{},{}", temp.x, temp.y, temp.z);
     for (int i = 0; i < 4; i++) {
         LOG_INFO("{},{},{},{}", model1[i][0], model1[i][1], model1[i][2],
                  model1[i][3]);
@@ -116,7 +118,16 @@ int main(int, char **) {
         //
         vao1.Bind();
         glm::vec3 temp = glm::vec3(0);
-        test.update_transform(temp, test.Get_rotation() - glm::vec3(0.1, 0, 0));
+        test.update_transform(temp, test.Get_rotation() + glm::vec3(0.0, 1, 0));
+        LOG_INFO("{},{},{}", test.Get_rotation_vector().x,
+                 test.Get_rotation_vector().y, test.Get_rotation_vector().z);
+        // for (int i = 0; i < 4; i++) {
+        //     LOG_INFO("{},{},{},{}", model2[i][0], model2[i][1], model2[i][2],
+        //              model2[i][3]);
+        // }
+        LOG_INFO("ro");
+        LOG_INFO("{},{},{}", test.Get_rotation().x, test.Get_rotation().y,
+                 test.Get_rotation().z);
         model1 = test.Get_transform();
         // model1 = glm::rotate(model1, glm::radians(-.1f), glm::vec3(-1, 0,
         // 0));
