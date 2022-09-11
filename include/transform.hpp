@@ -23,8 +23,6 @@ public:
     glm::vec3 Get_scale() const { return m_scale; };
     glm::vec3 Get_rotation() const { return m_rotation; };
 
-    glm::mat4 scale_mat();
-
     glm::mat4 rotaion_mat(glm::mat4 set_transform);
     glm::mat4 update_mat();
     void separate_mat(glm::mat4 set_transform);

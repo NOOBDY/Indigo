@@ -70,14 +70,6 @@ void transform::separate_mat(glm::mat4 set_transform) {
     m_rotation = rot;
     // m_rotation_vector = (m_rotation - glm::vec3(180.f)) / glm::vec3(180.f);
 }
-glm::mat4 transform::scale_mat() {
-    glm::mat4 scale_mat = glm::mat4(0.0f);
-    scale_mat[0][0] = m_scale.x;
-    scale_mat[1][1] = m_scale.y;
-    scale_mat[2][2] = m_scale.z;
-    scale_mat[3][3] = 1.0f;
-    return scale_mat;
-}
 void transform::update_transform(glm::vec3 position, glm::vec3 rotation,
                                  glm::vec3 scale, glm::mat4 set_transform) {
 
