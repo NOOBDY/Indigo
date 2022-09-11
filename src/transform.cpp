@@ -1,7 +1,7 @@
 #include "transform.hpp"
 
 #include "log.hpp"
-
+#include "log.hpp"
 transform::transform(glm::vec3 position, glm::vec3 rotate, glm::vec3 scale,
                      glm::mat4 transform) {
     update_transform(position, rotate, scale, transform);
@@ -9,8 +9,14 @@ transform::transform(glm::vec3 position, glm::vec3 rotate, glm::vec3 scale,
 
 glm::mat4 transform::update_mat() {
     glm::mat4 new_transform = glm::mat4(1.f);
+    new_transform = glm::translate(new_transform, glm::vec3(0.f));
+    // glm::vec3 temp = glm::vec3(180.f);
+    // glm::vec3 temp = glm::mod(m_rotation, glm::vec3(360));
+
+    m_rotation_vector = m_rotation / glm::vec3(180.f);
+    // m_rotation_vector = glm::fract(m_rotation_vector);
     new_transform = glm::scale(new_transform, m_scale);
-    new_transform = glm::rotate(new_transform, 180.f, m_rotation_vector);
+    new_transform = glm::rotate(new_transform, 360.0f, m_rotation_vector);
     new_transform = glm::translate(new_transform, m_position);
     return new_transform;
 }
@@ -67,15 +73,16 @@ glm::mat4 transform::scale_mat() {
 }
 void transform::update_transform(glm::vec3 position, glm::vec3 rotation,
                                  glm::vec3 scale, glm::mat4 set_transform) {
-    if (set_transform[0][0] != NULL) {
+
+    if (set_transform != glm::mat4(NULL)) {
         packdata.transform = m_transform;
 
     } else {
-        if (position.x != NULL)
+        if (position != glm::vec3(NULL))
             m_position = position;
-        if (scale.x != NULL)
+        if (scale != glm::vec3(NULL))
             m_scale = scale;
-        if (rotation.x != NULL)
+        if (rotation != glm::vec3(NULL))
             m_rotation = rotation;
         m_transform = update_mat();
         packdata.transform = m_transform;
