@@ -36,6 +36,7 @@ add_executable(Indigo
     src/uniform_buffer.cpp
     src/texture.cpp
     src/transform.cpp
+    src/light.cpp
 
     include/log.hpp
     include/window.hpp
@@ -49,6 +50,7 @@ add_executable(Indigo
     include/uniform_buffer.hpp
     include/texture.hpp
     include/transform.hpp
+    include/light.hpp
 
     assets/shaders/base.vert
     assets/shaders/base.frag

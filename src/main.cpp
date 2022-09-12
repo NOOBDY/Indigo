@@ -13,19 +13,12 @@
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
+#include "light.hpp"
 
 #pragma pack(16) // std140 layout pads by multiple of 16
 struct Matrices {
     glm::mat4 model;
     glm::mat4 viewProjection;
-};
-
-struct LightInfo {
-    glm::vec3 light_pos;
-    glm::vec3 direction;
-    glm::vec3 color;
-    float power;
-    int lightType;
 };
 
 struct Material {
@@ -45,15 +38,12 @@ int main(int, char **) {
                     "../assets/shaders/phong.frag");
 
     UniformBuffer matrices(sizeof(Matrices), 0);
-    UniformBuffer data(sizeof(Material), 1);
-    UniformBuffer light_data(sizeof(LightInfo), 2);
+    UniformBuffer material_Data(sizeof(Material), 1);
+    UniformBuffer light_data(sizeof(LightData), 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
-    LightInfo light1 = {glm::vec3(5.0f, 0.0f, 0.0f),
-                        glm::vec3(0.0f, 1.0f, 0.0f),
-                        glm::vec3(1.0f, 1.0f, 1.0f), 1.0f};
-
+    Light light1(glm::vec3(1.0f));
     // begin model 1
     Transform model1Trans(glm::vec3(0));
     // glm::mat4 model1 = glm::mat4(1.0f);
@@ -116,12 +106,13 @@ int main(int, char **) {
                                 glm::vec3(0.1, 0.0, 0));
         model1 = model1Trans.GetTransform();
 
+        LightData light_info = light1.GetLightData();
         Matrices mat1;
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
-        data.SetData(0, sizeof(Material), &mat_color1);
-        light_data.SetData(0, sizeof(LightInfo), &light1);
+        material_Data.SetData(0, sizeof(Material), &mat_color1);
+        light_data.SetData(0, sizeof(LightData), &light_info);
 
         tex1.Bind(0);
         tex2.Bind(1);
@@ -135,7 +126,7 @@ int main(int, char **) {
         mat2.model = model2;
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
-        data.SetData(0, sizeof(Material), &mat_color2);
+        material_Data.SetData(0, sizeof(Material), &mat_color2);
 
         tex2.Bind(0);
         tex1.Bind(1);

@@ -6,20 +6,30 @@ in vec3 normal;
 in vec2 UV;
 
 out vec4 color;
-layout(std140,binding=1)uniform Data{
+layout(std140,binding=1)uniform material_Data{
     vec3 diff_c;
     float max_shine;
 };
-layout(std140,binding=2)uniform light_data{
-    vec3 light_pos;
-    vec3 direction;
-    vec3 light_color;
+layout(std140,binding=2)buffer light_Data{
+    mat4 transform;
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
+    vec3 light_Color;
+    float radius;
     float power;
+    int light_Type;
 };
 
 uniform sampler2D texture1;// samplers are opaque types and
 uniform sampler2D texture2;// cannot exist in uniform blocks
 
+struct TransformData{
+    mat4 transform;
+    vec3 position;
+    vec3 rotation;
+    vec3 scale;
+};
 struct light_info{
     vec3 light_pos;
     vec3 rotation;
@@ -68,7 +78,7 @@ void main(){
     vec3 am_c=vec3(.702,.702,.702);
     vec3 spec_c=vec3(1.,1.,1.);
     // float max_shine=100.;
-    vec3 color3=phong_light(max_shine,light_pos,world_pos,cam_pos,am_c,diff_c,spec_c);
+    vec3 color3=phong_light(max_shine,position,world_pos,cam_pos,am_c,diff_c,spec_c);
     color=vec4(color3,1.);
     // color = vec4(normal, 1.0);
 }
