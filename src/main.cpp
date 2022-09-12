@@ -18,19 +18,21 @@
 struct Matrices {
     glm::mat4 model;
     glm::mat4 viewProjection;
-    glm::vec3 camera_pos;
 };
-struct light_info {
+
+struct LightInfo {
     glm::vec3 light_pos;
     glm::vec3 direction;
     glm::vec3 color;
     float power;
-    int light_type;
+    int lightType;
 };
-struct material {
-    glm::vec3 base_color;
-    float max_shine;
+
+struct Material {
+    glm::vec3 baseColor;
+    float maxShine;
 };
+
 int main(int, char **) {
     Log::Init();
 
@@ -43,28 +45,22 @@ int main(int, char **) {
                     "../assets/shaders/phong.frag");
 
     UniformBuffer matrices(sizeof(Matrices), 0);
-    UniformBuffer data(sizeof(material), 1);
-    UniformBuffer light_data(sizeof(light_info), 2);
+    UniformBuffer data(sizeof(Material), 1);
+    UniformBuffer light_data(sizeof(LightInfo), 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
-    light_info light1 = {glm::vec3(5.0f, 0.0f, 0.0f),
-                         glm::vec3(0.0f, 1.0f, 0.0f),
-                         glm::vec3(1.0f, 1.0f, 1.0f), 1.0f};
+    LightInfo light1 = {glm::vec3(5.0f, 0.0f, 0.0f),
+                        glm::vec3(0.0f, 1.0f, 0.0f),
+                        glm::vec3(1.0f, 1.0f, 1.0f), 1.0f};
 
     // begin model 1
-    transform test(glm::vec3(0));
-    test.update_transform(glm::vec3(0, 0, 0), glm::vec3(0), glm::vec3(.5));
+    Transform model1Trans(glm::vec3(0));
     // glm::mat4 model1 = glm::mat4(1.0f);
-    glm::mat4 model1 = test.Get_transform();
+    model1Trans.SetPosition(glm::vec3(2, 0, 0));
+    glm::mat4 model1 = model1Trans.GetTransform();
 
-    glm::vec3 temp = test.Get_rotation();
-    LOG_INFO("{},{},{}", temp.x, temp.y, temp.z);
-    for (int i = 0; i < 4; i++) {
-        LOG_INFO("{},{},{},{}", model1[i][0], model1[i][1], model1[i][2],
-                 model1[i][3]);
-    }
-    material mat_color1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
+    Material mat_color1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
     // model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
     Importer obj1("../assets/donut.obj");
@@ -85,7 +81,7 @@ int main(int, char **) {
 
     // begin model 2
     glm::mat4 model2 = glm::mat4(1.0f);
-    material mat_color2 = {glm::vec3(0.0f, 0.8f, 0.8f), 100.0f};
+    Material mat_color2 = {glm::vec3(0.0f, 0.8f, 0.8f), 100.0f};
     model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
 
     Importer obj2("../assets/suzanne.obj");
@@ -114,18 +110,18 @@ int main(int, char **) {
 
     do {
         Renderer::Clear();
+        vao1.Bind();
 
-        glm::vec3 temp = glm::vec3(0);
-        test.update_transform(temp,
-                              test.Get_rotation() + glm::vec3(0.1, 0.0, 0));
-        model1 = test.Get_transform();
+        model1Trans.SetRotation(model1Trans.GetRotation() +
+                                glm::vec3(0.1, 0.0, 0));
+        model1 = model1Trans.GetTransform();
 
         Matrices mat1;
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
-        data.SetData(0, sizeof(material), &mat_color1);
-        light_data.SetData(0, sizeof(light_info), &light1);
+        data.SetData(0, sizeof(Material), &mat_color1);
+        light_data.SetData(0, sizeof(LightInfo), &light1);
 
         tex1.Bind(0);
         tex2.Bind(1);
@@ -139,7 +135,7 @@ int main(int, char **) {
         mat2.model = model2;
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
-        data.SetData(0, sizeof(material), &mat_color2);
+        data.SetData(0, sizeof(Material), &mat_color2);
 
         tex2.Bind(0);
         tex1.Bind(1);
