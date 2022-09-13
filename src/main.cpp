@@ -1,5 +1,9 @@
 #include "pch.hpp"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
@@ -26,6 +30,16 @@ int main(int, char **) {
     Renderer::Init();
     Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
 
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    (void)io;
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
 
@@ -39,7 +53,7 @@ int main(int, char **) {
     glm::vec3 color1(0.8f, 0.5f, 0.0f);
     model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
-    Importer obj1("../assets/donut.obj");
+    Importer obj1("../assets/sphere.obj");
 
     VertexArray vao1;
 
@@ -84,6 +98,8 @@ int main(int, char **) {
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
 
+    bool show = true;
+
     do {
         Renderer::Clear();
 
@@ -120,7 +136,25 @@ int main(int, char **) {
 
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        if (show)
+            ImGui::ShowDemoWindow(&show);
+
+        ImGui::Begin("Test");
+        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
     } while (!window.ShouldClose());
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }

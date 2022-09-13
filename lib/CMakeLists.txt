@@ -1,7 +1,3 @@
-add_definitions(
-    -DGLEW_STATIC
-)
-
 # GLFW
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -11,17 +7,19 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(glfw)
 
 # GLEW
+add_definitions(
+    -DGLEW_STATIC
+)
 
 set(GLEW_SOURCE
     glew-2.2.0/src/glew.c
 )
 
-include_directories(
-    glew-2.2.0/include
-)
-
 add_library(glew_220 STATIC
     ${GLEW_SOURCE}
+)
+target_include_directories(glew_220 PUBLIC
+    glew-2.2.0/include
 )
 target_link_libraries(glew_220
     ${OPENGL_LIBRARY}
@@ -49,3 +47,29 @@ set(ASSIMP_WARNINGS_AS_ERRORS OFF)
 set(ASSIMP_BUILD_TESTS OFF)
 
 add_subdirectory(assimp)
+
+# imgui
+
+set(IMGUI_SOURCE
+    imgui/backends/imgui_impl_glfw.cpp
+    imgui/backends/imgui_impl_opengl3.cpp
+    imgui/imgui.cpp
+    imgui/imgui_demo.cpp
+    imgui/imgui_draw.cpp
+    imgui/imgui_tables.cpp
+    imgui/imgui_widgets.cpp
+)
+
+set(IMGUI_INCLUDE_DIR
+    lib/imgui/
+    lib/imgui/backends/
+    PARENT_SCOPE
+)
+
+add_library(ImGui STATIC
+    ${IMGUI_SOURCE}
+)
+target_include_directories(ImGui PUBLIC
+    imgui/
+    imgui/backends/
+)
