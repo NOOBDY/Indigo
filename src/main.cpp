@@ -53,7 +53,7 @@ int main(int, char **) {
     glm::vec3 color1(0.8f, 0.5f, 0.0f);
     model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
-    Importer obj1("../assets/sphere.obj");
+    Importer obj1("../assets/donut.obj");
 
     VertexArray vao1;
 
