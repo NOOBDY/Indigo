@@ -37,9 +37,10 @@ int main(int, char **) {
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
 
+    LightData light_info[1];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer material_Data(sizeof(Material), 1);
-    UniformBuffer light_data(sizeof(LightData), 2);
+    UniformBuffer light_data(sizeof(light_info), 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
@@ -106,13 +107,13 @@ int main(int, char **) {
                                 glm::vec3(0.1, 0.0, 0));
         model1 = model1Trans.GetTransform();
 
-        LightData light_info = light1.GetLightData();
+        light_info[0] = light1.GetLightData();
         Matrices mat1;
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
         material_Data.SetData(0, sizeof(Material), &mat_color1);
-        light_data.SetData(0, sizeof(LightData), &light_info);
+        light_data.SetData(0, sizeof(light_info), &light_info);
 
         tex1.Bind(0);
         tex2.Bind(1);
