@@ -1,4 +1,3 @@
-#include "glm/fwd.hpp"
 #include "pch.hpp"
 
 #include "log.hpp"
@@ -37,21 +36,21 @@ int main(int, char **) {
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
 
-    LightData light_info[1];
+    LightData lightInfo[1];
     UniformBuffer matrices(sizeof(Matrices), 0);
-    UniformBuffer material_Data(sizeof(Material), 1);
-    UniformBuffer light_data(sizeof(light_info), 2);
+    UniformBuffer materials(sizeof(Material), 1);
+    UniformBuffer lights(sizeof(LightData) * 1, 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
     Light light1(glm::vec3(1.0f));
     // begin model 1
-    Transform model1Trans(glm::vec3(0));
+    Transform model1Trans;
     // glm::mat4 model1 = glm::mat4(1.0f);
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
     glm::mat4 model1 = model1Trans.GetTransform();
 
-    Material mat_color1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
     // model1 = glm::translate(model1, glm::vec3(2, 0, 0));
 
     Importer obj1("../assets/donut.obj");
@@ -72,7 +71,7 @@ int main(int, char **) {
 
     // begin model 2
     glm::mat4 model2 = glm::mat4(1.0f);
-    Material mat_color2 = {glm::vec3(0.0f, 0.8f, 0.8f), 100.0f};
+    Material matColor2 = {glm::vec3(0.0f, 0.8f, 0.8f), 100.0f};
     model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
 
     Importer obj2("../assets/suzanne.obj");
@@ -107,13 +106,13 @@ int main(int, char **) {
                                 glm::vec3(0.1, 0.0, 0));
         model1 = model1Trans.GetTransform();
 
-        light_info[0] = light1.GetLightData();
+        lightInfo[0] = light1.GetLightData();
         Matrices mat1;
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
-        material_Data.SetData(0, sizeof(Material), &mat_color1);
-        light_data.SetData(0, sizeof(light_info), &light_info);
+        materials.SetData(0, sizeof(Material), &matColor1);
+        lights.SetData(0, sizeof(lightInfo), &lightInfo);
 
         tex1.Bind(0);
         tex2.Bind(1);
@@ -127,7 +126,8 @@ int main(int, char **) {
         mat2.model = model2;
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
-        material_Data.SetData(0, sizeof(Material), &mat_color2);
+        materials.SetData(0, sizeof(Material), &matColor2);
+        lights.SetData(0, sizeof(lightInfo), &lightInfo);
 
         tex2.Bind(0);
         tex1.Bind(1);

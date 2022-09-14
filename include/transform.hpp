@@ -12,13 +12,14 @@ struct TransformData {
 
 class Transform {
 public:
-    Transform(glm::vec3 position = glm::vec3(0.0f),
-              glm::vec3 rotation = glm::vec3(0.0f),
-              glm::vec3 scale = glm::vec3(1.f));
+    Transform() = default;
+    Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale);
+
     void SetTransform(glm::mat4 transform);
-    void SetPosition(glm::vec3 position);
-    void SetRotation(glm::vec3 rotation);
-    void SetScale(glm::vec3 scale);
+
+    void SetPosition(glm::vec3 position) { m_Position = position; }
+    void SetRotation(glm::vec3 rotation) { m_Rotation = rotation; }
+    void SetScale(glm::vec3 scale) { m_Scale = scale; }
 
     glm::mat4 GetTransform();
     glm::vec3 GetPosition() const { return m_Position; };

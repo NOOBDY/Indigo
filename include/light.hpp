@@ -2,6 +2,7 @@
 #define LIGHT_HPP
 
 #include "pch.hpp"
+
 #include "transform.hpp"
 
 enum LightType : int {
@@ -9,13 +10,16 @@ enum LightType : int {
     spot = 1,
     direction = 2,
 };
+
 struct LightData {
-    TransformData transform_Data;
-    glm::vec3 light_Color;
+    glm::vec3 position;
+    glm::vec3 rotation;
+    glm::vec3 lightColor;
     float radius;
     float power;
-    LightType light_Type;
+    LightType lightType;
 };
+
 class Light {
 public:
     Light(glm::vec3 light_Color = glm::vec3(1.0f), float radius = 1.0f,
