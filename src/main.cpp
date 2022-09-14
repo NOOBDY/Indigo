@@ -39,7 +39,7 @@ int main(int, char **) {
     LightData lightInfo[1];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
-    UniformBuffer lights(sizeof(LightData) * 1, 2);
+    UniformBuffer lights(sizeof(lightInfo), 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
@@ -97,8 +97,10 @@ int main(int, char **) {
 
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
+    float i = 0;
 
     do {
+        i += 0.005;
         Renderer::Clear();
         vao1.Bind();
 
@@ -106,7 +108,10 @@ int main(int, char **) {
                                 glm::vec3(0.1, 0.0, 0));
         model1 = model1Trans.GetTransform();
 
+        // LOG_INFO("{}", light1.GetPower());
+        light1.m_Transform.SetPosition(glm::vec3(glm::sin(i)));
         lightInfo[0] = light1.GetLightData();
+
         Matrices mat1;
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();

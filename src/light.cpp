@@ -28,8 +28,11 @@ void Light::SetLightType(LightType light_Type) {
 
 LightData Light::GetLightData() {
     LightData data = {
-        m_Transform.GetTransformData().position,
-        m_Transform.GetTransformData().rotation,
+        // m_Transform.GetTransformData().transform,
+        m_Transform.GetPosition(),
+        // m_Transform.GetRotation(),
+        // m_Transform.GetScale(),
+
         m_LightColor,
         m_Radius,
         m_Power,
