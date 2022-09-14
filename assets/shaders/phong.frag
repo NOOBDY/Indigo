@@ -1,88 +1,90 @@
 #version 460 core
 
-in vec3 geo_pos;
-in vec3 world_pos;
+#define LIGHT_NUMBER 1
+
+in vec3 geoPosition;
+in vec3 worldPosition;
 in vec3 normal;
 in vec2 UV;
 
 out vec4 color;
-struct TransformData{
-    mat4 transform;
+
+struct LightData {
     vec3 position;
     vec3 rotation;
-    vec3 scale;
-};
-struct LightData{
-    TransformData transform;
-    vec3 light_Color;
+    vec3 lightColor;
     float radius;
     float power;
-    int light_Type;
+    int lightType;
 };
-struct Material{
-    vec3 base_color;
-    float max_shine;
+
+struct MaterialData {
+    vec3 baseColor;
+    float maxShine;
     // vec3 normal;
 };
-layout(std140,binding=1)uniform material_Data{
-    Material matter;
-    
-};
-#define light_number 1
-layout(std140,binding=2)uniform light_Data{
-    LightData lights[light_number];
+
+layout(std140, binding = 1) uniform Materials {
+    MaterialData material;
 };
 
-uniform sampler2D texture1;// samplers are opaque types and
-uniform sampler2D texture2;// cannot exist in uniform blocks
+layout(std140, binding = 2) uniform Lights {
+    LightData lights[LIGHT_NUMBER];
+};
 
-vec3 point_light(vec3 cam_pos,vec3 pos,LightData light,Material matter){
-    //mesh normal
-    vec3 n=normal;
-    //direction :light to mesh
-    vec3 l=normalize(light.transform.position-pos);
-    //direction :cam to mesh
-    vec3 v=normalize(cam_pos-pos);
-    //direction :reflection
-    vec3 r=normalize(reflect(-l,n));
-    float dot_ln=dot(l,n);
-    float dot_rv=dot(r,v);
-    vec3 base_color=matter.base_color;
-    return vec3(dot_rv);
-    
-    if(dot_ln<0.)
-    return vec3(0.,0.,0.);
-    
-    if(dot_rv<0.)
-    return light.power*base_color*dot_ln;
-    
-    return light.power*(base_color*dot_ln+light.light_Color*pow(dot_rv,matter.max_shine));
+uniform sampler2D texture1; // samplers are opaque types and
+uniform sampler2D texture2; // cannot exist in uniform blocks
+
+vec3 PointLight(vec3 cameraPosition, vec3 position, LightData light,
+                MaterialData matter) {
+    // mesh normal
+    vec3 n = normal;
+    // direction :light to mesh
+    vec3 l = normalize(light.position - position);
+    // direction :cam to mesh
+    vec3 v = normalize(cameraPosition - position);
+    // direction :reflection
+    vec3 r = normalize(reflect(-l, n));
+    float dotLN = dot(l, n);
+    float dotRV = dot(r, v);
+    vec3 baseColor = material.baseColor;
+    return vec3(dotRV);
+
+    if (dotLN < 0.)
+        return vec3(0., 0., 0.);
+
+    if (dotRV < 0.)
+        return light.power * baseColor * dotLN;
+
+    return light.power *
+           (baseColor * dotLN + light.lightColor * pow(dotRV, matter.maxShine));
 }
 
-vec3 phong_light(vec3 cam_pos,vec3 position,LightData lights[light_number],Material matter){
-    vec3 color3=vec3(0);
-    for(int i=0;i<light_number;i++){
-        LightData light=lights[i];
-        light.light_Color=vec3(1);
-        vec3 amb_light=.3*light.light_Color;
-        color3+=amb_light*matter.base_color;
-        color3=point_light(cam_pos,position,light,matter);
+vec3 PhongLight(vec3 cameraPosition, vec3 position,
+                LightData lights[LIGHT_NUMBER], MaterialData material) {
+    vec3 color3 = vec3(0);
+    for (int i = 0; i < LIGHT_NUMBER; i++) {
+        LightData light = lights[i];
+        light.lightColor = vec3(1);
+        vec3 ambientLight = .3 * light.lightColor;
+        color3 += ambientLight * material.baseColor;
+        color3 = PointLight(cameraPosition, position, light, material);
         // color3=light.transform.position;
     }
-    
+
     return color3;
 }
 
-void main(){
+void main() {
     // vec3 light_pos=vec3(0,2,0);
-    vec3 cam_pos=vec3(0,3,4);
-    vec3 am_c=vec3(.702,.702,.702);
-    vec3 spec_c=vec3(1.,1.,1.);
+    vec3 cameraPosition = vec3(0, 3, 4);
+    vec3 ambientColor = vec3(.702, .702, .702);
+    vec3 specularColor = vec3(1., 1., 1.);
     // float max_shine=100.;
-    vec3 color3=vec3(0.);
-    // color3=lights[0].light_Color;
-    color3=phong_light(cam_pos,world_pos,lights,matter);
+    vec3 color3 = vec3(0.);
+    // color3 = lights[0].lightColor;
+    color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     // color3=world_pos;
-    color=vec4(color3,1.);
+    color = vec4(color3, 1.);
     // color = vec4(normal, 1.0);
 }

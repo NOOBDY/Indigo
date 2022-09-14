@@ -2,23 +2,8 @@
 
 #include "log.hpp"
 
-Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
-    SetPosition(position);
-    SetScale(scale);
-    SetRotation(rotation);
-};
-
-void Transform::SetPosition(glm::vec3 position) {
-    m_Position = position;
-}
-
-void Transform::SetScale(glm::vec3 scale) {
-    m_Scale = scale;
-}
-
-void Transform::SetRotation(glm::vec3 rotation) {
-    m_Rotation = rotation;
-}
+Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
+    : m_Position(position), m_Rotation(rotation), m_Scale(scale){};
 
 void Transform::SetTransform(glm::mat4 transform) {
     m_Transform = transform;
@@ -76,13 +61,13 @@ glm::mat4 Transform::RotationMat(glm::mat4 transform) {
 }
 
 glm::mat4 Transform::UpdateMat() {
-    glm::mat4 new_transform = glm::mat4(1.f);
-    new_transform = glm::translate(new_transform, glm::vec3(0.f));
-    new_transform = glm::scale(new_transform, m_Scale);
-    new_transform = RotationMat(new_transform);
-    new_transform = glm::translate(new_transform, m_Position);
-    m_Transform = new_transform;
-    return new_transform;
+    glm::mat4 transform = glm::mat4(1.f);
+    transform = glm::translate(transform, glm::vec3(0.f));
+    transform = glm::scale(transform, m_Scale);
+    transform = RotationMat(transform);
+    transform = glm::translate(transform, m_Position);
+    m_Transform = transform;
+    return transform;
 }
 
 glm::mat4 Transform::GetTransform() {
@@ -90,6 +75,7 @@ glm::mat4 Transform::GetTransform() {
 
     return m_Transform;
 };
+
 TransformData Transform::GetTransformData() {
     UpdateMat();
 
