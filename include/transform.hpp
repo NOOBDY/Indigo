@@ -6,8 +6,11 @@
 struct TransformData {
     glm::mat4 transform;
     glm::vec3 position;
+    float pad1;
     glm::vec3 rotation;
+    float pad2;
     glm::vec3 scale;
+    float pad3;
 };
 
 class Transform {

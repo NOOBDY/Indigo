@@ -100,7 +100,7 @@ int main(int, char **) {
     float i = 0;
 
     do {
-        i += 0.005;
+        i += 0.05;
         Renderer::Clear();
         vao1.Bind();
 
@@ -108,8 +108,10 @@ int main(int, char **) {
                                 glm::vec3(0.1, 0.0, 0));
         model1 = model1Trans.GetTransform();
 
-        // LOG_INFO("{}", light1.GetPower());
-        light1.m_Transform.SetPosition(glm::vec3(glm::sin(i)));
+        float tempValue = glm::abs(glm::sin(i));
+        light1.m_Transform.SetPosition(glm::vec3(0, tempValue * 3, 0));
+        // light1.SetLightColor(glm::vec3(0.0f, temp, 0.0));
+        // light1.SetPower(temp);
         lightInfo[0] = light1.GetLightData();
 
         Matrices mat1;

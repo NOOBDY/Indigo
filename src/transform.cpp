@@ -80,10 +80,7 @@ TransformData Transform::GetTransformData() {
     UpdateMat();
 
     TransformData data = {
-        m_Transform,
-        m_Position,
-        m_Rotation,
-        m_Scale,
+        m_Transform, m_Position, 0.0f, m_Rotation, 0.0f, m_Scale, 0.0f,
     };
 
     return data;

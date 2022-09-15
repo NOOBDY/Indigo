@@ -13,10 +13,13 @@ enum LightType : int {
 };
 
 struct LightData {
-    // glm::mat4 transform;
+    glm::mat4 transform;
     glm::vec3 position;
-    // glm::vec3 rotation;
-    // glm::vec3 scale;
+    float pad1;
+    glm::vec3 rotation;
+    float pad2;
+    glm::vec3 scale;
+    float pad3;
 
     glm::vec3 lightColor;
     float radius;
@@ -46,7 +49,7 @@ public:
 private:
     glm::vec3 m_LightColor;
     float m_Radius = 1.0f;
-    float m_Power = 1.0f;
+    float m_Power = 0.5f;
     LightType m_LightType = LightType::POINT;
 };
 
