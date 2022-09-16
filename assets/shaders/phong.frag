@@ -45,7 +45,7 @@ vec3 phong_light(float alpha, vec3 light_pos, vec3 pos, vec3 eye, vec3 am_c, vec
 
 void main() {
         vec3 light_pos = vec3(0, 2, 0);
-        vec3 cam_pos = vec3(0, 3, 4);
+        vec3 cam_pos = vec3(0, 0, 4);
         vec3 am_c = vec3(0.702, 0.702, 0.702);
         vec3 spec_c = vec3(1.0, 1.0, 1.0);
         float max_shine = 100.0;

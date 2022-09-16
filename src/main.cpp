@@ -51,7 +51,9 @@ int main(int, char **) {
     // begin model 1
     glm::mat4 model1 = glm::mat4(1.0f);
     glm::vec3 color1(0.8f, 0.5f, 0.0f);
-    model1 = glm::translate(model1, glm::vec3(2, 0, 0));
+    glm::vec3 pos1(2, 0, 0);
+    glm::vec3 rot1(180, 180, 180);
+    glm::vec3 scale1(1, 1, 1);
 
     Importer obj1("../assets/donut.obj");
 
@@ -98,7 +100,7 @@ int main(int, char **) {
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
 
-    bool show = true;
+    bool show = false;
 
     do {
         Renderer::Clear();
@@ -106,7 +108,11 @@ int main(int, char **) {
         //
         vao1.Bind();
 
-        model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(-1, 1, 0));
+        model1 = glm::translate(glm::mat4(1.0f), pos1);
+        model1 = glm::rotate(model1, glm::radians(rot1.x), glm::vec3(1, 0, 0));
+        model1 = glm::rotate(model1, glm::radians(rot1.y), glm::vec3(0, 1, 0));
+        model1 = glm::rotate(model1, glm::radians(rot1.z), glm::vec3(0, 0, 1));
+        model1 = glm::scale(model1, scale1);
 
         Matrices mat1;
         mat1.model = model1;
@@ -145,6 +151,12 @@ int main(int, char **) {
 
         ImGui::Begin("Test");
         ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        ImGui::End();
+
+        ImGui::Begin("Model 1");
+        ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
+        ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Render();
