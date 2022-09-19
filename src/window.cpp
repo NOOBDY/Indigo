@@ -36,6 +36,7 @@ Window::Window(int width, int height, const char *title) {
     }
 
     glfwMakeContextCurrent(m_Window);
+    glfwSwapInterval(1); // enable v-sync
 
     glfwSetInputMode(m_Window, GLFW_STICKY_KEYS, GL_TRUE);
 }
