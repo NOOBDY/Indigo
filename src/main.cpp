@@ -15,11 +15,18 @@
 #include "index_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
+#include "transform.hpp"
+#include "light.hpp"
 
 #pragma pack(16) // std140 layout pads by multiple of 16
 struct Matrices {
     glm::mat4 model;
     glm::mat4 viewProjection;
+};
+
+struct Material {
+    glm::vec3 baseColor;
+    float maxShine;
 };
 
 int main(int, char **) {
@@ -44,14 +51,20 @@ int main(int, char **) {
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
 
+    LightData lightInfo[1];
     UniformBuffer matrices(sizeof(Matrices), 0);
-    UniformBuffer data(sizeof(glm::vec3), 1);
+    UniformBuffer materials(sizeof(Material), 1);
+    UniformBuffer lights(sizeof(lightInfo), 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
+    Light light1(glm::vec3(1.0f));
     // begin model 1
     glm::mat4 model1 = glm::mat4(1.0f);
-    glm::vec3 color1(0.8f, 0.5f, 0.0f);
+    Material matColor1 = {
+        glm::vec3(0.8f, 0.5f, 0.0f),
+        100.0f,
+    };
 
     glm::vec3 pos1(2, 0, 0);
     glm::vec3 rot1(180, 180, 180);
@@ -75,7 +88,10 @@ int main(int, char **) {
 
     // begin model 2
     glm::mat4 model2 = glm::mat4(1.0f);
-    glm::vec3 color2(0.0f, 0.8f, 0.8f);
+    Material matColor2 = {
+        glm::vec3(0.0f, 0.8f, 0.8f),
+        100.0f,
+    };
 
     glm::vec3 pos2(-2, 0, 0);
     glm::vec3 rot2(180, 180, 180);
@@ -107,8 +123,6 @@ int main(int, char **) {
 
     do {
         Renderer::Clear();
-
-        //
         vao1.Bind();
 
         model1 = glm::translate(glm::mat4(1.0f), pos1);
@@ -121,15 +135,13 @@ int main(int, char **) {
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
-        data.SetData(0, sizeof(glm::vec3), &color1[0]);
+        materials.SetData(0, sizeof(Material), &matColor1);
+        lights.SetData(0, sizeof(lightInfo), &lightInfo);
 
         tex1.Bind(0);
         tex2.Bind(1);
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
-        //
-
-        //
         vao2.Bind();
 
         model2 = glm::translate(glm::mat4(1.0f), pos2);
@@ -142,7 +154,8 @@ int main(int, char **) {
         mat2.model = model2;
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
-        data.SetData(0, sizeof(glm::vec3), &color2[0]);
+        materials.SetData(0, sizeof(Material), &matColor2);
+        lights.SetData(0, sizeof(lightInfo), &lightInfo);
 
         tex2.Bind(0);
         tex1.Bind(1);
