@@ -30,7 +30,7 @@ private:
 
     glm::mat4 m_Projection;
     glm::mat4 m_View;
-    glm::vec3 m_Position = {0, 0, 8};
+    glm::vec3 m_Position = {0, 3, 4};
     glm::vec3 m_Target = {0, 0, 0};
 };
 

@@ -31,9 +31,10 @@ int main(int, char **) {
     Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
 
     IMGUI_CHECKVERSION();
+    LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    (void)io;
+    io.IniFilename = "../assets/imgui.ini";
 
     ImGui::StyleColorsDark();
 
@@ -51,6 +52,7 @@ int main(int, char **) {
     // begin model 1
     glm::mat4 model1 = glm::mat4(1.0f);
     glm::vec3 color1(0.8f, 0.5f, 0.0f);
+
     glm::vec3 pos1(2, 0, 0);
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
@@ -74,7 +76,10 @@ int main(int, char **) {
     // begin model 2
     glm::mat4 model2 = glm::mat4(1.0f);
     glm::vec3 color2(0.0f, 0.8f, 0.8f);
-    model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
+
+    glm::vec3 pos2(-2, 0, 0);
+    glm::vec3 rot2(180, 180, 180);
+    glm::vec3 scale2(1, 1, 1);
 
     Importer obj2("../assets/suzanne.obj");
 
@@ -99,8 +104,6 @@ int main(int, char **) {
 
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
-
-    bool show = false;
 
     do {
         Renderer::Clear();
@@ -129,7 +132,11 @@ int main(int, char **) {
         //
         vao2.Bind();
 
-        model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
+        model2 = glm::translate(glm::mat4(1.0f), pos2);
+        model2 = glm::rotate(model2, glm::radians(rot2.x), glm::vec3(1, 0, 0));
+        model2 = glm::rotate(model2, glm::radians(rot2.y), glm::vec3(0, 1, 0));
+        model2 = glm::rotate(model2, glm::radians(rot2.z), glm::vec3(0, 0, 1));
+        model2 = glm::scale(model2, scale2);
 
         Matrices mat2;
         mat2.model = model2;
@@ -146,17 +153,20 @@ int main(int, char **) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (show)
-            ImGui::ShowDemoWindow(&show);
-
-        ImGui::Begin("Test");
+        ImGui::Begin("Framerate");
         ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
         ImGui::End();
 
-        ImGui::Begin("Model 1");
+        ImGui::Begin("Donut");
         ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
+        ImGui::End();
+
+        ImGui::Begin("Suzanne");
+        ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
+        ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Render();
