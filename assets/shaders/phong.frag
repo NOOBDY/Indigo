@@ -17,7 +17,10 @@ struct TransformData{
     float pad2;
     vec3 scale;
     float pad3;
+    vec3 direction;
+    float pad4;
 };
+
 struct LightData{
     TransformData transform;
     
@@ -25,6 +28,7 @@ struct LightData{
     float radius;
     float power;
     int lightType;
+    float cutoff;
 };
 
 struct MaterialData{
@@ -57,6 +61,7 @@ MaterialData matter){
     float dotLN=dot(l,n);
     float dotRV=dot(r,v);
     vec3 baseColor=material.baseColor;
+    float distance=length(position-light.transform.position);
     
     if(dotLN<0.)
     return vec3(0.,0.,0.);
@@ -67,15 +72,76 @@ MaterialData matter){
     return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
 }
 
+vec3 SpotLight(vec3 cameraPosition,vec3 position,LightData light,
+MaterialData matter){
+    // mesh normal
+    vec3 n=normal;
+    // direction :light to mesh
+    // vec3 l=normalize(light.transform.position-position);
+    vec3 l=normalize(vec3(0,1,0));
+    // direction :cam to mesh
+    vec3 v=normalize(cameraPosition-position);
+    // direction :reflection
+    vec3 r=normalize(reflect(-l,n));
+    float dotLN=dot(l,n);
+    float dotRV=dot(r,v);
+    vec3 baseColor=material.baseColor;
+    // return vec3(1.);
+    
+    if(dotLN<0.)
+    return vec3(0.,0.,0.);
+    
+    if(dotRV<0.)
+    return light.power*baseColor*dotLN;
+    
+    return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
+}
+vec3 DirectionLight(vec3 cameraPosition,vec3 position,LightData light,
+MaterialData matter){
+    // mesh normal
+    vec3 n=normal;
+    // direction :light to mesh
+    // vec3 l=normalize(light.transform.position.direction);
+    vec3 l=normalize(vec3(0,1,0));
+    // direction :cam to mesh
+    vec3 v=normalize(cameraPosition-position);
+    // direction :reflection
+    vec3 r=normalize(reflect(-l,n));
+    float dotLN=dot(l,n);
+    float dotRV=dot(r,v);
+    vec3 baseColor=material.baseColor;
+    
+    if(dotLN<0.)
+    return vec3(0.,0.,0.);
+    
+    if(dotRV<0.)
+    return light.power*baseColor*dotLN;
+    
+    return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine*1000));
+}
 vec3 PhongLight(vec3 cameraPosition,vec3 position,
 LightData lights[LIGHT_NUMBER],MaterialData material){
     vec3 color3=vec3(0);
     for(int i=0;i<LIGHT_NUMBER;i++){
         LightData light=lights[i];
-        vec3 ambientLight=.2*light.lightColor;
-        color3+=ambientLight*material.baseColor;
-        if(light.lightType==0)
-        color3+=PointLight(cameraPosition,position,light,material);
+        if(light.lightType==0)continue;
+        switch(light.lightType){
+            case 1:
+            color3+=PointLight(cameraPosition,position,light,material);
+            break;
+            case 2:
+            color3+=SpotLight(cameraPosition,position,light,material);
+            break;
+            case 3:
+            color3=abs(light.transform.direction);
+            // color3+=DirectionLight(cameraPosition,position,light,material);
+            break;
+            case 4:
+            vec3 ambientLight=light.power*light.lightColor;
+            color3+=ambientLight*material.baseColor;
+            break;
+            
+        }
     }
     
     return color3;

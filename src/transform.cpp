@@ -75,12 +75,24 @@ glm::mat4 Transform::GetTransform() {
 
     return m_Transform;
 };
+glm::vec3 Transform::GetDirection() {
+    glm::vec3 Direction = glm::vec3(0, 1, 0);
+    glm::mat4 transform = glm::mat4(1.f);
+    transform = glm::translate(transform, Direction);
+    transform = RotationMat(transform);
+    Direction.x = transform[0][3];
+    Direction.y = transform[1][3];
+    Direction.z = transform[2][3];
+
+    return Direction;
+};
 
 TransformData Transform::GetTransformData() {
     UpdateMat();
 
     TransformData data = {
-        m_Transform, m_Position, 0.0f, m_Rotation, 0.0f, m_Scale, 0.0f,
+        m_Transform, m_Position, 0.0f,           m_Rotation, 0.0f,
+        m_Scale,     0.0f,       GetDirection(), 0.0f,
     };
 
     return data;

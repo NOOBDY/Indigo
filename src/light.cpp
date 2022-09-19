@@ -25,21 +25,18 @@ void Light::SetPower(float power) {
 void Light::SetLightType(LightType light_Type) {
     m_LightType = light_Type;
 }
+void Light::SetCutoff(float cutoff) {
+    m_Cutoff = cutoff;
+}
 
 LightData Light::GetLightData() {
     LightData data = {
-        m_Transform.GetTransformData().transform,
-        m_Transform.GetPosition(),
-        1.0f,
-        m_Transform.GetRotation(),
-        1.0f,
-        m_Transform.GetScale(),
-        1.0f,
-
+        m_Transform.GetTransformData(),
         m_LightColor,
         m_Radius,
         m_Power,
         m_LightType,
+        m_Cutoff,
 
     };
 

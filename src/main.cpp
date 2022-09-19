@@ -44,6 +44,7 @@ int main(int, char **) {
     Camera camera(45.0f, window.GetAspectRatio());
 
     Light light1(glm::vec3(1.0f));
+    light1.SetLightType(LightType::DIRECTION);
     // begin model 1
     Transform model1Trans;
     // glm::mat4 model1 = glm::mat4(1.0f);
@@ -105,7 +106,7 @@ int main(int, char **) {
         vao1.Bind();
 
         model1Trans.SetRotation(model1Trans.GetRotation() +
-                                glm::vec3(0.1, 0.0, 0));
+                                glm::vec3(0.01, 0.0, 0));
         model1 = model1Trans.GetTransform();
 
         float tempValue = glm::abs(glm::sin(i));
@@ -113,6 +114,7 @@ int main(int, char **) {
         // light1.SetLightColor(glm::vec3(0.0f, temp, 0.0));
         // light1.SetPower(temp);
         lightInfo[0] = light1.GetLightData();
+        // LOG_INFO("{}", lightInfo[0].transform.direction.x);
 
         Matrices mat1;
         mat1.model = model1;
