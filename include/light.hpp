@@ -46,7 +46,7 @@ public:
 
 private:
     glm::vec3 m_LightColor;
-    float m_Radius = 100.0f;
+    float m_Radius = 100000.0f;
     float m_Power = 0.5f;
     LightType m_LightType = LightType::POINT;
     float m_Cutoff = 30.0f;

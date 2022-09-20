@@ -1,6 +1,6 @@
 #version 460 core
 
-#define LIGHT_NUMBER 1
+#define LIGHT_NUMBER 2
 
 in vec3 geoPosition;
 in vec3 worldPosition;
@@ -9,6 +9,7 @@ in vec2 UV;
 
 out vec4 color;
 
+#pragma pack(16)// std140 layout pads by multiple of 16
 struct TransformData{
     mat4 transform;
     vec3 position;
@@ -21,6 +22,7 @@ struct TransformData{
     float pad4;
 };
 
+#pragma pack(16)// std140 layout pads by multiple of 16
 struct LightData{
     TransformData transform;
     
@@ -47,7 +49,10 @@ layout(std140,binding=2)uniform Lights{
 
 uniform sampler2D texture1;// samplers are opaque types and
 uniform sampler2D texture2;// cannot exist in uniform blocks
-
+float fade(vec3 center,vec3 postion,float radius){
+    return 1;
+    return 1-clamp(length(postion-center)/radius,0,2);
+};
 vec3 PointLight(vec3 cameraPosition,vec3 position,LightData light,
 MaterialData matter){
     // mesh normal
@@ -62,14 +67,15 @@ MaterialData matter){
     float dotRV=dot(r,v);
     vec3 baseColor=material.baseColor;
     float distance=length(position-light.transform.position);
+    float fadeout=fade(light.transform.position,position,light.radius);
     
     if(dotLN<0.)
     return vec3(0.,0.,0.);
     
     if(dotRV<0.)
-    return light.power*baseColor*dotLN;
+    return light.power*fadeout*baseColor*dotLN;
     
-    return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
+    return light.power*fadeout*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
 }
 
 vec3 SpotLight(vec3 cameraPosition,vec3 position,LightData light,
@@ -77,8 +83,8 @@ MaterialData matter){
     // mesh normal
     vec3 n=normal;
     // direction :light to mesh
-    // vec3 l=normalize(light.transform.position-position);
-    vec3 l=normalize(vec3(0,1,0));
+    vec3 direction=light.transform.direction;
+    vec3 l=normalize(light.transform.position-position);
     // direction :cam to mesh
     vec3 v=normalize(cameraPosition-position);
     // direction :reflection
@@ -86,23 +92,24 @@ MaterialData matter){
     float dotLN=dot(l,n);
     float dotRV=dot(r,v);
     vec3 baseColor=material.baseColor;
-    // return vec3(1.);
+    float spot=dot(direction,l);
+    spot=pow(spot,light.cutoff);
+    float fadeout=fade(light.transform.position,position,light.radius);
     
     if(dotLN<0.)
     return vec3(0.,0.,0.);
     
     if(dotRV<0.)
-    return light.power*baseColor*dotLN;
+    return light.power*spot*fadeout*baseColor*dotLN;
     
-    return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
+    return light.power*spot*fadeout*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
 }
 vec3 DirectionLight(vec3 cameraPosition,vec3 position,LightData light,
 MaterialData matter){
     // mesh normal
     vec3 n=normal;
     // direction :light to mesh
-    // vec3 l=normalize(light.transform.position.direction);
-    vec3 l=normalize(vec3(0,1,0));
+    vec3 l=normalize(light.transform.direction);
     // direction :cam to mesh
     vec3 v=normalize(cameraPosition-position);
     // direction :reflection
@@ -133,8 +140,8 @@ LightData lights[LIGHT_NUMBER],MaterialData material){
             color3+=SpotLight(cameraPosition,position,light,material);
             break;
             case 3:
-            color3=abs(light.transform.direction);
-            // color3+=DirectionLight(cameraPosition,position,light,material);
+            // color3=abs(light.transform.direction)*5;
+            color3+=DirectionLight(cameraPosition,position,light,material);
             break;
             case 4:
             vec3 ambientLight=light.power*light.lightColor;
