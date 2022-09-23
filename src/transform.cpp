@@ -64,8 +64,8 @@ glm::mat4 Transform::UpdateMat() {
     glm::mat4 transform = glm::mat4(1.f);
     transform = glm::translate(transform, glm::vec3(0.f));
     transform = glm::scale(transform, m_Scale);
-    transform = RotationMat(transform);
     transform = glm::translate(transform, m_Position);
+    transform = RotationMat(transform);
     m_Transform = transform;
     return transform;
 }

@@ -22,7 +22,6 @@ struct TransformData{
     float pad4;
 };
 
-#pragma pack(16)// std140 layout pads by multiple of 16
 struct LightData{
     TransformData transform;
     

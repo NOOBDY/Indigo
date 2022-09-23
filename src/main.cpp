@@ -36,17 +36,18 @@ int main(int, char **) {
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
 
-    LightData lightInfo[2];
+#define LIGHT_NUMBER 2
+    LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
-    UniformBuffer lights(sizeof(lightInfo), 2);
+    UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
     Light light1(glm::vec3(1.0f));
     Light light2(glm::vec3(1.0f));
     // light1.SetPower(0.3);
-    light1.SetLightType(LightType::POINT);
+    light1.SetLightType(LightType::SPOT);
     light2.SetLightType(LightType::AMBIENT);
     // begin model 1
     Transform model1Trans;
@@ -115,7 +116,7 @@ int main(int, char **) {
         float tempValue = glm::sin(i);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
         // light1.m_Transform.SetRotation(glm::vec3(0, 0, tempValue * 180));
-        // light1.SetLightColor(glm::vec3(0.0f, temp, 0.0));
+        // light1.SetLightColor(glm::vec3(0.0f, tempValue, 0.0));
         light2.SetPower(tempValue);
         light1.SetRadius(2 * glm::abs(tempValue));
         // LOG_INFO("{}", light1.m_Transform.GetRotation().z);
@@ -133,7 +134,7 @@ int main(int, char **) {
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
         materials.SetData(0, sizeof(Material), &matColor1);
-        lights.SetData(0, sizeof(lightInfo), &lightInfo);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
         tex1.Bind(0);
         tex2.Bind(1);
@@ -148,7 +149,7 @@ int main(int, char **) {
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor2);
-        lights.SetData(0, sizeof(lightInfo), &lightInfo);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
         tex2.Bind(0);
         tex1.Bind(1);

@@ -3,7 +3,6 @@
 
 #include "pch.hpp"
 
-#pragma pack(16) // std140 layout pads by multiple of 16
 struct TransformData {
     glm::mat4 transform;
     glm::vec3 position;
