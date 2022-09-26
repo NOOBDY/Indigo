@@ -18,9 +18,11 @@ struct LightData {
 
     glm::vec3 lightColor;
     float radius;
+
     float power;
     LightType lightType;
     float cutoff;
+    float temp;
 };
 
 class Light {

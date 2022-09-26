@@ -38,6 +38,7 @@ LightData Light::GetLightData() {
         m_Power,
         m_LightType,
         m_Cutoff,
+        1.0,
 
     };
 
