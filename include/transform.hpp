@@ -11,6 +11,8 @@ struct TransformData {
     float pad2;
     glm::vec3 scale;
     float pad3;
+    glm::vec3 direction;
+    float pad4;
 };
 
 class Transform {
@@ -28,11 +30,13 @@ public:
     glm::vec3 GetPosition() const { return m_Position; };
     glm::vec3 GetRotation() const { return m_Rotation; };
     glm::vec3 GetScale() const { return m_Scale; };
+    glm::vec3 GetDirection();
+    glm::mat4 GetDirection4();
 
     TransformData GetTransformData();
+    glm::mat4 RotationMat(glm::mat4 transform);
 
 private:
-    glm::mat4 RotationMat(glm::mat4 transform);
     glm::mat4 UpdateMat();
 
 private:

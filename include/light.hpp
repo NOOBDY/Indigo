@@ -10,21 +10,19 @@ enum LightType : int {
     POINT = 1,
     SPOT = 2,
     DIRECTION = 3,
+    AMBIENT = 4,
 };
 
 struct LightData {
-    glm::mat4 transform;
-    glm::vec3 position;
-    float pad1;
-    glm::vec3 rotation;
-    float pad2;
-    glm::vec3 scale;
-    float pad3;
+    TransformData transform;
 
     glm::vec3 lightColor;
     float radius;
+
     float power;
     LightType lightType;
+    float cutoff;
+    float temp;
 };
 
 class Light {
@@ -36,11 +34,13 @@ public:
     void SetRadius(float radius);
     void SetPower(float power);
     void SetLightType(LightType light_Type);
+    void SetCutoff(float cutoff);
 
     glm::vec3 GetLightColor() const { return m_LightColor; };
     float GetRadius() const { return m_Radius; };
     float GetPower() const { return m_Power; };
     LightType GetLightType() const { return m_LightType; };
+    float GetCutoff() const { return m_Cutoff; };
 
     LightData GetLightData();
 
@@ -48,9 +48,10 @@ public:
 
 private:
     glm::vec3 m_LightColor;
-    float m_Radius = 1.0f;
+    float m_Radius = 100000.0f;
     float m_Power = 0.5f;
     LightType m_LightType = LightType::POINT;
+    float m_Cutoff = 30.0f;
 };
 
 #endif
