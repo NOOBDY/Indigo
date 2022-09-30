@@ -46,17 +46,14 @@ int main(int, char **) {
 
     Light light1(glm::vec3(1.0f));
     Light light2(glm::vec3(1.0f));
-    // light1.SetPower(0.3);
-    light1.SetLightType(LightType::SPOT);
+    light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
     // begin model 1
     Transform model1Trans;
-    // glm::mat4 model1 = glm::mat4(1.0f);
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
     glm::mat4 model1 = model1Trans.GetTransform();
 
-    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    // model1 = glm::translate(model1, glm::vec3(2, 0, 0));
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 1000.0f};
 
     Importer obj1("../assets/donut.obj");
 
@@ -115,18 +112,10 @@ int main(int, char **) {
 
         float tempValue = glm::sin(i);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
-        // light1.m_Transform.SetRotation(glm::vec3(0, 0, tempValue * 180));
-        // light2.SetPower(tempValue);
-        light1.SetRadius(2 * glm::abs(tempValue));
-        // LOG_INFO("{}", light1.m_Transform.GetRotation().z);
+        light1.SetRadius(3 * glm::abs(tempValue));
+
         lightInfo[1] = light1.GetLightData();
         lightInfo[0] = light2.GetLightData();
-        // for (int i = 0; i < 4; i++) {
-        //     LOG_INFO("{},{},{},{}", light1.m_Transform.GetDirection4()[i][0],
-        //              light1.m_Transform.GetDirection4()[i][1],
-        //              light1.m_Transform.GetDirection4()[i][2],
-        //              light1.m_Transform.GetDirection4()[i][3]);
-        // }
 
         Matrices mat1;
         mat1.model = model1;

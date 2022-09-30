@@ -51,8 +51,8 @@ layout(std140,binding=2)uniform Lights{
 uniform sampler2D texture1;// samplers are opaque types and
 uniform sampler2D texture2;// cannot exist in uniform blocks
 float fade(vec3 center,vec3 postion,float radius){
-    return 1;
-    return 1-clamp(length(postion-center)/radius,0,2);
+    // return 1;
+    return 1-clamp(length(postion-center)/radius,0,1);
 };
 vec3 PointLight(vec3 cameraPosition,vec3 position,LightData light,
 MaterialData matter){
@@ -125,7 +125,7 @@ MaterialData matter){
     if(dotRV<0.)
     return light.power*baseColor*dotLN;
     
-    return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine*1000));
+    return light.power*(baseColor*dotLN+light.lightColor*pow(dotRV,matter.maxShine));
 }
 vec3 PhongLight(vec3 cameraPosition,vec3 position,
 LightData lights[LIGHT_NUMBER],MaterialData material){
