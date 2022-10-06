@@ -3,32 +3,32 @@ name: build
 on: push
 
 jobs:
-  linux:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
-        cmake_build_type: [Debug, Release]
-    steps:
-      - name: Installing Dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -y install ${{ matrix.compiler.cc }} cmake ninja-build libglu1-mesa-dev mesa-common-dev xorg-dev
+  # linux:
+  #   runs-on: ${{ matrix.os }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       os: [ubuntu-latest]
+  #       compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
+  #       cmake_build_type: [Debug, Release]
+  #   steps:
+  #     - name: Installing Dependencies
+  #       run: |
+  #         sudo apt-get update
+  #         sudo apt-get -y install ${{ matrix.compiler.cc }} cmake ninja-build libglu1-mesa-dev mesa-common-dev xorg-dev
 
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          submodules: recursive
+  #     - name: Checkout Repository
+  #       uses: actions/checkout@v2
+  #       with:
+  #         submodules: recursive
 
-      - name: Building Project
-        env:
-          CC: ${{ matrix.compiler.cc }}
-          CXX: ${{ matrix.compiler.cxx }}
-        run: |
-          cmake -B build -G "Ninja"
-          cmake --build build
+  #     - name: Building Project
+  #       env:
+  #         CC: ${{ matrix.compiler.cc }}
+  #         CXX: ${{ matrix.compiler.cxx }}
+  #       run: |
+  #         cmake -B build -G "Ninja"
+  #         cmake --build build
 
   windows:
     runs-on: ${{ matrix.os }}
@@ -39,9 +39,11 @@ jobs:
         compiler: [{ cc: gcc, cxx: g++ }]
         cmake_build_type: [Debug, Release]
     steps:
-      - name: Installing Dependencies
-      - uses: lukka/get-cmake@latest
-      - uses: egor-tensin/setup-gcc@v1
+      - name: Installing GCC
+        uses: egor-tensin/setup-gcc@v1
+
+      - name: Installing CMake
+        uses: lukka/get-cmake@latest
 
       - name: Checkout Repository
         uses: actions/checkout@v2
