@@ -4,7 +4,7 @@ on: push
 
 jobs:
   linux:
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -12,6 +12,10 @@ jobs:
         compiler: [{ cc: clang, cxx: clang++ }, { cc: gcc, cxx: g++ }]
         cmake_build_type: [Debug, Release]
     steps:
+      - name: Installing Dependencies
+        run: |
+          sudo apt install ninja-build
+
       - name: Checkout Repository
         uses: actions/checkout@v2
         with:
@@ -19,8 +23,8 @@ jobs:
 
       - name: Building Project
         env:
-          CC: ${{matrix.compiler.cc}}
-          CXX: ${{matrix.compiler.cxx}}
+          CC: ${{ matrix.compiler.cc }}
+          CXX: ${{ matrix.compiler.cxx }}
         run: |
           cmake -B build -G Ninja
           cmake --build build
