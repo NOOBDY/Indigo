@@ -16,6 +16,7 @@ set(LIB
     spdlog::spdlog
     glm::glm
     assimp
+    ImGui
 )
 
 add_definitions(
@@ -63,6 +64,7 @@ target_include_directories(Indigo SYSTEM PRIVATE
     lib/glm/include/
     lib/stb/
     lib/assimp/include/
+    ${IMGUI_INCLUDE_DIR}
 )
 target_include_directories(Indigo PRIVATE
     include/
