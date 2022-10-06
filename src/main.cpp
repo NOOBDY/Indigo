@@ -51,20 +51,24 @@ int main(int, char **) {
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
 
-    LightData lightInfo[1];
+#define LIGHT_NUMBER 2
+    LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
-    UniformBuffer lights(sizeof(lightInfo), 2);
+    UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
     Light light1(glm::vec3(1.0f));
+    Light light2(glm::vec3(1.0f));
+    light1.SetLightType(LightType::POINT);
+    light2.SetLightType(LightType::DIRECTION);
     // begin model 1
-    glm::mat4 model1 = glm::mat4(1.0f);
-    Material matColor1 = {
-        glm::vec3(0.8f, 0.5f, 0.0f),
-        100.0f,
-    };
+    Transform model1Trans;
+    model1Trans.SetPosition(glm::vec3(2, 0, 0));
+    glm::mat4 model1 = model1Trans.GetTransform();
+
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 1000.0f};
 
     glm::vec3 pos1(2, 0, 0);
     glm::vec3 rot1(180, 180, 180);
@@ -121,22 +125,29 @@ int main(int, char **) {
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
 
+    float i = 0;
+
     do {
         Renderer::Clear();
         vao1.Bind();
 
-        model1 = glm::translate(glm::mat4(1.0f), pos1);
-        model1 = glm::rotate(model1, glm::radians(rot1.x), glm::vec3(1, 0, 0));
-        model1 = glm::rotate(model1, glm::radians(rot1.y), glm::vec3(0, 1, 0));
-        model1 = glm::rotate(model1, glm::radians(rot1.z), glm::vec3(0, 0, 1));
-        model1 = glm::scale(model1, scale1);
+        model1Trans.SetRotation(model1Trans.GetRotation() +
+                                glm::vec3(0.01, 0.0, 0));
+        model1 = model1Trans.GetTransform();
+
+        float tempValue = glm::sin(i);
+        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
+        light1.SetRadius(3 * glm::abs(tempValue));
+
+        lightInfo[1] = light1.GetLightData();
+        lightInfo[0] = light2.GetLightData();
 
         Matrices mat1;
         mat1.model = model1;
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
         materials.SetData(0, sizeof(Material), &matColor1);
-        lights.SetData(0, sizeof(lightInfo), &lightInfo);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
         tex1.Bind(0);
         tex2.Bind(1);
@@ -155,7 +166,7 @@ int main(int, char **) {
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor2);
-        lights.SetData(0, sizeof(lightInfo), &lightInfo);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
         tex2.Bind(0);
         tex1.Bind(1);
