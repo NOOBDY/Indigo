@@ -72,4 +72,5 @@ add_library(ImGui STATIC
 target_include_directories(ImGui PUBLIC
     imgui/
     imgui/backends/
+    glfw/include/
 )
