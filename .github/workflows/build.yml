@@ -1,0 +1,26 @@
+name: Auto Build Test
+
+on: push
+
+jobs:
+  linux:
+    runs-on: ${{matrix.os}}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        compiler: [{ cc: clang, cxx: clang++ }, { cc: gcc, cxx: g++ }]
+        cmake_build_type: [Debug, Release]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Building Project
+        env:
+          CC: ${{matrix.compiler.cc}}
+          CXX: ${{matrix.compiler.cxx}}
+        run: |
+          cmake -B build -G Ninja
+          cmake --build build
