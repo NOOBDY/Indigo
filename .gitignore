@@ -68,7 +68,6 @@ StyleCopReport.xml
 *_h.h
 *.ilk
 *.meta
-*.obj
 !demos/models/*.obj
 !test/geometry/*.obj
 !docs/**/*.obj

@@ -34,10 +34,10 @@ public:
     glm::mat4 GetDirection4();
 
     TransformData GetTransformData();
-    glm::mat4 RotationMat(glm::mat4 transform);
 
 private:
     glm::mat4 UpdateMat();
+    glm::mat4 RotationMat(glm::mat4 transform);
 
 private:
     glm::mat4 m_Transform = glm::mat4(1.0f);

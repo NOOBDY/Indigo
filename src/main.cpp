@@ -1,5 +1,9 @@
 #include "pch.hpp"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
@@ -31,7 +35,18 @@ int main(int, char **) {
     Window window;
 
     Renderer::Init();
-    Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
+    Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+
+    IMGUI_CHECKVERSION();
+    LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.IniFilename = "../assets/imgui.ini";
+
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 460");
 
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
@@ -51,11 +66,14 @@ int main(int, char **) {
     // begin model 1
     Transform model1Trans;
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
-    glm::mat4 model1 = model1Trans.GetTransform();
 
-    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 1000.0f};
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
 
-    Importer obj1("../assets/donut.obj");
+    glm::vec3 pos1(2, 0, 0);
+    glm::vec3 rot1(180, 180, 180);
+    glm::vec3 scale1(1, 1, 1);
+
+    Importer obj1("../assets/models/donut.obj");
 
     VertexArray vao1;
 
@@ -72,11 +90,15 @@ int main(int, char **) {
     // end model 1
 
     // begin model 2
-    glm::mat4 model2 = glm::mat4(1.0f);
-    Material matColor2 = {glm::vec3(0.0f, 0.8f, 0.8f), 100.0f};
-    model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
+    Transform model2Trans;
+    model2Trans.SetPosition({2, 0, 0});
+    Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    Importer obj2("../assets/suzanne.obj");
+    glm::vec3 pos2(-2, 0, 0);
+    glm::vec3 rot2(180, 180, 180);
+    glm::vec3 scale2(1, 1, 1);
+
+    Importer obj2("../assets/models/suzanne.obj");
 
     VertexArray vao2;
 
@@ -92,33 +114,34 @@ int main(int, char **) {
     vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
 
-    Texture tex1("../assets/fabric.png");
-    Texture tex2("../assets/uv.png");
+    Texture tex1("../assets/textures/fabric.png");
+    Texture tex2("../assets/textures/uv.png");
 
     program.Bind();
 
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
+
     float i = 0;
 
     do {
-        i += 0.05;
         Renderer::Clear();
-        vao1.Bind();
 
-        model1Trans.SetRotation(model1Trans.GetRotation() +
-                                glm::vec3(0.01, 0.0, 0));
-        model1 = model1Trans.GetTransform();
-
-        float tempValue = glm::sin(i);
+        float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
         light1.SetRadius(3 * glm::abs(tempValue));
 
         lightInfo[1] = light1.GetLightData();
         lightInfo[0] = light2.GetLightData();
 
+        vao1.Bind();
+
+        model1Trans.SetPosition(pos1);
+        model1Trans.SetRotation(rot1);
+        model1Trans.SetScale(scale1);
+
         Matrices mat1;
-        mat1.model = model1;
+        mat1.model = model1Trans.GetTransform();
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
         materials.SetData(0, sizeof(Material), &matColor1);
@@ -130,10 +153,12 @@ int main(int, char **) {
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         vao2.Bind();
 
-        model2 = glm::rotate(model2, glm::radians(-.1f), glm::vec3(0, 1, 0));
+        model2Trans.SetPosition(pos2);
+        model2Trans.SetRotation(rot2);
+        model2Trans.SetScale(scale2);
 
         Matrices mat2;
-        mat2.model = model2;
+        mat2.model = model2Trans.GetTransform();
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor2);
@@ -144,7 +169,34 @@ int main(int, char **) {
 
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        ImGui::Begin("Framerate");
+        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        ImGui::End();
+
+        ImGui::Begin("Donut");
+        ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
+        ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
+        ImGui::End();
+
+        ImGui::Begin("Suzanne");
+        ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
+        ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
     } while (!window.ShouldClose());
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
