@@ -1,4 +1,4 @@
-name: Auto Build Test
+name: build
 
 on: push
 
@@ -9,7 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        compiler: [{ cc: clang, cxx: clang++ }, { cc: gcc, cxx: g++ }]
+        compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
         cmake_build_type: [Debug, Release]
     steps:
       - name: Installing Dependencies
@@ -27,5 +27,5 @@ jobs:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
         run: |
-          cmake -B build -G Ninja
+          cmake -B build -G "Ninja"
           cmake --build build
