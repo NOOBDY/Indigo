@@ -39,8 +39,8 @@ jobs:
         compiler: [{ cc: gcc, cxx: g++ }]
         cmake_build_type: [Debug, Release]
     steps:
-      - name: Installing GCC
-        uses: egor-tensin/setup-gcc@v1
+      - uses: egor-tensin/setup-mingw@v2
+      - uses: egor-tensin/setup-gcc@v1
 
       - name: Installing CMake
         uses: lukka/get-cmake@latest
