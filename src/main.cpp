@@ -35,7 +35,7 @@ int main(int, char **) {
     Window window;
 
     Renderer::Init();
-    Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
+    Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
     IMGUI_CHECKVERSION();
     LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
@@ -66,9 +66,8 @@ int main(int, char **) {
     // begin model 1
     Transform model1Trans;
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
-    glm::mat4 model1 = model1Trans.GetTransform();
 
-    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 1000.0f};
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
 
     glm::vec3 pos1(2, 0, 0);
     glm::vec3 rot1(180, 180, 180);
@@ -91,11 +90,9 @@ int main(int, char **) {
     // end model 1
 
     // begin model 2
-    glm::mat4 model2 = glm::mat4(1.0f);
-    Material matColor2 = {
-        glm::vec3(0.0f, 0.8f, 0.8f),
-        100.0f,
-    };
+    Transform model2Trans;
+    model2Trans.SetPosition({2, 0, 0});
+    Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
     glm::vec3 pos2(-2, 0, 0);
     glm::vec3 rot2(180, 180, 180);
@@ -129,21 +126,22 @@ int main(int, char **) {
 
     do {
         Renderer::Clear();
-        vao1.Bind();
 
-        model1Trans.SetRotation(model1Trans.GetRotation() +
-                                glm::vec3(0.01, 0.0, 0));
-        model1 = model1Trans.GetTransform();
-
-        float tempValue = glm::sin(i);
+        float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
         light1.SetRadius(3 * glm::abs(tempValue));
 
         lightInfo[1] = light1.GetLightData();
         lightInfo[0] = light2.GetLightData();
 
+        vao1.Bind();
+
+        model1Trans.SetPosition(pos1);
+        model1Trans.SetRotation(rot1);
+        model1Trans.SetScale(scale1);
+
         Matrices mat1;
-        mat1.model = model1;
+        mat1.model = model1Trans.GetTransform();
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
         materials.SetData(0, sizeof(Material), &matColor1);
@@ -155,14 +153,12 @@ int main(int, char **) {
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         vao2.Bind();
 
-        model2 = glm::translate(glm::mat4(1.0f), pos2);
-        model2 = glm::rotate(model2, glm::radians(rot2.x), glm::vec3(1, 0, 0));
-        model2 = glm::rotate(model2, glm::radians(rot2.y), glm::vec3(0, 1, 0));
-        model2 = glm::rotate(model2, glm::radians(rot2.z), glm::vec3(0, 0, 1));
-        model2 = glm::scale(model2, scale2);
+        model2Trans.SetPosition(pos2);
+        model2Trans.SetRotation(rot2);
+        model2Trans.SetScale(scale2);
 
         Matrices mat2;
-        mat2.model = model2;
+        mat2.model = model2Trans.GetTransform();
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor2);

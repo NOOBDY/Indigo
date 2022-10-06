@@ -48,24 +48,21 @@ void Transform::SetTransform(glm::mat4 transform) {
 }
 
 glm::mat4 Transform::RotationMat(glm::mat4 transform) {
-    if (m_Rotation.x != 0.0f)
-        transform = glm::rotate(transform, glm::radians(m_Rotation.x),
-                                glm::vec3(1.f, 0.f, 0.f));
-    if (m_Rotation.y != 0.0f)
-        transform = glm::rotate(transform, glm::radians(m_Rotation.y),
-                                glm::vec3(0.f, 1.f, 0.f));
-    if (m_Rotation.z != 0.0f)
-        transform = glm::rotate(transform, glm::radians(m_Rotation.z),
-                                glm::vec3(0.f, 0.f, 1.f));
+    transform = glm::rotate(transform, glm::radians(m_Rotation.x),
+                            glm::vec3(1.f, 0.f, 0.f));
+    transform = glm::rotate(transform, glm::radians(m_Rotation.y),
+                            glm::vec3(0.f, 1.f, 0.f));
+    transform = glm::rotate(transform, glm::radians(m_Rotation.z),
+                            glm::vec3(0.f, 0.f, 1.f));
     return transform;
 }
 
 glm::mat4 Transform::UpdateMat() {
     glm::mat4 transform = glm::mat4(1.f);
-    transform = glm::translate(transform, glm::vec3(0.f));
-    transform = glm::scale(transform, m_Scale);
+    // transform = glm::translate(transform, glm::vec3(0.f));
     transform = glm::translate(transform, m_Position);
     transform = RotationMat(transform);
+    transform = glm::scale(transform, m_Scale);
     m_Transform = transform;
     return transform;
 }
@@ -76,13 +73,13 @@ glm::mat4 Transform::GetTransform() {
     return m_Transform;
 };
 glm::vec3 Transform::GetDirection() {
-    glm::vec4 Direction = glm::vec4(0, 1, 0, 1);
+    glm::vec4 direction = glm::vec4(0, 1, 0, 1);
     glm::mat4 transform = glm::mat4(1.f);
     transform = glm::translate(transform, glm::vec3(0));
     transform = glm::scale(transform, glm::vec3(1));
     transform = RotationMat(transform);
-    Direction = transform * Direction;
-    return glm::vec3(Direction);
+    direction = transform * direction;
+    return glm::vec3(direction);
 };
 
 glm::mat4 Transform::GetDirection4() {
