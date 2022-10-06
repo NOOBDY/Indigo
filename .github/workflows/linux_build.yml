@@ -1,0 +1,31 @@
+name: linux build
+
+on: push
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
+        cmake_build_type: [Debug, Release]
+    steps:
+      - name: Installing Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install ${{ matrix.compiler.cc }} cmake ninja-build libglu1-mesa-dev mesa-common-dev xorg-dev
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Building Project
+        env:
+          CC: ${{ matrix.compiler.cc }}
+          CXX: ${{ matrix.compiler.cxx }}
+        run: |
+          cmake -B build -G "Ninja"
+          cmake --build build
