@@ -29,3 +29,29 @@ jobs:
         run: |
           cmake -B build -G "Ninja"
           cmake --build build
+
+  windows:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        compiler: [{ cc: gcc, cxx: g++ }]
+        cmake_build_type: [Debug, Release]
+    steps:
+      - name: Installing Dependencies
+      - uses: lukka/get-cmake@latest
+      - uses: egor-tensin/setup-gcc@v1
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+
+      - name: Building Project
+        env:
+          CC: ${{ matrix.compiler.cc }}
+          CXX: ${{ matrix.compiler.cxx }}
+        run: |
+          cmake -B build -G "Ninja"
+          cmake --build build
