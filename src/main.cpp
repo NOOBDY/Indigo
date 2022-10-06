@@ -73,7 +73,7 @@ int main(int, char **) {
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    Importer obj1("../assets/donut.obj");
+    Importer obj1("../assets/models/donut.obj");
 
     VertexArray vao1;
 
@@ -98,7 +98,7 @@ int main(int, char **) {
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
-    Importer obj2("../assets/suzanne.obj");
+    Importer obj2("../assets/models/suzanne.obj");
 
     VertexArray vao2;
 
@@ -114,8 +114,8 @@ int main(int, char **) {
     vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
 
-    Texture tex1("../assets/fabric.png");
-    Texture tex2("../assets/uv.png");
+    Texture tex1("../assets/textures/fabric.png");
+    Texture tex2("../assets/textures/uv.png");
 
     program.Bind();
 
