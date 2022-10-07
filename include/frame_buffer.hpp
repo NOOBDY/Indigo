@@ -8,9 +8,10 @@ public:
     FrameBuffer(const int binding, int number);
     ~FrameBuffer();
     void bind();
+    void genTexture();
 
 private:
-    const int m_number;
+    const int m_number = 10;
     GLuint m_BufferID;
     GLuint m_TextureIDs;
 
