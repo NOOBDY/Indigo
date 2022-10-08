@@ -1,5 +1,7 @@
 # Indigo
 
+[![build](https://github.com/NOOBDY/Indigo/actions/workflows/build.yml/badge.svg)](https://github.com/NOOBDY/Indigo/actions/workflows/build.yml) 
+
 As of now, this project's structure and code in heavily borrowed from [opengl-tutorial](http://www.opengl-tutorial.org/) and the [Hazel Engine](https://github.com/TheCherno/Hazel) from the Cherno.
 
 ## Cloning
