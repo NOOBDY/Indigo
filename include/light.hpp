@@ -27,20 +27,22 @@ struct LightData {
 
 class Light {
 public:
-    Light(glm::vec3 light_Color = glm::vec3(1.0f), float radius = 1.0f,
-          float power = 1.0f, LightType light_Type = LightType::POINT);
+    Light(glm::vec3 lightColor = glm::vec3(1.0f), float radius = 1.0f,
+          float power = 1.0f, LightType lightType = LightType::POINT);
 
-    void SetLightColor(glm::vec3 light_Color);
+    void SetLightColor(glm::vec3 lightColor);
     void SetRadius(float radius);
     void SetPower(float power);
-    void SetLightType(LightType light_Type);
-    void SetCutoff(float cutoff);
+    void SetLightType(LightType lightType);
+    void SetInner(float inner);
+    void SetOuter(float outer);
 
     glm::vec3 GetLightColor() const { return m_LightColor; };
     float GetRadius() const { return m_Radius; };
     float GetPower() const { return m_Power; };
     LightType GetLightType() const { return m_LightType; };
-    float GetCutoff() const { return m_Cutoff; };
+    float GetInner() const { return m_InnerCone; };
+    float GetOuter() const { return m_OuterCone; };
 
     LightData GetLightData();
 
@@ -51,7 +53,8 @@ private:
     float m_Radius = 100000.0f;
     float m_Power = 0.5f;
     LightType m_LightType = LightType::POINT;
-    float m_Cutoff = 30.0f;
+    float m_InnerCone = 20.0f;
+    float m_OuterCone = 30.0f;
 };
 
 #endif

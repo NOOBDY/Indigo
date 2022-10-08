@@ -129,10 +129,10 @@ int main(int, char **) {
 
         float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
-        light1.SetRadius(3 * glm::abs(tempValue));
+        // light1.SetRadius(3 * glm::abs(tempValue));
 
-        lightInfo[1] = light1.GetLightData();
-        lightInfo[0] = light2.GetLightData();
+        lightInfo[0] = light1.GetLightData();
+        lightInfo[1] = light2.GetLightData();
 
         vao1.Bind();
 
