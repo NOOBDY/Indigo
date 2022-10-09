@@ -6,14 +6,17 @@
 #include "log.hpp"
 
 Program::Program(const std::string &vertexShaderFilepath,
+                 const std::string &geometryShaderFilepath,
                  const std::string &fragmentShaderFilepath) {
     LOG_TRACE("Creating Program");
     m_ProgramID = glCreateProgram();
 
     m_VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+    m_GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
     m_FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
     CompileShader(m_VertexShaderID, vertexShaderFilepath);
+    CompileShader(m_GeometryShaderID, geometryShaderFilepath);
     CompileShader(m_FragmentShaderID, fragmentShaderFilepath);
 
     LinkProgram();
@@ -87,6 +90,7 @@ void Program::LinkProgram() {
     LOG_TRACE("Linking Program");
 
     glAttachShader(m_ProgramID, m_VertexShaderID);
+    glAttachShader(m_ProgramID, m_GeometryShaderID);
     glAttachShader(m_ProgramID, m_FragmentShaderID);
     glLinkProgram(m_ProgramID);
 
@@ -115,8 +119,10 @@ void Program::LinkProgram() {
     }
 
     glDetachShader(m_ProgramID, m_VertexShaderID);
+    glDetachShader(m_ProgramID, m_GeometryShaderID);
     glDetachShader(m_ProgramID, m_FragmentShaderID);
 
     glDeleteShader(m_VertexShaderID);
+    glDeleteShader(m_GeometryShaderID);
     glDeleteShader(m_FragmentShaderID);
 }

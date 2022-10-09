@@ -49,6 +49,7 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init("#version 460");
 
     Program program("../assets/shaders/phong.vert",
+                    "../assets/shaders/phong.geom",
                     "../assets/shaders/phong.frag");
 
 #define LIGHT_NUMBER 2
