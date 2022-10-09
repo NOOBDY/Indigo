@@ -9,6 +9,14 @@ out vec3 worldPosition;
 out vec3 normal;
 out vec2 UV;
 
+out pointData {
+    vec3 normal;
+    vec3 worldPosition;
+    vec3 geoPosition;
+    vec2 UV;
+
+} dataOut;
+
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
@@ -29,4 +37,8 @@ void main() {
     geoPosition = vertPosition;
     worldPosition = (model * vec4(vertPosition, 1)).xyz;
     UV = vertUV;
+    dataOut.worldPosition = worldPosition;
+    dataOut.geoPosition = geoPosition;
+    dataOut.UV = UV;
+    dataOut.normal = normal;
 }
