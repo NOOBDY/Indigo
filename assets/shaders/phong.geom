@@ -14,11 +14,12 @@ in pointData {
     vec3 worldPosition;
     vec3 geoPosition;
     vec2 UV;
-    mat3 TBN;
+    mat4 modelMat;
+    mat4 viewProjection;
 } dataIn[];
 
 void setData() {
-       // Edges of the triangle
+    // Edges of the triangle
     vec3 edge0 = gl_in[1].gl_Position.xyz - gl_in[0].gl_Position.xyz;
     vec3 edge1 = gl_in[2].gl_Position.xyz - gl_in[0].gl_Position.xyz;
     // Lengths of UV differences
@@ -31,19 +32,17 @@ void setData() {
     vec3 tangent = vec3(invDet * (deltaUV1.y * edge0 - deltaUV0.y * edge1));
     vec3 bitangent = vec3(invDet * (-deltaUV1.x * edge0 + deltaUV0.x * edge1));
 
-    vec3 T = normalize(tangent);
-    vec3 B = normalize(bitangent);
-    vec3 N = normalize(cross(edge1, edge0));
-
-    TBN = mat3(T, B, N);
-    TBN = transpose(TBN);
+    vec3 T = normalize((dataIn[0].modelMat * vec4(tangent, 0.0)).xyz);
+    vec3 B = normalize((dataIn[0].modelMat * vec4(bitangent, 0.0)).xyz);
+    vec3 N = normalize((dataIn[0].modelMat * vec4(cross(edge1, edge0), 0.0)).xyz);
 
     for(int index = 0; index < 3; index++) {
-        gl_Position = gl_in[index].gl_Position;
+        gl_Position = dataIn[0].viewProjection * gl_in[index].gl_Position;
         normal = dataIn[index].normal;
         worldPosition = dataIn[index].worldPosition;
         geoPosition = dataIn[index].geoPosition;
         UV = dataIn[index].UV;
+        TBN = transpose(mat3(T, B, N));
 
         EmitVertex();
     }

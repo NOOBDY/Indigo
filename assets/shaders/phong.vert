@@ -14,6 +14,8 @@ out pointData {
     vec3 worldPosition;
     vec3 geoPosition;
     vec2 UV;
+    mat4 modelMat;
+    mat4 viewProjection;
 
 } dataOut;
 
@@ -23,7 +25,7 @@ layout(std140, binding = 0) uniform Matrices {
 };
 
 void main() {
-    gl_Position = viewProjection * model * vec4(vertPosition, 1);
+    gl_Position = model * vec4(vertPosition, 1);
 
     mat4 modelRotation = model;
 
@@ -41,4 +43,6 @@ void main() {
     dataOut.geoPosition = geoPosition;
     dataOut.UV = UV;
     dataOut.normal = normal;
+    dataOut.modelMat = modelRotation;
+    dataOut.viewProjection = viewProjection;
 }
