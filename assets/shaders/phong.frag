@@ -44,8 +44,6 @@ layout(std140, binding = 1) uniform Materials {
 
 layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
-    // float vvv[1];
-    // test v[LIGHT_NUMBER];
 };
 
 uniform sampler2D texture1;// samplers are opaque types and
