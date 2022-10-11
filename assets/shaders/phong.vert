@@ -8,13 +8,14 @@ out vec3 geoPosition;
 out vec3 worldPosition;
 out vec3 normal;
 out vec2 UV;
+// out mat4 modelR;
 
 out pointData {
     vec3 normal;
     vec3 worldPosition;
     vec3 geoPosition;
     vec2 UV;
-    mat4 modelMat;
+    mat4 modelRotation;
     mat4 viewProjection;
 
 } dataOut;
@@ -39,10 +40,11 @@ void main() {
     geoPosition = vertPosition;
     worldPosition = (model * vec4(vertPosition, 1)).xyz;
     UV = vertUV;
+    // modelR = modelRotation;
     dataOut.worldPosition = worldPosition;
     dataOut.geoPosition = geoPosition;
     dataOut.UV = UV;
     dataOut.normal = normal;
-    dataOut.modelMat = modelRotation;
+    dataOut.modelRotation = modelRotation;
     dataOut.viewProjection = viewProjection;
 }

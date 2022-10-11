@@ -7,6 +7,7 @@ in vec3 worldPosition;
 in vec3 normal;
 in vec2 UV;
 in mat3 TBN;
+// in mat4 modelR;
 
 out vec4 color;
 
@@ -103,7 +104,7 @@ void main() {
     vec3 cameraPosition = vec3(0, 3, 4);
     vec3 color3 = vec3(0.);
     // color3 = texture(texture_n, UV).xyz;
-    color3 = (TBN * texture(texture_n, UV).xyz).xyz;
+    color3 = (TBN * (texture(texture_n, UV).xyz)).xyz;
     // color3 = normal;
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     // color3 = worldPosition;
