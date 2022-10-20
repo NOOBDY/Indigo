@@ -103,5 +103,6 @@ void main() {
     vec3 cameraPosition = vec3(0, 3, 4);
     vec3 color3 = vec3(0.);
     color3 = PhongLight(cameraPosition, worldPosition, lights, material);
+    color3 = texture(frame_image, UV).xyz;
     color = vec4(color3, 1.);
 }

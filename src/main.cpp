@@ -155,6 +155,7 @@ int main(int, char **) {
         tex1.Bind(0);
         tex2.Bind(1);
         tex3.Bind(2);
+        tex4.Bind(3);
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         vao2.Bind();
