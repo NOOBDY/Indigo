@@ -118,12 +118,14 @@ int main(int, char **) {
     Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
     Texture tex2("../assets/textures/uv.png");
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
     program.Bind();
 
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
     program.SetInt("texture_n", 2);
+    program.SetInt("frame_image", 3);
 
     float i = 0;
 

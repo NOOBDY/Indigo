@@ -31,10 +31,11 @@ void setData() {
 
     vec3 tangent = vec3(invDet * (deltaUV1.y * edge0 - deltaUV0.y * edge1));
     vec3 bitangent = vec3(invDet * (-deltaUV1.x * edge0 + deltaUV0.x * edge1));
+    mat4 model = dataIn[0].modelRotation;
 
-    vec3 T = normalize(vec4(tangent, 0.0).xyz);
-    vec3 B = normalize(vec4(bitangent, 0.0).xyz);
-    vec3 N = normalize(vec4(cross(edge1, edge0), 0.0).xyz);
+    vec3 T = -normalize(vec4(tangent, 0.0).xyz);
+    vec3 B = -normalize(vec4(bitangent, 0.0).xyz);
+    vec3 N = -normalize(vec4(cross(edge1, edge0), 0.0)).xyz;
 
     for(int index = 0; index < 3; index++) {
         gl_Position = dataIn[0].viewProjection * gl_in[index].gl_Position;
@@ -42,8 +43,7 @@ void setData() {
         worldPosition = dataIn[index].worldPosition;
         geoPosition = dataIn[index].geoPosition;
         UV = dataIn[index].UV;
-        TBN = transpose(mat3(T, B, N));
-        // TBN = (mat3(T, B, N));
+        TBN = (mat3(T, B, N));
 
         EmitVertex();
     }
