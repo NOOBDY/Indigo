@@ -13,6 +13,7 @@
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
+#include "frame_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
@@ -116,6 +117,12 @@ int main(int, char **) {
 
     Texture tex1("../assets/textures/fabric.png");
     Texture tex2("../assets/textures/uv.png");
+
+    Texture renderSurface(800, 600);
+
+    FrameBuffer fbo;
+
+    fbo.AttachTexture(renderSurface.GetTextureID());
 
     program.Bind();
 
