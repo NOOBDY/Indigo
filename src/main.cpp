@@ -50,6 +50,7 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init("#version 460");
 
     Program program("../assets/shaders/phong.vert",
+                    "../assets/shaders/phong.geom",
                     "../assets/shaders/phong.frag");
 
 #define LIGHT_NUMBER 2
@@ -70,11 +71,11 @@ int main(int, char **) {
 
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
 
-    glm::vec3 pos1(2, 0, 0);
+    glm::vec3 pos1(1.35, 0, 0);
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    Importer obj1("../assets/models/donut.obj");
+    Importer obj1("../assets/models/wall.obj");
 
     VertexArray vao1;
 
@@ -115,8 +116,10 @@ int main(int, char **) {
     vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
 
-    Texture tex1("../assets/textures/fabric.png");
+    Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
     Texture tex2("../assets/textures/uv.png");
+    Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
     Texture renderSurface(800, 600);
 
@@ -128,6 +131,8 @@ int main(int, char **) {
 
     program.SetInt("texture1", 0);
     program.SetInt("texture2", 1);
+    program.SetInt("texture_n", 2);
+    program.SetInt("frame_image", 3);
 
     float i = 0;
 
@@ -136,10 +141,10 @@ int main(int, char **) {
 
         float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
-        light1.SetRadius(3 * glm::abs(tempValue));
+        // light1.SetRadius(3 * glm::abs(tempValue));
 
-        lightInfo[1] = light1.GetLightData();
-        lightInfo[0] = light2.GetLightData();
+        lightInfo[0] = light1.GetLightData();
+        lightInfo[1] = light2.GetLightData();
 
         vao1.Bind();
 
@@ -156,6 +161,8 @@ int main(int, char **) {
 
         tex1.Bind(0);
         tex2.Bind(1);
+        tex3.Bind(2);
+        tex4.Bind(3);
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         vao2.Bind();

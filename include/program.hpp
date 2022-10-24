@@ -6,6 +6,7 @@
 class Program {
 public:
     Program(const std::string &vertexShaderFilepath,
+            const std::string &geometryShaderFilepath,
             const std::string &fragmentShaderFilepath);
     ~Program();
 
@@ -29,6 +30,7 @@ private:
 
     // perhaps can change this into a vector of shaders
     GLuint m_VertexShaderID;
+    GLuint m_GeometryShaderID;
     GLuint m_FragmentShaderID;
 };
 
