@@ -7,10 +7,6 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(glfw)
 
 # GLEW
-add_definitions(
-    -DGLEW_STATIC
-)
-
 set(GLEW_SOURCE
     glew-2.2.0/src/glew.c
 )
@@ -25,7 +21,9 @@ target_link_libraries(glew_220
     ${OPENGL_LIBRARY}
     ${EXTRA_LIBS}
 )
-
+add_definitions(
+    -DGLEW_STATIC
+)
 # spdlog
 
 add_subdirectory(spdlog)

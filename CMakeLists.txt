@@ -19,10 +19,6 @@ set(LIB
     ImGui
 )
 
-add_definitions(
-    -DGLEW_STATIC
-)
-
 add_executable(Indigo
     src/main.cpp
     src/log.cpp
