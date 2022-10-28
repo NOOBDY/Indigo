@@ -49,19 +49,43 @@ void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer> ib) {
 
     m_IndexBuffer = ib;
 }
-const std::vector<std::vector<float>>
-Calculate_TBN(std::vector<float> vertices, std::vector<float> uvs,
-              std::vector<float> indices) {
+const std::vector<std::vector<float>> Calculate_TBN(std::vector<float> vertices,
+                                                    std::vector<float> uvs,
+                                                    std::vector<int> indices) {
     int length = indices.size();
     std::vector<float> T;
     std::vector<float> B;
     std::vector<float> N;
     std::vector<std::vector<float>> TBN;
     for (int i = 0; i < length; i += 3) {
-        glm::vec3 points_position[3];
-        glm::vec2 points_uv[3];
+        glm::vec3 pointsPosition[3];
+        glm::vec2 pointsUV[3];
+        glm::vec3 edge[2];
+        glm::vec2 deltaUV[2];
+
         for (int j = 0; j < 3; j++) {
-            points_position[j].x = 1.0;
+            int index = i + j;
+            pointsPosition[index].x = vertices[index * 3];
+            pointsPosition[index].y = vertices[index * 3 + 1];
+            pointsPosition[index].z = vertices[index * 3 + 2];
+            pointsUV[index].x = uvs[index * 3];
+            pointsUV[index].y = uvs[index * 3 + 1];
+        }
+        edge[0] = pointsPosition[1] - pointsPosition[0];
+        edge[1] = pointsPosition[2] - pointsPosition[0];
+        deltaUV[0] = pointsUV[1] - pointsUV[0];
+        deltaUV[1] = pointsUV[2] - pointsUV[0];
+        float invDet =
+            1.0f / (deltaUV[0].x * deltaUV[1].y - deltaUV[0].y * deltaUV[1].x);
+        glm::vec3 tangent = glm::normalize(
+            invDet * (deltaUV[1].y * edge[0] - deltaUV[0].y * edge[1]));
+        glm::vec3 bitangent = glm::normalize(
+            invDet * (-deltaUV[1].x * edge[0] + deltaUV[0].x * edge[1]));
+        glm::vec3 normal = glm::normalize(glm::cross(edge[0], edge[1]));
+        for (int j = 0; j < 3; j++) {
+            T.push_back(tangent[j]);
+            B.push_back(bitangent[j]);
+            N.push_back(normal[j]);
         }
     }
     TBN.push_back(T);
