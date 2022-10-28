@@ -23,6 +23,9 @@ public:
     const std::shared_ptr<IndexBuffer> GetIndexBuffer() const {
         return m_IndexBuffer;
     }
+    const std::vector<std::vector<float>>
+    Calculate_TBN(std::vector<float> vertices, std::vector<float> uvs,
+                  std::vector<float> indices);
 
 private:
     GLuint m_ArrayID;

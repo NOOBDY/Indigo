@@ -49,3 +49,23 @@ void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer> ib) {
 
     m_IndexBuffer = ib;
 }
+const std::vector<std::vector<float>>
+Calculate_TBN(std::vector<float> vertices, std::vector<float> uvs,
+              std::vector<float> indices) {
+    int length = indices.size();
+    std::vector<float> T;
+    std::vector<float> B;
+    std::vector<float> N;
+    std::vector<std::vector<float>> TBN;
+    for (int i = 0; i < length; i += 3) {
+        glm::vec3 points_position[3];
+        glm::vec2 points_uv[3];
+        for (int j = 0; j < 3; j++) {
+            points_position[j].x = 1.0;
+        }
+    }
+    TBN.push_back(T);
+    TBN.push_back(B);
+    TBN.push_back(N);
+    return TBN;
+};
