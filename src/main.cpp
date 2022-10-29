@@ -121,18 +121,28 @@ int main(int, char **) {
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
-    Texture renderSurface(800, 600);
+    Texture renderSurface(1280, 720);
 
     FrameBuffer fbo;
+
+    GLuint rbo;
+
+    glCreateRenderbuffers(1, &rbo);
+    glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, 1280, 720);
+    glNamedFramebufferRenderbuffer(
+        fbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOG_WARN("Incomplete Frame Buffer");
 
     fbo.AttachTexture(renderSurface.GetTextureID());
 
     program.Bind();
 
-    program.SetInt("texture1", 0);
-    program.SetInt("texture2", 1);
-    program.SetInt("texture_n", 2);
-    program.SetInt("frame_image", 3);
+    program.SetInt("texture1", 1);
+    program.SetInt("texture2", 2);
+    program.SetInt("texture3", 3);
+    program.SetInt("texture4", 4);
 
     float i = 0;
 
@@ -159,12 +169,20 @@ int main(int, char **) {
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        tex1.Bind(0);
-        tex2.Bind(1);
-        tex3.Bind(2);
-        tex4.Bind(3);
+        tex1.Bind(1);
+        tex2.Bind(2);
+        tex3.Bind(3);
+        tex4.Bind(4);
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+
+        /*
+        fbo.Unbind();
+        glViewport(0, 0, 1280, 720);
+        Renderer::Clear();
+        */
+
+        /*
         vao2.Bind();
 
         model2Trans.SetPosition(pos2);
@@ -178,8 +196,10 @@ int main(int, char **) {
         materials.SetData(0, sizeof(Material), &matColor2);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        tex2.Bind(0);
         tex1.Bind(1);
+        tex2.Bind(2);
+        tex3.Bind(3);
+        tex4.Bind(4);
 
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
@@ -205,6 +225,7 @@ int main(int, char **) {
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        */
 
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();

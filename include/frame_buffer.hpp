@@ -21,6 +21,8 @@ public:
 
     void AttachTexture(GLuint textureID);
 
+    GLuint GetBufferID() const { return m_BufferID; }
+
 private:
     GLuint m_BufferID;
 };
