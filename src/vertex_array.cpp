@@ -50,9 +50,9 @@ void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer> ib) {
     m_IndexBuffer = ib;
 }
 const std::vector<std::vector<float>>
-VertexArray::Calculate_TBN(const std::vector<float> &vertices,
-                           const std::vector<float> &uvs,
-                           const std::vector<unsigned int> &indices) {
+VertexArray::CalculateTBN(const std::vector<float> &vertices,
+                          const std::vector<float> &uvs,
+                          const std::vector<unsigned int> &indices) {
     unsigned int length = indices.size();
     std::vector<float> T;
     std::vector<float> B;

@@ -88,8 +88,8 @@ int main(int, char **) {
         std::make_shared<VertexBuffer>(obj1.GetNormals(), 3 * sizeof(float)));
 
     vao1.SetIndexBuffer(std::make_shared<IndexBuffer>(obj1.GetIndices()));
-    const std::vector<std::vector<float>> test = vao1.Calculate_TBN(
-        obj1.GetVertices(), obj1.GetUVs(), obj1.GetIndices());
+    const std::vector<std::vector<float>> test =
+        vao1.CalculateTBN(obj1.GetVertices(), obj1.GetUVs(), obj1.GetIndices());
     // end model 1
 
     // begin model 2

@@ -24,9 +24,9 @@ public:
         return m_IndexBuffer;
     }
     const std::vector<std::vector<float>>
-    Calculate_TBN(const std::vector<float> &vertices,
-                  const std::vector<float> &uvs,
-                  const std::vector<unsigned int> &indices);
+    CalculateTBN(const std::vector<float> &vertices,
+                 const std::vector<float> &uvs,
+                 const std::vector<unsigned int> &indices);
 
 private:
     GLuint m_ArrayID;
