@@ -50,8 +50,8 @@ layout(std140, binding = 2) uniform Lights {
 
 uniform sampler2D texture1;// samplers are opaque types and
 uniform sampler2D texture2;// cannot exist in uniform blocks
-uniform sampler2D texture_n;
-uniform sampler2D frame_image;//frame buffer texture
+uniform sampler2D texture3;
+uniform sampler2D texture4;//frame buffer texture
 float fade(vec3 center, vec3 postion, float radius) {
     return 1.0 / (length(postion - center) / radius + 0.1);
     // return 1.0 - clamp(length(postion - center) / radius, 0, 1);
@@ -59,7 +59,7 @@ float fade(vec3 center, vec3 postion, float radius) {
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
     vec3 n = normal;
-    n = TBN * (texture(texture_n, UV).xyz * 2 - 1);
+    n = TBN * (texture(texture3, UV).xyz * 2 - 1);
     vec3 direction = light.transform.direction;
     // direction :light to mesh
     vec3 l = light.lightType == 3 ? direction : normalize(light.transform.position - position);
@@ -103,7 +103,6 @@ void main() {
     vec3 cameraPosition = vec3(0, 3, 4);
     vec3 color3 = vec3(0.);
     color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    color3 = TBN * (texture(texture_n, UV).xyz * 2 - 1);
-    // color3 = texture(frame_image, UV).xyz;
+    // color3 = texture(texture1, UV).xyz;
     color = vec4(color3, 1.);
 }

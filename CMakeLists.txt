@@ -19,10 +19,6 @@ set(LIB
     ImGui
 )
 
-add_definitions(
-    -DGLEW_STATIC
-)
-
 add_executable(Indigo
     src/main.cpp
     src/log.cpp
@@ -35,6 +31,7 @@ add_executable(Indigo
     src/vertex_buffer.cpp
     src/index_buffer.cpp
     src/uniform_buffer.cpp
+    src/frame_buffer.cpp
     src/texture.cpp
     src/transform.cpp
     src/light.cpp
@@ -49,6 +46,7 @@ add_executable(Indigo
     include/vertex_buffer.hpp
     include/index_buffer.hpp
     include/uniform_buffer.hpp
+    include/frame_buffer.hpp
     include/texture.hpp
     include/transform.hpp
     include/light.hpp

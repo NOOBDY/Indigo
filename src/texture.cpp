@@ -5,8 +5,47 @@
 
 #include "log.hpp"
 
+Texture::Texture(const int width, const int height) {
+    LOG_TRACE("Creating Texture");
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+
+    glTexImage2D(         //
+        GL_TEXTURE_2D,    // target
+        0,                // level
+        GL_RGB,           // internal format
+        width,            //
+        height,           //
+        0,                // border
+        GL_RGB,           // format
+        GL_UNSIGNED_BYTE, // type
+        NULL              //
+    );
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
 Texture::Texture(const std::string &textureFilepath) {
     LOG_TRACE("Creating Texture");
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+
+    LoadImage(textureFilepath);
+}
+
+Texture::~Texture() {
+    LOG_TRACE("Deleting Texture");
+    glDeleteTextures(1, &m_TextureID);
+}
+
+void Texture::Bind(unsigned int slot) {
+    LOG_TRACE("Binding Texture");
+    glBindTextureUnit(slot, m_TextureID);
+}
+
+void Texture::LoadImage(const std::string &textureFilepath) {
+    glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
@@ -18,8 +57,6 @@ Texture::Texture(const std::string &textureFilepath) {
         throw;
     }
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
-    glBindTexture(GL_TEXTURE_2D, m_TextureID);
     glTexImage2D(                           //
         GL_TEXTURE_2D,                      // target
         0,                                  // level
@@ -41,16 +78,6 @@ Texture::Texture(const std::string &textureFilepath) {
     glGenerateMipmap(GL_TEXTURE_2D);
 
     stbi_image_free(data);
-}
-
-Texture::~Texture() {
-    LOG_TRACE("Deleting Texture");
-    glDeleteTextures(1, &m_TextureID);
-}
-
-void Texture::Bind(unsigned int slot) {
-    LOG_TRACE("Binding Texture");
-    glBindTextureUnit(slot, m_TextureID);
 }
 
 GLuint Texture::GetTextureLocation(const GLuint &programID,
