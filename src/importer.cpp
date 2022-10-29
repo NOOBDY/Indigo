@@ -45,6 +45,18 @@ Importer::Importer(const std::string &filepath) {
             m_Normals.push_back(mesh->mNormals[j].z);
         }
 
+        for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
+            m_Tangents.push_back(mesh->mTangents[j].x);
+            m_Tangents.push_back(mesh->mTangents[j].y);
+            m_Tangents.push_back(mesh->mTangents[j].z);
+        }
+
+        for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
+            m_Bitangents.push_back(mesh->mBitangents[j].x);
+            m_Bitangents.push_back(mesh->mBitangents[j].y);
+            m_Bitangents.push_back(mesh->mBitangents[j].z);
+        }
+
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
             // faces are triangulated so this can be hard coded
             m_Indices.push_back(mesh->mFaces[j].mIndices[0]);

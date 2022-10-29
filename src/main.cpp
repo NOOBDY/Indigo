@@ -87,6 +87,12 @@ int main(int, char **) {
     vao1.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj1.GetNormals(), 3 * sizeof(float)));
 
+    vao1.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj1.GetTangents(), 3 * sizeof(float)));
+
+    vao1.AddVertexBuffer(std::make_shared<VertexBuffer>(obj1.GetBitangents(),
+                                                        3 * sizeof(float)));
+
     vao1.SetIndexBuffer(std::make_shared<IndexBuffer>(obj1.GetIndices()));
     // end model 1
 
@@ -111,6 +117,12 @@ int main(int, char **) {
 
     vao2.AddVertexBuffer(
         std::make_shared<VertexBuffer>(obj2.GetNormals(), 3 * sizeof(float)));
+
+    vao2.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(obj2.GetTangents(), 3 * sizeof(float)));
+
+    vao2.AddVertexBuffer(std::make_shared<VertexBuffer>(obj2.GetBitangents(),
+                                                        3 * sizeof(float)));
 
     vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
