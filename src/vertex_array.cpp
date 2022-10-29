@@ -49,27 +49,31 @@ void VertexArray::SetIndexBuffer(const std::shared_ptr<IndexBuffer> ib) {
 
     m_IndexBuffer = ib;
 }
-const std::vector<std::vector<float>> Calculate_TBN(std::vector<float> vertices,
-                                                    std::vector<float> uvs,
-                                                    std::vector<int> indices) {
-    int length = indices.size();
+const std::vector<std::vector<float>>
+VertexArray::Calculate_TBN(const std::vector<float> &vertices,
+                           const std::vector<float> &uvs,
+                           const std::vector<unsigned int> &indices) {
+    unsigned int length = indices.size();
     std::vector<float> T;
     std::vector<float> B;
     std::vector<float> N;
     std::vector<std::vector<float>> TBN;
-    for (int i = 0; i < length; i += 3) {
+    for (unsigned int i = 0; i < length; i += 3) {
+        // three point
         glm::vec3 pointsPosition[3];
         glm::vec2 pointsUV[3];
         glm::vec3 edge[2];
         glm::vec2 deltaUV[2];
 
-        for (int j = 0; j < 3; j++) {
-            int index = i + j;
-            pointsPosition[index].x = vertices[index * 3];
-            pointsPosition[index].y = vertices[index * 3 + 1];
-            pointsPosition[index].z = vertices[index * 3 + 2];
-            pointsUV[index].x = uvs[index * 3];
-            pointsUV[index].y = uvs[index * 3 + 1];
+        for (unsigned int j = 0; j < 3; j++) {
+            // each point
+            unsigned int index = indices[i + j];
+            LOG_INFO(vertices[index]);
+            pointsPosition[j].x = vertices[index * 3];
+            pointsPosition[j].y = vertices[index * 3 + 1];
+            pointsPosition[j].z = vertices[index * 3 + 2];
+            pointsUV[j].x = uvs[index * 3];
+            pointsUV[j].y = uvs[index * 3 + 1];
         }
         edge[0] = pointsPosition[1] - pointsPosition[0];
         edge[1] = pointsPosition[2] - pointsPosition[0];
