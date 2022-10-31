@@ -33,7 +33,7 @@ void Renderer::Init() {
         LOG_ERROR("Failed to Initialize GLEW\n");
     }
 
-    glEnable(GL_DEPTH_TEST);
+    // glEnable(GL_DEPTH_TEST);
 
     glEnable(GL_CULL_FACE);
 

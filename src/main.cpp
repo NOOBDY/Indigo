@@ -100,9 +100,9 @@ int main(int, char **) {
     // model2Trans.SetPosition({2, 0, 0});
     // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    // glm::vec3 pos2(-2, 0, 0);
-    // glm::vec3 rot2(180, 180, 180);
-    // glm::vec3 scale2(1, 1, 1);
+    glm::vec3 pos2(-2, 0, 0);
+    glm::vec3 rot2(180, 180, 180);
+    glm::vec3 scale2(1, 1, 1);
 
     // Importer obj2("../assets/models/suzanne.obj");
 
@@ -153,13 +153,14 @@ int main(int, char **) {
     fbo.Bind();
 
     // color buffer
+    // Texture renderSurface("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture renderSurface(1280, 720);
     renderSurface.Bind();
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 1280, 720, 0, GL_RGB,
                  GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // fbo.AttachTexture(renderSurface.GetTextureID());
+    fbo.AttachTexture(renderSurface.GetTextureID());
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D,
                            renderSurface.GetTextureID(), 0);
 
@@ -177,13 +178,26 @@ int main(int, char **) {
     float i = 0;
 
     do {
+        fbo.Bind();
+        // glEnable(GL_DEPTH_TEST); // enable depth testing (is disabled for
+        glDisable(GL_DEPTH_TEST); // enable depth testing (is disabled for
+        // rendering screen-space quad)
         program.Bind();
+        tex1.Bind(1);
+        tex2.Bind(2);
+        tex3.Bind(3);
+        tex4.Bind(4);
+
+        // program1.Bind();
         program.SetInt("texture1", 1);
         program.SetInt("texture2", 2);
         program.SetInt("texture3", 3);
         program.SetInt("texture4", 4);
+        tex1.Bind(1);
+        tex2.Bind(2);
+        tex3.Bind(3);
+        tex4.Bind(4);
 
-        fbo.Bind();
         Renderer::Clear();
         Renderer::ClearColor(1., 0, 0, 1);
 
@@ -195,6 +209,7 @@ int main(int, char **) {
         lightInfo[1] = light2.GetLightData();
 
         vao1.Bind();
+        // glBindVertexArray(quadVAO);
 
         model1Trans.SetPosition(pos1);
         model1Trans.SetRotation(rot1);
@@ -207,19 +222,20 @@ int main(int, char **) {
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        tex1.Bind(1);
-        tex2.Bind(2);
-        tex3.Bind(3);
-        tex4.Bind(4);
-
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
-        // program1.Bind();
-        // glBindVertexArray(quadVAO);
-        // glBindTexture(GL_TEXTURE_2D,
-        //               renderSurface.GetTextureID()); // use the color
-        //               attachment
-        // //                                    plane
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // glClear(GL_COLOR_BUFFER_BIT);
+
+        // Renderer::Clear();
+        fbo.Unbind();
+        // program.Unbind();
+        program1.Bind();
+        program1.SetInt("screenTexture", 0);
+        // vao1.Bind();
+        // Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+        glBindVertexArray(quadVAO);
+        glBindTexture(GL_TEXTURE_2D,
+                      renderSurface.GetTextureID()); // use the color
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // glClear(GL_COLOR_BUFFER_BIT);
 
@@ -249,6 +265,7 @@ int main(int, char **) {
         tex4.Bind(4);
 
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
+        */
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -272,7 +289,6 @@ int main(int, char **) {
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-        */
 
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
