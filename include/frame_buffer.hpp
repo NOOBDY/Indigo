@@ -19,7 +19,7 @@ public:
     void Bind() const;
     void Unbind() const;
 
-    void AttachTexture(GLuint textureID);
+    void AttachTexture(GLuint textureID, int textureType);
 
     GLuint GetBufferID() const { return m_BufferID; }
 

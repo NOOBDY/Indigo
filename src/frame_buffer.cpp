@@ -24,12 +24,12 @@ void FrameBuffer::Unbind() const {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void FrameBuffer::AttachTexture(GLuint textureID) {
+void FrameBuffer::AttachTexture(GLuint textureID, int textureType) {
     LOG_TRACE("Attaching Texture");
     glNamedFramebufferTexture( //
         m_BufferID,            //
-        GL_COLOR_ATTACHMENT0,  // attachment type, currently hard-coded to color
-        textureID,             //
-        0                      // mipmap level, idk what this does
+        textureType,
+        textureID, //
+        0          // mipmap level, idk what this does
     );
 }
