@@ -13,6 +13,8 @@ FrameBuffer::~FrameBuffer() {
 }
 
 void FrameBuffer::Bind() const {
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        LOG_ERROR("Frame Buffer not complete!");
     LOG_TRACE("Binding Frame Buffer");
     glBindFramebuffer(GL_FRAMEBUFFER, m_BufferID);
 }

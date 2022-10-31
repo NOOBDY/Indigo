@@ -6,7 +6,7 @@ in vec3 geoPosition;
 in vec3 worldPosition;
 in vec3 normal;
 in vec2 UV;
-in mat3 TBN;
+// in mat3 TBN;
 // in mat4 modelR;
 
 out vec4 color;
@@ -59,7 +59,7 @@ float fade(vec3 center, vec3 postion, float radius) {
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
     vec3 n = normal;
-    n = TBN * (texture(texture3, UV).xyz * 2 - 1);
+    // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
     vec3 direction = light.transform.direction;
     // direction :light to mesh
     vec3 l = light.lightType == 3 ? direction : normalize(light.transform.position - position);

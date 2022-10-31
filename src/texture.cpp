@@ -43,6 +43,9 @@ void Texture::Bind(unsigned int slot) {
     LOG_TRACE("Binding Texture");
     glBindTextureUnit(slot, m_TextureID);
 }
+void Texture::Bind() {
+    glBindTexture(GL_TEXTURE_2D, m_TextureID);
+}
 
 void Texture::LoadImage(const std::string &textureFilepath) {
     glBindTexture(GL_TEXTURE_2D, m_TextureID);
