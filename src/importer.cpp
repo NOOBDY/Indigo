@@ -1,7 +1,5 @@
 #include "importer.hpp"
 
-#include <array>
-
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
@@ -49,9 +47,6 @@ Importer::Importer(const std::string &filepath) {
 
         m_Bitangents.insert(m_Bitangents.end(), &mesh->mBitangents[0].x,
                             &mesh->mBitangents[0].x + 3 * mesh->mNumVertices);
-
-        m_Indices.insert(m_Indices.end(), &mesh->mFaces[0].mIndices[0],
-                         &mesh->mFaces[0].mIndices[0] + 3 * mesh->mNumFaces);
 
         for (unsigned int j = 0; j < mesh->mNumFaces; ++j) {
             /**
