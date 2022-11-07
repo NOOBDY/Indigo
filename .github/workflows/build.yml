@@ -1,10 +1,6 @@
 name: build
 
-on:
-  workflow_dispatch:
-  pull_request:
-    branches:
-      - master
+on: [push]
 
 jobs:
   linux:
@@ -43,11 +39,13 @@ jobs:
         compiler: [{ cc: gcc, cxx: g++ }]
         cmake_build_type: [Debug, Release]
     steps:
-      - name: Installing GCC
-        uses: egor-tensin/setup-mingw@v2
-
-      - name: Installing CMake
-        uses: lukka/get-cmake@latest
+      - name: Installing Dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-cmake
 
       - name: Checkout Repository
         uses: actions/checkout@v2
