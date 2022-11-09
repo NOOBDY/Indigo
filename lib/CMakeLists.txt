@@ -21,6 +21,9 @@ target_link_libraries(glew_220
     ${OPENGL_LIBRARY}
     ${EXTRA_LIBS}
 )
+add_definitions(
+    -DGLEW_STATIC
+)
 # spdlog
 
 add_subdirectory(spdlog)
