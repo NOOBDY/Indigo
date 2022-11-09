@@ -11,6 +11,8 @@ void main() {
     if(TexCoords.x < 0.5) {
         col = vec3(0);
         const float offset = 1.0 / 300.0;
+        // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
+
         vec2 offsets[9] = vec2[](vec2(-offset, offset), // 左上
         vec2(0.0f, offset), // 正上
         vec2(offset, offset), // 右上
@@ -22,18 +24,18 @@ void main() {
         vec2(offset, -offset)  // 右下
         );
 
-        //edge detction
-        // float kernel[9] = float[](-1, -1, -1, -1, 9, -1, -1, -1, -1);
-        //blur
-        float kernel[9] = float[](1.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 4.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 1.0 / 16);
+        // edge detction
+        float kernel[9] = float[](-1, -1, -1, -1, 8, -1, -1, -1, -1);
+        // blur
+        // float kernel[9] = float[](1.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 4.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 1.0 / 16);
 
         vec3 sampleTex[9];
         for(int i = 0; i < 9; i++) {
             sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
         }
         for(int i = 0; i < 9; i++) col += sampleTex[i] * kernel[i];
-        //subframe
-        col = vec3(1) - texture(screenTexture, TexCoords).rgb;
+        // subframe
+        // col = vec3(1) - texture(screenTexture, TexCoords).rgb;
     }
     FragColor = vec4(col, 1.0);
 }
