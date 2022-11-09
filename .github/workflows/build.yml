@@ -38,6 +38,11 @@ jobs:
         os: [windows-latest]
         compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
         cmake_build_type: [Debug, Release]
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
     steps:
       - name: Installing Dependencies
         uses: msys2/setup-msys2@v2
