@@ -8,6 +8,7 @@ out vec3 worldPosition;
 out vec3 geoPosition;
 out vec2 UV;
 out mat3 TBN;
+// out mat3 TBN;
 
 in pointData {
     vec3 normal;
@@ -16,6 +17,7 @@ in pointData {
     vec2 UV;
     mat4 modelRotation;
     mat4 viewProjection;
+    mat3 TBN;
 } dataIn[];
 
 void setData() {
@@ -43,7 +45,8 @@ void setData() {
         worldPosition = dataIn[index].worldPosition;
         geoPosition = dataIn[index].geoPosition;
         UV = dataIn[index].UV;
-        TBN = (mat3(T, B, N));
+        // TBN = (mat3(T, B, N));
+        TBN = dataIn[index].TBN;
 
         EmitVertex();
     }
