@@ -39,20 +39,7 @@ jobs:
         compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
         cmake_build_type: [Debug, Release]
 
-    defaults:
-      run:
-        shell: msys2 {0}
-
     steps:
-      - name: Installing Dependencies
-        uses: msys2/setup-msys2@v2
-        with:
-          update: true
-          install: >-
-            mingw-w64-x86_64-${{ matrix.compiler.cc }}
-            mingw-w64-x86_64-ninja
-            mingw-w64-x86_64-cmake
-
       - name: Checkout Repository
         uses: actions/checkout@v3
         with:
@@ -63,5 +50,5 @@ jobs:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
         run: |
-          cmake -B build -G "Ninja"
+          cmake -B build -G "Ninja" -DCMAKE_GENERATOR_PLATFORM=x64
           cmake --build build
