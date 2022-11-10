@@ -29,7 +29,9 @@ layout(std140, binding = 0) uniform Matrices {
 };
 
 void main() {
-    gl_Position = model * vec4(vertPosition, 1);
+    //do projection on geo shader
+    // gl_Position = model * vec4(vertPosition, 1);
+    gl_Position = viewProjection * model * vec4(vertPosition, 1);
 
     mat4 modelRotation = model;
 
@@ -48,10 +50,10 @@ void main() {
     UV = vertUV;
     dataOut.TBN = mat3(tangent, bitangent, normal);
     // modelR = modelRotation;
-    dataOut.worldPosition = worldPosition;
-    dataOut.geoPosition = geoPosition;
-    dataOut.UV = UV;
-    dataOut.normal = normal;
-    dataOut.modelRotation = modelRotation;
-    dataOut.viewProjection = viewProjection;
+    // dataOut.worldPosition = worldPosition;
+    // dataOut.geoPosition = geoPosition;
+    // dataOut.UV = UV;
+    // dataOut.normal = normal;
+    // dataOut.modelRotation = modelRotation;
+    // dataOut.viewProjection = viewProjection;
 }
