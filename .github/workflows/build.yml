@@ -22,7 +22,7 @@ jobs:
           sudo apt-get -y install ${{ matrix.compiler.cc }} cmake ninja-build libglu1-mesa-dev mesa-common-dev xorg-dev
 
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
@@ -40,17 +40,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        compiler: [{ cc: gcc, cxx: g++ }]
+        compiler: [{ cc: clang, cxx: clang++ }]
         cmake_build_type: [Debug, Release]
+
     steps:
-      - name: Installing GCC
-        uses: egor-tensin/setup-mingw@v2
-
-      - name: Installing CMake
-        uses: lukka/get-cmake@latest
-
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: recursive
 
