@@ -92,28 +92,30 @@ int main(int, char **) {
     VertexArray vao2;
     vao2.LoadOBJ("../assets/models/suzanne.obj");
     // end model 2
-    // plane for framebuffer
-    float quadVertices[] = {// vertex attributes for a quad that fills the
-                            // entire screen in Normalized Device Coordinates.
-                            // positions   // texCoords
-                            -1.0f, 1.0f, 0.0f, 1.0f,  -1.0f, -1.0f,
-                            0.0f,  0.0f, 1.0f, -1.0f, 1.0f,  0.0f,
+    // 2D plane for framebuffer
+    float quadVertices[] = {
+        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
+        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+    };
+    float quadUV[] = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                      1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+    GLuint quadIndex[] = {0, 1, 2, 3, 4, 5};
 
-                            -1.0f, 1.0f, 0.0f, 1.0f,  1.0f,  -1.0f,
-                            1.0f,  0.0f, 1.0f, 1.0f,  1.0f,  1.0f};
-    unsigned int quadVAO, quadVBO;
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices,
-                 GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
-                          (void *)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float),
-                          (void *)(2 * sizeof(float)));
+    std::vector<float> quadVerticesVector(std::begin(quadVertices),
+                                          std::end(quadVertices));
+    std::vector<float> quadUvVector(std::begin(quadUV), std::end(quadUV));
+    std::vector<GLuint> quadIndexVector(std::begin(quadIndex),
+                                        std::end(quadIndex));
+
+    VertexArray planeVao;
+
+    planeVao.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(quadVerticesVector, 2 * sizeof(float)));
+
+    planeVao.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(quadUvVector, 2 * sizeof(float)));
+
+    planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndexVector));
 
     Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
     Texture tex2("../assets/textures/uv.png");
@@ -212,9 +214,11 @@ int main(int, char **) {
         Renderer::DisableDepthTest(); // direct render texture no need depth
         program1.Bind();
         program1.SetInt("screenTexture", 0);
-        glBindVertexArray(quadVAO);
+        // glBindVertexArray(quadVAO);
+        planeVao.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
         ImGui_ImplOpenGL3_NewFrame();
