@@ -17,6 +17,8 @@ public:
     void AddVertexBuffer(const std::shared_ptr<VertexBuffer> vb);
     void SetIndexBuffer(const std::shared_ptr<IndexBuffer> ib);
 
+    void LoadOBJ(const std::string &filepath);
+
     const std::vector<std::shared_ptr<VertexBuffer>> GetVertexBuffers() const {
         return m_Buffers;
     }

@@ -14,13 +14,13 @@ class Importer {
 public:
     Importer(const std::string &filepath);
 
-    std::vector<float> &GetVertices() { return m_Vertices; }
-    std::vector<float> &GetUVs() { return m_UVs; }
-    std::vector<float> &GetNormals() { return m_Normals; }
-    std::vector<float> &GetTangents() { return m_Tangents; }
-    std::vector<float> &GetBitangents() { return m_Bitangents; }
+    const std::vector<float> &GetVertices() const { return m_Vertices; }
+    const std::vector<float> &GetUVs() const { return m_UVs; }
+    const std::vector<float> &GetNormals() const { return m_Normals; }
+    const std::vector<float> &GetTangents() const { return m_Tangents; }
+    const std::vector<float> &GetBitangents() const { return m_Bitangents; }
 
-    std::vector<unsigned int> &GetIndices() { return m_Indices; }
+    const std::vector<unsigned int> &GetIndices() const { return m_Indices; }
 
 private:
     std::vector<float> m_Vertices;

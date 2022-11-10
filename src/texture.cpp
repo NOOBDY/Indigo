@@ -9,7 +9,7 @@ Texture::Texture(const int width, const int height) {
     LOG_TRACE("Creating Texture");
 
     glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
-    this->Bind();
+    glBindTexture(GL_TEXTURE_2D, m_TextureID);
 
     glTexImage2D(         //
         GL_TEXTURE_2D,    // target
@@ -25,7 +25,6 @@ Texture::Texture(const int width, const int height) {
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    this->Unbind();
 }
 
 Texture::Texture(const std::string &textureFilepath) {
@@ -41,12 +40,9 @@ Texture::~Texture() {
     glDeleteTextures(1, &m_TextureID);
 }
 
-void Texture::BindUnit(unsigned int slot) {
+void Texture::Bind(unsigned int slot) {
     LOG_TRACE("Binding Texture");
     glBindTextureUnit(slot, m_TextureID);
-}
-void Texture::Bind() {
-    glBindTexture(GL_TEXTURE_2D, m_TextureID);
 }
 void Texture::Unbind() {
     glBindTexture(GL_TEXTURE_2D, 0);
