@@ -93,29 +93,23 @@ int main(int, char **) {
     vao2.LoadOBJ("../assets/models/suzanne.obj");
     // end model 2
     // 2D plane for framebuffer
-    float quadVertices[] = {
+    std::vector<float> quadVertices = {
         -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
         1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
     };
-    float quadUV[] = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-                      1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-    GLuint quadIndex[] = {0, 1, 2, 3, 4, 5};
-
-    std::vector<float> quadVerticesVector(std::begin(quadVertices),
-                                          std::end(quadVertices));
-    std::vector<float> quadUvVector(std::begin(quadUV), std::end(quadUV));
-    std::vector<GLuint> quadIndexVector(std::begin(quadIndex),
-                                        std::end(quadIndex));
+    std::vector<float> quadUV = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+    std::vector<unsigned int> quadIndex = {0, 1, 2, 3, 4, 5};
 
     VertexArray planeVao;
 
     planeVao.AddVertexBuffer(
-        std::make_shared<VertexBuffer>(quadVerticesVector, 2 * sizeof(float)));
+        std::make_shared<VertexBuffer>(quadVertices, 2 * sizeof(float)));
 
     planeVao.AddVertexBuffer(
-        std::make_shared<VertexBuffer>(quadUvVector, 2 * sizeof(float)));
+        std::make_shared<VertexBuffer>(quadUV, 2 * sizeof(float)));
 
-    planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndexVector));
+    planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
 
     Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
     Texture tex2("../assets/textures/uv.png");
