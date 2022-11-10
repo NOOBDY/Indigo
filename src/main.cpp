@@ -13,6 +13,7 @@
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
+#include "frame_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
@@ -49,8 +50,9 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init("#version 460");
 
     Program program("../assets/shaders/phong.vert",
-                    "../assets/shaders/phong.geom",
                     "../assets/shaders/phong.frag");
+    Program program1("../assets/shaders/frame_screen.vert",
+                     "../assets/shaders/frame_screen.frag");
 
 #define LIGHT_NUMBER 2
     LightData lightInfo[LIGHT_NUMBER];
@@ -94,8 +96,6 @@ int main(int, char **) {
                                                         3 * sizeof(float)));
 
     vao1.SetIndexBuffer(std::make_shared<IndexBuffer>(obj1.GetIndices()));
-    const std::vector<std::vector<float>> test =
-        vao1.CalculateTBN(obj1.GetVertices(), obj1.GetUVs(), obj1.GetIndices());
     // end model 1
 
     // begin model 2
@@ -128,23 +128,79 @@ int main(int, char **) {
 
     vao2.SetIndexBuffer(std::make_shared<IndexBuffer>(obj2.GetIndices()));
     // end model 2
+    // 2D plane for framebuffer
+    float quadVertices[] = {
+        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
+        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+    };
+    float quadUV[] = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                      1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+    GLuint quadIndex[] = {0, 1, 2, 3, 4, 5};
+
+    std::vector<float> quadVerticesVector(std::begin(quadVertices),
+                                          std::end(quadVertices));
+    std::vector<float> quadUvVector(std::begin(quadUV), std::end(quadUV));
+    std::vector<GLuint> quadIndexVector(std::begin(quadIndex),
+                                        std::end(quadIndex));
+
+    VertexArray planeVao;
+
+    planeVao.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(quadVerticesVector, 2 * sizeof(float)));
+
+    planeVao.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(quadUvVector, 2 * sizeof(float)));
+
+    planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndexVector));
 
     Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
     Texture tex2("../assets/textures/uv.png");
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
-    program.Bind();
+    FrameBuffer fbo;
+    fbo.Bind();
 
-    program.SetInt("texture1", 0);
-    program.SetInt("texture2", 1);
-    program.SetInt("texture_n", 2);
-    program.SetInt("frame_image", 3);
+    // color buffer
+    Texture renderSurface(1280, 720);
+    renderSurface.Bind();
+    fbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
+    Texture depthtTexture(1280, 720);
+    depthtTexture.Bind();
+    fbo.AttachTexture(depthtTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
+
+    // render buffer
+    GLuint rbo;
+
+    glCreateRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, 1280, 720);
+    // glNamedRenderbufferStorage(rbo, GL_DEPTH_COMPONENT, 1280, 720);
+
+    glNamedFramebufferRenderbuffer(
+        fbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    // when fbo is bind all render will storage and not display
+    fbo.Unbind();
 
     float i = 0;
 
     do {
+        fbo.Bind();
+
+        Renderer::Init();
         Renderer::Clear();
+        Renderer::ClearColor(1., 0, 0, 1);
+        program.Bind();
+        tex1.BindUnit(1);
+        tex2.BindUnit(2);
+        tex3.BindUnit(3);
+        tex4.BindUnit(4);
+
+        program.SetInt("texture1", 1);
+        program.SetInt("texture2", 2);
+        program.SetInt("texture3", 3);
+        program.SetInt("texture4", 4);
 
         float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
@@ -166,12 +222,9 @@ int main(int, char **) {
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        tex1.Bind(0);
-        tex2.Bind(1);
-        tex3.Bind(2);
-        tex4.Bind(3);
-
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+        // glClear(GL_COLOR_BUFFER_BIT);
+
         vao2.Bind();
 
         model2Trans.SetPosition(pos2);
@@ -185,10 +238,24 @@ int main(int, char **) {
         materials.SetData(0, sizeof(Material), &matColor2);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        tex2.Bind(0);
-        tex1.Bind(1);
+        tex1.BindUnit(2);
+        tex2.BindUnit(1);
+        tex3.BindUnit(3);
+        tex4.BindUnit(4);
 
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
+
+        // frame buffer part
+        fbo.Unbind();
+        glDisable(GL_DEPTH_TEST); // direct render texture no need depth
+        program1.Bind();
+        program1.SetInt("screenTexture", 0);
+        // glBindVertexArray(quadVAO);
+        planeVao.Bind();
+        glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
+        Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // done frame buffer
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
