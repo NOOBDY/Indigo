@@ -9,27 +9,6 @@ VertexArray::VertexArray() {
     glCreateVertexArrays(1, &m_ArrayID);
 }
 
-void VertexArray::LoadOBJ(const std::string &filepath) {
-    Importer importer(filepath);
-
-    AddVertexBuffer(std::make_shared<VertexBuffer>(importer.GetVertices(),
-                                                   3 * sizeof(float)));
-
-    AddVertexBuffer(
-        std::make_shared<VertexBuffer>(importer.GetUVs(), 2 * sizeof(float)));
-
-    AddVertexBuffer(std::make_shared<VertexBuffer>(importer.GetNormals(),
-                                                   3 * sizeof(float)));
-
-    AddVertexBuffer(std::make_shared<VertexBuffer>(importer.GetTangents(),
-                                                   3 * sizeof(float)));
-
-    AddVertexBuffer(std::make_shared<VertexBuffer>(importer.GetBitangents(),
-                                                   3 * sizeof(float)));
-
-    SetIndexBuffer(std::make_shared<IndexBuffer>(importer.GetIndices()));
-}
-
 VertexArray::~VertexArray() {
     LOG_TRACE("Deleting Vertex Array");
     glDeleteVertexArrays(1, &m_ArrayID);

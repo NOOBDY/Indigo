@@ -9,6 +9,7 @@
 #include "renderer.hpp"
 #include "program.hpp"
 #include "camera.hpp"
+#include "importer.hpp"
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
@@ -66,6 +67,7 @@ int main(int, char **) {
     Light light2(glm::vec3(1.0f));
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
+    light2.SetPower(0.2f);
     // begin model 1
     Transform model1Trans;
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
@@ -76,8 +78,7 @@ int main(int, char **) {
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    VertexArray vao1;
-    vao1.LoadOBJ("../assets/models/wall.obj");
+    VertexArray vao1 = Importer::LoadFile("../assets/models/wall.obj");
     // end model 1
 
     // begin model 2
@@ -89,8 +90,7 @@ int main(int, char **) {
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
-    VertexArray vao2;
-    vao2.LoadOBJ("../assets/models/suzanne.obj");
+    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
     // end model 2
     // 2D plane for framebuffer
     std::vector<float> quadVertices = {
@@ -145,7 +145,6 @@ int main(int, char **) {
         fbo.Bind();
 
         Renderer::Clear();
-        Renderer::ClearColor(0.6f, 0.6f, 0.6f, 1);
         Renderer::EnableDepthTest();
 
         program.Bind();

@@ -8,20 +8,20 @@ uniform sampler2D screenTexture;
 
 void main() {
     vec3 col = texture(screenTexture, TexCoords).rgb;
-    if(TexCoords.x < 0.5) {
+    if(TexCoords.x < 0) {
         col = vec3(0);
         const float offset = 1.0 / 300.0;
         // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
 
         vec2 offsets[9] = vec2[](vec2(-offset, offset), // 左上
-        vec2(0.0f, offset), // 正上
-        vec2(offset, offset), // 右上
-        vec2(-offset, 0.0f),   // 左
-        vec2(0.0f, 0.0f),   // 中
-        vec2(offset, 0.0f),   // 右
+        vec2(0.0f, offset),     // 正上
+        vec2(offset, offset),   // 右上
+        vec2(-offset, 0.0f),    // 左
+        vec2(0.0f, 0.0f),       // 中
+        vec2(offset, 0.0f),     // 右
         vec2(-offset, -offset), // 左下
-        vec2(0.0f, -offset), // 正下
-        vec2(offset, -offset)  // 右下
+        vec2(0.0f, -offset),    // 正下
+        vec2(offset, -offset)   // 右下
         );
 
         // edge detction
