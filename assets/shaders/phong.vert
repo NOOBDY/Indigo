@@ -10,6 +10,7 @@ out vec3 geoPosition;
 out vec3 worldPosition;
 out vec3 normal;
 out vec2 UV;
+out mat3 TBN;
 // out mat4 modelR;
 
 out pointData {
@@ -29,7 +30,9 @@ layout(std140, binding = 0) uniform Matrices {
 };
 
 void main() {
-    gl_Position = model * vec4(vertPosition, 1);
+    // do projection on geo shader
+    // gl_Position = model * vec4(vertPosition, 1);
+    gl_Position = viewProjection * model * vec4(vertPosition, 1);
 
     mat4 modelRotation = model;
 
@@ -46,12 +49,13 @@ void main() {
     geoPosition = vertPosition;
     worldPosition = (model * vec4(vertPosition, 1)).xyz;
     UV = vertUV;
-    dataOut.TBN = mat3(tangent, bitangent, normal);
+    TBN = mat3(tangent, bitangent, normal);
+    // dataOut.TBN = mat3(tangent, bitangent, normal);
     // modelR = modelRotation;
-    dataOut.worldPosition = worldPosition;
-    dataOut.geoPosition = geoPosition;
-    dataOut.UV = UV;
-    dataOut.normal = normal;
-    dataOut.modelRotation = modelRotation;
-    dataOut.viewProjection = viewProjection;
+    // dataOut.worldPosition = worldPosition;
+    // dataOut.geoPosition = geoPosition;
+    // dataOut.UV = UV;
+    // dataOut.normal = normal;
+    // dataOut.modelRotation = modelRotation;
+    // dataOut.viewProjection = viewProjection;
 }
