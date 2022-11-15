@@ -2,8 +2,6 @@
 
 #include "log.hpp"
 
-#include "importer.hpp"
-
 VertexArray::VertexArray() {
     LOG_TRACE("Creating Vertex Array");
     glCreateVertexArrays(1, &m_ArrayID);

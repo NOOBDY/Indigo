@@ -78,7 +78,8 @@ int main(int, char **) {
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    VertexArray vao1 = Importer::LoadFile("../assets/models/wall.obj");
+    VertexArray vao1 =
+        Importer::LoadFile("../assets/models/high-poly-suzanne.glb");
     // end model 1
 
     // begin model 2
@@ -90,7 +91,8 @@ int main(int, char **) {
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
-    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
+    VertexArray vao2 =
+        Importer::LoadFile("../assets/models/high-poly-suzanne.obj");
     // end model 2
     // 2D plane for framebuffer
     std::vector<float> quadVertices = {
