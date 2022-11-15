@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 project(Indigo VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -16,10 +16,7 @@ set(LIB
     spdlog::spdlog
     glm::glm
     assimp
-)
-
-add_definitions(
-    -DGLEW_STATIC
+    ImGui
 )
 
 add_executable(Indigo
@@ -29,22 +26,30 @@ add_executable(Indigo
     src/renderer.cpp
     src/program.cpp
     src/camera.cpp
+    src/importer.cpp
     src/vertex_array.cpp
     src/vertex_buffer.cpp
     src/index_buffer.cpp
     src/uniform_buffer.cpp
+    src/frame_buffer.cpp
     src/texture.cpp
+    src/transform.cpp
+    src/light.cpp
 
     include/log.hpp
     include/window.hpp
     include/renderer.hpp
     include/program.hpp
     include/camera.hpp
+    include/importer.hpp
     include/vertex_array.hpp
     include/vertex_buffer.hpp
     include/index_buffer.hpp
     include/uniform_buffer.hpp
+    include/frame_buffer.hpp
     include/texture.hpp
+    include/transform.hpp
+    include/light.hpp
 
     assets/shaders/base.vert
     assets/shaders/base.frag
@@ -57,9 +62,13 @@ target_include_directories(Indigo SYSTEM PRIVATE
     lib/glm/include/
     lib/stb/
     lib/assimp/include/
+    ${IMGUI_INCLUDE_DIR}
 )
 target_include_directories(Indigo PRIVATE
     include/
+)
+target_precompile_headers(Indigo PRIVATE
+    include/pch.hpp
 )
 target_compile_options(Indigo PRIVATE
     -Wall -pedantic

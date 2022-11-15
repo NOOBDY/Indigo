@@ -1,24 +1,36 @@
-#include <vector>
-#include <memory>
+#include "pch.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/matrix_decompose.hpp>
-
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
 #include "program.hpp"
 #include "camera.hpp"
+#include "importer.hpp"
 #include "vertex_array.hpp"
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
+#include "frame_buffer.hpp"
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
+#include "transform.hpp"
+#include "light.hpp"
+
+#define LIGHT_NUMBER 2
+
+#pragma pack(16) // std140 layout pads by multiple of 16
+struct Matrices {
+    glm::mat4 model;
+    glm::mat4 viewProjection;
+};
+
+struct Material {
+    glm::vec3 baseColor;
+    float maxShine;
+};
 
 int main(int, char **) {
     Log::Init();
@@ -26,104 +38,150 @@ int main(int, char **) {
     Window window;
 
     Renderer::Init();
-    Renderer::ClearColor(0.102f, 0.02f, 0.478f, 1.0f);
+    Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    Program program("../assets/shaders/base.vert",
-                    "../assets/shaders/base.frag");
+    IMGUI_CHECKVERSION();
+    LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
+    ImGui::CreateContext();
+    ImGuiIO &io = ImGui::GetIO();
+    io.IniFilename = "../assets/imgui.ini";
 
-    UniformBuffer matrices(sizeof(glm::mat4), 0);
-    UniformBuffer data(sizeof(glm::vec3), 1);
+    ImGui::StyleColorsDark();
+
+    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
+    Program program("../assets/shaders/phong.vert",
+                    "../assets/shaders/phong.frag");
+    Program program1("../assets/shaders/frame_screen.vert",
+                     "../assets/shaders/frame_screen.frag");
+
+    LightData lightInfo[LIGHT_NUMBER];
+    UniformBuffer matrices(sizeof(Matrices), 0);
+    UniformBuffer materials(sizeof(Material), 1);
+    UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
-    Assimp::Importer importer;
-
+    Light light1(glm::vec3(1.0f));
+    Light light2(glm::vec3(1.0f));
+    light1.SetLightType(LightType::POINT);
+    light2.SetLightType(LightType::DIRECTION);
+    light2.SetPower(0.2f);
     // begin model 1
-    glm::mat4 model1 = glm::mat4(1.0f);
-    glm::vec3 color1(0.8f, 0.5f, 0.0f);
-    model1 = glm::translate(model1, glm::vec3(2, 0, 0));
+    Transform model1Trans;
+    model1Trans.SetPosition(glm::vec3(2, 0, 0));
 
-    const aiScene *scene1 = importer.ReadFile(
-        "../assets/donut.obj", aiProcessPreset_TargetRealtime_Fast);
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
 
-    const aiMesh *mesh1 = scene1->mMeshes[0];
+    glm::vec3 pos1(1.35, 0, 0);
+    glm::vec3 rot1(180, 180, 180);
+    glm::vec3 scale1(1, 1, 1);
 
-    std::vector<float> uvs1;
-
-    for (unsigned int i = 0; i < mesh1->mNumVertices; ++i) {
-        uvs1.push_back(mesh1->mTextureCoords[0][i].x);
-        uvs1.push_back(mesh1->mTextureCoords[0][i].y);
-    }
-
-    std::vector<unsigned int> indices1;
-
-    for (unsigned int i = 0; i < mesh1->mNumFaces; ++i) {
-        aiFace f = mesh1->mFaces[i];
-        for (unsigned int j = 0; j < f.mNumIndices; ++j) {
-            indices1.push_back(f.mIndices[j]);
-        }
-    }
-
-    std::shared_ptr<VertexBuffer> vbo1(std::make_shared<VertexBuffer>(
-        (float *)&mesh1->mVertices[0], mesh1->mNumVertices,
-        sizeof(aiVector3D)));
-
-    std::shared_ptr<VertexBuffer> uv1(std::make_shared<VertexBuffer>(
-        (float *)&uvs1[0], mesh1->mNumVertices, sizeof(aiVector2D)));
-
-    std::shared_ptr<IndexBuffer> ibo1(
-        std::make_shared<IndexBuffer>(&indices1[0], indices1.size()));
+    VertexArray vao1 = Importer::LoadFile("../assets/models/wall.obj");
     // end model 1
 
     // begin model 2
-    glm::mat4 model2 = glm::mat4(1.0f);
-    glm::vec3 color2(0.0f, 0.8f, 0.8f);
-    model2 = glm::translate(model2, glm::vec3(-2, 0, 0));
+    Transform model2Trans;
+    model2Trans.SetPosition({2, 0, 0});
+    Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    const aiScene *scene2 = importer.ReadFile(
-        "../assets/suzanne.obj", aiProcessPreset_TargetRealtime_Fast);
+    glm::vec3 pos2(-2, 0, 0);
+    glm::vec3 rot2(180, 180, 180);
+    glm::vec3 scale2(1, 1, 1);
 
-    const aiMesh *mesh2 = scene2->mMeshes[0];
-
-    std::vector<float> uvs2;
-
-    for (unsigned int i = 0; i < mesh2->mNumVertices; ++i) {
-        uvs2.push_back(mesh2->mTextureCoords[0][i].x);
-        uvs2.push_back(mesh2->mTextureCoords[0][i].y);
-    }
-
-    std::vector<unsigned int> indices2;
-
-    for (unsigned int i = 0; i < mesh2->mNumFaces; ++i) {
-        aiFace f = mesh2->mFaces[i];
-        for (unsigned int j = 0; j < f.mNumIndices; ++j) {
-            indices2.push_back(f.mIndices[j]);
-        }
-    }
-
-    std::shared_ptr<VertexBuffer> vbo2(std::make_shared<VertexBuffer>(
-        (float *)&mesh2->mVertices[0], mesh2->mNumVertices,
-        sizeof(aiVector3D)));
-
-    std::shared_ptr<VertexBuffer> uv2(std::make_shared<VertexBuffer>(
-        (float *)&uvs2[0], mesh2->mNumVertices, sizeof(aiVector2D)));
-
-    std::shared_ptr<IndexBuffer> ibo2(
-        std::make_shared<IndexBuffer>(&indices2[0], indices2.size()));
+    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
     // end model 2
+    // 2D plane for framebuffer
+    std::vector<float> quadVertices = {
+        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
+        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+    };
+    std::vector<float> quadUV = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+    std::vector<unsigned int> quadIndex = {0, 1, 2, 3, 4, 5};
 
-    Texture tex1("../assets/fabric.png");
-    Texture tex2("../assets/uv.png");
+    VertexArray planeVao;
 
-    program.Bind();
+    planeVao.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(quadVertices, 2 * sizeof(float)));
 
-    program.SetInt("texture1", 0);
-    program.SetInt("texture2", 1);
+    planeVao.AddVertexBuffer(
+        std::make_shared<VertexBuffer>(quadUV, 2 * sizeof(float)));
+
+    planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
+
+    Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
+    Texture tex2("../assets/textures/uv.png");
+    Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+
+    FrameBuffer fbo;
+    fbo.Bind();
+
+    // color buffer
+    Texture renderSurface(1280, 720);
+    fbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
+    Texture depthTexture(1280, 720);
+    fbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
+
+    // render buffer
+    GLuint rbo;
+
+    glCreateRenderbuffers(1, &rbo);
+    // glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, 1280, 720);
+    // glNamedRenderbufferStorage(rbo, GL_DEPTH_COMPONENT, 1280, 720);
+
+    glNamedFramebufferRenderbuffer(
+        fbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+    // when fbo is bind all render will storage and not display
+    fbo.Unbind();
+
+    float i = 0;
 
     glm::vec3 pos = camera.GetPosition();
 
     do {
+        fbo.Bind();
+
         Renderer::Clear();
+        Renderer::EnableDepthTest();
+
+        program.Bind();
+
+        tex1.Bind(1);
+        tex2.Bind(2);
+        tex3.Bind(3);
+        tex4.Bind(4);
+
+        program.SetInt("texture1", 1);
+        program.SetInt("texture2", 2);
+        program.SetInt("texture3", 3);
+        program.SetInt("texture4", 4);
+
+        float tempValue = glm::sin(i += 0.1f);
+        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
+        // light1.SetRadius(3 * glm::abs(tempValue));
+
+        lightInfo[0] = light1.GetLightData();
+        lightInfo[1] = light2.GetLightData();
+
+        vao1.Bind();
+
+        model1Trans.SetPosition(pos1);
+        model1Trans.SetRotation(rot1);
+        model1Trans.SetScale(scale1);
+
+        Matrices mat1;
+        mat1.model = model1Trans.GetTransform();
+        mat1.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat1), &mat1);
+        materials.SetData(0, sizeof(Material), &matColor1);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+
+        Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
 
         if (window.GetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE)) {
             glm::mat4 cameraMat =
@@ -139,45 +197,69 @@ int main(int, char **) {
         camera.SetDirection(pos * -1.0f);
         camera.UpdateView();
 
-        //
-        VertexArray vao1;
-        vao1.AddVertexBuffer(vbo1);
-        vao1.AddVertexBuffer(uv1);
-        vao1.SetIndexBuffer(ibo1);
+        vao2.Bind();
 
-        model1 = glm::rotate(model1, glm::radians(-1.0f), glm::vec3(-1, 1, 0));
-        glm::mat4 MVP1 = camera.GetViewProjection() * model1;
+        model2Trans.SetPosition(pos2);
+        model2Trans.SetRotation(rot2);
+        model2Trans.SetScale(scale2);
 
-        matrices.SetData(0, sizeof(glm::mat4), &MVP1[0][0]);
-        data.SetData(0, sizeof(glm::vec3), &color1[0]);
+        Matrices mat2;
+        mat2.model = model2Trans.GetTransform();
+        mat2.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat2), &mat2);
+        materials.SetData(0, sizeof(Material), &matColor2);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        tex1.Bind(0);
+        tex1.Bind(2);
         tex2.Bind(1);
+        tex3.Bind(3);
+        tex4.Bind(4);
 
-        glDrawElements(GL_TRIANGLES, vao1.GetIndexBuffer()->GetCount(),
-                       GL_UNSIGNED_INT, (void *)0);
-        //
+        Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
-        //
-        VertexArray vao2;
-        vao2.AddVertexBuffer(vbo2);
-        vao2.AddVertexBuffer(uv2);
-        vao2.SetIndexBuffer(ibo2);
+        // frame buffer part
+        fbo.Unbind();
 
-        model2 = glm::rotate(model2, glm::radians(-1.0f), glm::vec3(0, 1, 0));
-        glm::mat4 MVP2 = camera.GetViewProjection() * model2;
+        Renderer::DisableDepthTest(); // direct render texture no need depth
+        program1.Bind();
+        program1.SetInt("screenTexture", 0);
+        // glBindVertexArray(quadVAO);
+        planeVao.Bind();
+        glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
+        Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
+        // glDrawArrays(GL_TRIANGLES, 0, 6);
+        // done frame buffer
 
-        matrices.SetData(0, sizeof(glm::mat4), &MVP2[0][0]);
-        data.SetData(0, sizeof(glm::vec3), &color2[0]);
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-        tex2.Bind(0);
-        tex1.Bind(1);
+        ImGui::Begin("Framerate");
+        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        ImGui::End();
 
-        glDrawElements(GL_TRIANGLES, vao2.GetIndexBuffer()->GetCount(),
-                       GL_UNSIGNED_INT, (void *)0);
+        ImGui::Begin("Donut");
+        ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
+        ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
+        ImGui::End();
+
+        ImGui::Begin("Suzanne");
+        ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
+        ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);
+        ImGui::End();
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         window.UpdateCursorPosition();
+        // TODO: Figure this out and put it in `Window` class
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
     } while (!window.ShouldClose());
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }

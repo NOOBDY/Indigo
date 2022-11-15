@@ -1,10 +1,7 @@
 #ifndef VERTEX_ARRAY_HPP
 #define VERTEX_ARRAY_HPP
 
-#include <vector>
-#include <memory>
-
-#include <GL/glew.h>
+#include "pch.hpp"
 
 #include "vertex_buffer.hpp"
 #include "index_buffer.hpp"
@@ -30,7 +27,6 @@ public:
 private:
     GLuint m_ArrayID;
 
-    unsigned int m_BufferIndex = 0;
     std::vector<std::shared_ptr<VertexBuffer>> m_Buffers;
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
 };
