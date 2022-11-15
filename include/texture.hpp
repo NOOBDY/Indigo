@@ -14,8 +14,7 @@ public:
     /**
      * Bind texture to slot set in `program.SetInt()`
      */
-    void BindUnit(unsigned int slot);
-    void Bind();
+    void Bind(unsigned int slot);
     void Unbind();
 
     void SetData();
