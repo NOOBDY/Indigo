@@ -1,12 +1,9 @@
 #include "pch.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
+#include "controller.hpp"
 #include "program.hpp"
 #include "camera.hpp"
 #include "importer.hpp"
@@ -40,16 +37,7 @@ int main(int, char **) {
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    IMGUI_CHECKVERSION();
-    LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    io.IniFilename = "../assets/imgui.ini";
-
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    Controller::InitGUI(window);
 
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");

@@ -24,6 +24,7 @@ add_executable(Indigo
     src/log.cpp
     src/window.cpp
     src/renderer.cpp
+    src/controller.cpp
     src/program.cpp
     src/camera.cpp
     src/importer.cpp
@@ -39,6 +40,7 @@ add_executable(Indigo
     include/log.hpp
     include/window.hpp
     include/renderer.hpp
+    include/controller.hpp
     include/program.hpp
     include/camera.hpp
     include/importer.hpp
