@@ -53,8 +53,8 @@ int main(int, char **) {
 
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
-    Program program1("../assets/shaders/frame_screen.vert",
-                     "../assets/shaders/frame_screen.frag");
+    Program framebufferProgram("../assets/shaders/frame_screen.vert",
+                               "../assets/shaders/frame_screen.frag");
 
     LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
@@ -92,14 +92,24 @@ int main(int, char **) {
 
     VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
     // end model 2
+
     // 2D plane for framebuffer
     std::vector<float> quadVertices = {
-        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
-        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+        -1.0f, 1.0f,  //
+        -1.0f, -1.0f, //
+        1.0f,  -1.0f, //
+        1.0f,  1.0f,  //
     };
-    std::vector<float> quadUV = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-                                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-    std::vector<unsigned int> quadIndex = {0, 1, 2, 3, 4, 5};
+    std::vector<float> quadUV = {
+        0.0f, 1.0f, //
+        0.0f, 0.0f, //
+        1.0f, 0.0f, //
+        1.0f, 1.0f, //
+    };
+    std::vector<unsigned int> quadIndex = {
+        0, 1, 2, //
+        0, 2, 3, //
+    };
 
     VertexArray planeVao;
 
@@ -221,8 +231,8 @@ int main(int, char **) {
         fbo.Unbind();
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
-        program1.Bind();
-        program1.SetInt("screenTexture", 0);
+        framebufferProgram.Bind();
+        framebufferProgram.SetInt("screenTexture", 0);
         // glBindVertexArray(quadVAO);
         planeVao.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
@@ -238,13 +248,13 @@ int main(int, char **) {
         ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
         ImGui::End();
 
-        ImGui::Begin("Donut");
+        ImGui::Begin("Model 1");
         ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
         ImGui::End();
 
-        ImGui::Begin("Suzanne");
+        ImGui::Begin("Model 2");
         ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);

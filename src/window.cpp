@@ -7,8 +7,8 @@
  *
  * This will be called when there is an error for GLFW
  */
-void GLFWErrorCallback(int, const char *err_str) {
-    LOG_ERROR("{}", err_str);
+void GLFWErrorCallback(int, const char *errorMessage) {
+    LOG_ERROR("{}", errorMessage);
 }
 
 Window::Window(int width, int height, const char *title)
