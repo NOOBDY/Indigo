@@ -51,11 +51,12 @@ int main(int, char **) {
     ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
+    Program programShadow("../assets/shaders/frame_screen.vert",
+                     "../assets/shaders/frame_screen.frag");
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
-    Program program1("../assets/shaders/frame_screen.vert",
+    Program programScreen("../assets/shaders/frame_screen.vert",
                      "../assets/shaders/frame_screen.frag");
-
     LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
@@ -122,10 +123,8 @@ int main(int, char **) {
     fbo.Bind();
 
     // color buffer
-    Texture renderSurface(1280, 720);
+    Texture renderSurface(1280, 720,Texture::COLOR);
     fbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
-    Texture depthTexture(1280, 720);
-    fbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
 
     // render buffer
     GLuint rbo;
@@ -140,10 +139,16 @@ int main(int, char **) {
 
     // when fbo is bind all render will storage and not display
     fbo.Unbind();
+    FrameBuffer shadowFbo;
+    shadowFbo.Bind();
+    Texture depthTexture(1280, 720,Texture::DEPTH);
+    shadowFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
 
     float i = 0;
 
     do {
+        shadowFbo.Bind();
+        shadowFbo.Unbind();
         fbo.Bind();
 
         Renderer::Clear();
@@ -207,8 +212,8 @@ int main(int, char **) {
         fbo.Unbind();
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
-        program1.Bind();
-        program1.SetInt("screenTexture", 0);
+        programScreen.Bind();
+        programScreen.SetInt("screenTexture", 0);
         // glBindVertexArray(quadVAO);
         planeVao.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());

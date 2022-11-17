@@ -4,8 +4,7 @@
 #include <stb_image.h>
 
 #include "log.hpp"
-
-Texture::Texture(const int width, const int height) {
+Texture::Texture(const int width, const int height,textureType type) {
     LOG_TRACE("Creating Texture");
 
     glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
@@ -14,11 +13,11 @@ Texture::Texture(const int width, const int height) {
     glTexImage2D(         //
         GL_TEXTURE_2D,    // target
         0,                // level
-        GL_RGB,           // internal format
+        type,           // internal format
         width,            //
         height,           //
         0,                // border
-        GL_RGB,           // format
+        type,           // format
         GL_UNSIGNED_BYTE, // type
         NULL              //
     );

@@ -7,7 +7,11 @@
 
 class Texture {
 public:
-    Texture(const int width, const int height);
+    enum textureType:int{
+        DEPTH=GL_DEPTH_COMPONENT,
+        COLOR=GL_RGB,
+    };
+    Texture(const int width, const int height,textureType type);
     Texture(const std::string &textureFilepath);
     ~Texture();
 
