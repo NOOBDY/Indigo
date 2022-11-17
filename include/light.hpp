@@ -36,6 +36,7 @@ public:
     void SetLightType(LightType lightType);
     void SetInner(float inner);
     void SetOuter(float outer);
+    glm::mat4 GetLightProjection ();
 
     glm::vec3 GetLightColor() const { return m_LightColor; };
     float GetRadius() const { return m_Radius; };
