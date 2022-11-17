@@ -3,6 +3,8 @@
 
 #include "pch.hpp"
 
+#include "vertex_array.hpp"
+
 /**
  * Current implementation is extremely limiting
  *
@@ -12,24 +14,7 @@
  */
 class Importer {
 public:
-    Importer(const std::string &filepath);
-
-    std::vector<float> &GetVertices() { return m_Vertices; }
-    std::vector<float> &GetUVs() { return m_UVs; }
-    std::vector<float> &GetNormals() { return m_Normals; }
-    std::vector<float> &GetTangents() { return m_Tangents; }
-    std::vector<float> &GetBitangents() { return m_Bitangents; }
-
-    std::vector<unsigned int> &GetIndices() { return m_Indices; }
-
-private:
-    std::vector<float> m_Vertices;
-    std::vector<float> m_UVs;
-    std::vector<float> m_Normals;
-    std::vector<float> m_Tangents;
-    std::vector<float> m_Bitangents;
-
-    std::vector<unsigned int> m_Indices;
+    static VertexArray LoadFile(const std::string &filepath);
 };
 
 #endif
