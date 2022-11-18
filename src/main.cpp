@@ -19,6 +19,9 @@
 #include "transform.hpp"
 #include "light.hpp"
 
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
+
 #define LIGHT_NUMBER 2
 
 #pragma pack(16) // std140 layout pads by multiple of 16
@@ -35,7 +38,7 @@ struct Material {
 int main(int, char **) {
     Log::Init();
 
-    Window window;
+    Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -122,9 +125,9 @@ int main(int, char **) {
     fbo.Bind();
 
     // color buffer
-    Texture renderSurface(1280, 720);
+    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
     fbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
-    Texture depthTexture(1280, 720);
+    Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
     fbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
 
     // render buffer
@@ -132,7 +135,8 @@ int main(int, char **) {
 
     glCreateRenderbuffers(1, &rbo);
     // glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, 1280, 720);
+    glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
+                               SCREEN_HEIGHT);
     // glNamedRenderbufferStorage(rbo, GL_DEPTH_COMPONENT, 1280, 720);
 
     glNamedFramebufferRenderbuffer(

@@ -39,9 +39,6 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
     indexBuffer.reserve(sizeof(float) * mesh->mFaces[0].mNumIndices *
                         mesh->mNumFaces);
 
-    LOG_DEBUG("{}", sharedBuffer.capacity());
-    LOG_DEBUG("{}", indexBuffer.capacity());
-
     // Vertices
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mVertices[0].x,
                         &mesh->mVertices[0].x + 3 * mesh->mNumVertices);
