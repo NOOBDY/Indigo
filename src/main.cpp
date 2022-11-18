@@ -181,7 +181,7 @@ int main(int, char **) {
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
 
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE)) {
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
             glm::mat4 cameraMat =
                 glm::rotate(glm::mat4(1.0f),
                             window.GetCursorDelta().x * -2 / window.GetWidth(),
@@ -190,6 +190,7 @@ int main(int, char **) {
 
             pos = glm::vec3(cameraMat[3]);
         }
+        window.UpdateCursorPosition();
 
         camera.SetPosition(pos);
         camera.SetDirection(pos * -1.0f);
@@ -251,7 +252,6 @@ int main(int, char **) {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        window.UpdateCursorPosition();
         // TODO: Figure this out and put it in `Window` class
         glfwSwapBuffers(window.GetWindow());
         glfwPollEvents();
