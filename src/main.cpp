@@ -51,9 +51,9 @@ int main(int, char **) {
     ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 460");
 
-    Program programShadow("../assets/shaders/frame_screen.vert",
-                     "../assets/shaders/frame_screen.frag");
-    Program program("../assets/shaders/phong.vert",
+    Program programShadow("../assets/shaders/shadow.vert",
+                     "../assets/shaders/shadow.frag");
+    Program programColor("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
     Program programScreen("../assets/shaders/frame_screen.vert",
                      "../assets/shaders/frame_screen.frag");
@@ -119,12 +119,12 @@ int main(int, char **) {
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
-    FrameBuffer fbo;
-    fbo.Bind();
+    FrameBuffer colorFbo;
+    colorFbo.Bind();
 
     // color buffer
     Texture renderSurface(1280, 720,Texture::COLOR);
-    fbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
+    colorFbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
 
     // render buffer
     GLuint rbo;
@@ -135,10 +135,10 @@ int main(int, char **) {
     // glNamedRenderbufferStorage(rbo, GL_DEPTH_COMPONENT, 1280, 720);
 
     glNamedFramebufferRenderbuffer(
-        fbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+        colorFbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-    // when fbo is bind all render will storage and not display
-    fbo.Unbind();
+    // when colorFbo is bind all render will storage and not display
+    colorFbo.Unbind();
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
     Texture depthTexture(1280, 720,Texture::DEPTH);
@@ -148,23 +148,29 @@ int main(int, char **) {
 
     do {
         shadowFbo.Bind();
+        programShadow.Bind();
+        Matrices lightMat;
+        lightMat.model = model1Trans.GetTransform();
+        lightMat.viewProjection = light1.GetLightProjection();
+        vao1.Bind();
+        // Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         shadowFbo.Unbind();
-        fbo.Bind();
+        colorFbo.Bind();
 
         Renderer::Clear();
         Renderer::EnableDepthTest();
 
-        program.Bind();
+        programColor.Bind();
 
         tex1.Bind(1);
         tex2.Bind(2);
         tex3.Bind(3);
         tex4.Bind(4);
 
-        program.SetInt("texture1", 1);
-        program.SetInt("texture2", 2);
-        program.SetInt("texture3", 3);
-        program.SetInt("texture4", 4);
+        programColor.SetInt("texture1", 1);
+        programColor.SetInt("texture2", 2);
+        programColor.SetInt("texture3", 3);
+        programColor.SetInt("texture4", 4);
 
         float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
@@ -209,7 +215,7 @@ int main(int, char **) {
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
 
         // frame buffer part
-        fbo.Unbind();
+        colorFbo.Unbind();
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
@@ -217,6 +223,7 @@ int main(int, char **) {
         // glBindVertexArray(quadVAO);
         planeVao.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
+        // glBindTexture(GL_TEXTURE_2D, depthTexture.GetTextureID());
         Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
