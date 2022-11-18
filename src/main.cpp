@@ -219,13 +219,14 @@ int main(int, char **) {
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
+
         programScreen.SetInt("screenTexture", 0);
-        // glBindVertexArray(quadVAO);
+        programScreen.SetInt("depthTexture", 1);
+        renderSurface.Bind(0);
+        renderSurface.Bind(1);
+        // depthTexture.Bind(1);
         planeVao.Bind();
-        glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
-        // glBindTexture(GL_TEXTURE_2D, depthTexture.GetTextureID());
         Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
         ImGui_ImplOpenGL3_NewFrame();

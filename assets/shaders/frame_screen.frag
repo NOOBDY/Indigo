@@ -5,10 +5,13 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
+uniform sampler2D depthTexture;
 
 void main() {
     vec3 col = texture(screenTexture, TexCoords).rgb;
-    if(TexCoords.x < 0) {
+    vec3 screen = texture(screenTexture, TexCoords).rgb;
+    vec3 depth = texture(depthTexture, TexCoords).rgb;
+    if(TexCoords.x < 0.5) {
         col = vec3(0);
         const float offset = 1.0 / 300.0;
         // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
@@ -36,6 +39,10 @@ void main() {
         for(int i = 0; i < 9; i++) col += sampleTex[i] * kernel[i];
         // subframe
         // col = vec3(1) - texture(screenTexture, TexCoords).rgb;
+        col = depth;
+    } else {
+        col = screen;
+
     }
     FragColor = vec4(col, 1.0);
 }
