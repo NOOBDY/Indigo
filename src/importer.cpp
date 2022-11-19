@@ -28,8 +28,16 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
      * // There's probably a better way to predetermine vector size and
      * // load entire blocks of memory instead of `push_back()` each element
      *
-     * ? Update: changed from `push_back()` to `insert()` for some elements, but
-     * ? IDK if there are more optimizing space
+     * // Update 1: changed from `push_back()` to `insert()` for some elements,
+     * // but IDK if there are more optimizing space
+     *
+     * Update 2: Currently loads only the first mesh and uses a shared buffer to
+     * load mesh data into the GPU. This probably breaks OOP principles but the
+     * extra memory saved is pretty substantial(~2/3 less but unverified)
+     * especially on large files.
+     * Another index buffer vector has to be used due to type differences. If
+     * this problem can solved, the memory usage can be cut down to ~5/6 less
+     * than the original implementation.
      */
 
     // ! hard-coded to read only the first mesh
