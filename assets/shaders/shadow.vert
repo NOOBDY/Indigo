@@ -40,6 +40,15 @@ struct MaterialData {
     float maxShine;
     // vec3 normal;
 };
+out pointData {
+    vec3 normal;
+    vec3 worldPosition;
+    vec3 geoPosition;
+    vec2 UV;
+    mat4 modelRotation;
+    mat4 viewProjection;
+
+} dataOut;
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
@@ -51,8 +60,8 @@ layout(std140, binding = 2) uniform Lights {
 
 void main() {
     // do projection on geo shader
-    // gl_Position = model * vec4(vertPosition, 1);
-    gl_Position = viewProjection * model * vec4(vertPosition, 1);
+    gl_Position = model * vec4(vertPosition, 1);
+    // gl_Position = viewProjection * model * vec4(vertPosition, 1);
 
     mat4 modelRotation = model;
 
@@ -63,4 +72,12 @@ void main() {
 
     geoPosition = vertPosition;
     worldPosition = (model * vec4(vertPosition, 1)).xyz;
+    // dataOut.TBN = mat3(tangent, bitangent, normal);
+    // modelR = modelRotation;
+    // dataOut.worldPosition = worldPosition;
+    // dataOut.geoPosition = geoPosition;
+    // dataOut.UV = UV;
+    // dataOut.normal = normal;
+    // dataOut.modelRotation = modelRotation;
+    // dataOut.viewProjection = viewProjection;
 }

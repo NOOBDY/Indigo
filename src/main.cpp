@@ -141,9 +141,9 @@ int main(int, char **) {
     colorFbo.Unbind();
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
-    Texture depthTexture(1280, 720,Texture::DEPTH);
+    Texture depthTexture(1024, 1024,Texture::DEPTH,Texture::CUBE);
     shadowFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
-    Texture shadowTexture(1280, 720,Texture::COLOR);
+    Texture shadowTexture(1024, 1024,Texture::COLOR,Texture::CUBE);
     shadowFbo.AttachTexture(shadowTexture.GetTextureID(), GL_COLOR_ATTACHMENT0);
 
     float i = 0;
@@ -163,7 +163,7 @@ int main(int, char **) {
         Matrices lightMat;
         lightMat.model = model1Trans.GetTransform();
         // lightMat.viewProjection = light1.GetLightProjection();
-        lightMat.viewProjection = camera.GetViewProjection();
+        // lightMat.viewProjection = camera.GetViewProjection();
         vao1.Bind();
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         shadowFbo.Unbind();
@@ -175,7 +175,8 @@ int main(int, char **) {
         tex1.Bind(1);
         tex2.Bind(2);
         tex3.Bind(3);
-        tex4.Bind(4);
+        shadowTexture.Bind(4);
+        // tex4.Bind(4);
 
         programColor.SetInt("texture1", 1);
         programColor.SetInt("texture2", 2);
@@ -227,9 +228,9 @@ int main(int, char **) {
         programScreen.SetInt("screenTexture", 0);
         programScreen.SetInt("depthTexture", 1);
         renderSurface.Bind(0);
-        // renderSurface.Bind(1);
+        renderSurface.Bind(1);
         // depthTexture.Bind(1);
-        shadowTexture.Bind(1);
+        // shadowTexture.Bind(1);
         planeVao.Bind();
         Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
         // done frame buffer

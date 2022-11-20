@@ -1,6 +1,6 @@
 #version 460 core
 
-#define LIGHT_NUMBER 2
+#define LIGHT_NUMBER 1
 
 in vec3 geoPosition;
 in vec3 worldPosition;
@@ -52,11 +52,15 @@ layout(std140, binding = 2) uniform Lights {
 uniform sampler2D texture1; // samplers are opaque types and
 uniform sampler2D texture2; // cannot exist in uniform blocks
 uniform sampler2D texture3;
-uniform sampler2D texture4; // frame buffer texture
+// uniform sampler2D texture4; // frame buffer texture
+uniform samplerCube texture4; // frame buffer texture
 float fade(vec3 center, vec3 position, float radius) {
     return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
+float shadow(vec3 lightDirection) {
+    return texture(texture4, lightDirection).x;
+}
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
     vec3 n = normal;
@@ -86,6 +90,8 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     float dotRV = max(dot(r, v), 0.0);
     // ambient light not specular
     vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
+    // specular *= shadow(l);
+    return vec3(shadow(l));
     // return normal;
 
     return (diffuse + specular) * light.lightColor * light.power * fadeOut * spot;

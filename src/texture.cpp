@@ -26,17 +26,17 @@ Texture::Texture(const int width, const int height,textureType type,textureForma
             );
 
     else
-    glTexImage2D(         //
-        format,    // target
-        0,                // level
-        type,           // internal format
-        width,            //
-        height,           //
-        0,                // border
-        type,           // format
-        GL_UNSIGNED_BYTE, // type
-        NULL              //
-    );
+        glTexImage2D(         //
+            format,    // target
+            0,                // level
+            type,           // internal format
+            width,            //
+            height,           //
+            0,                // border
+            type,           // format
+            GL_UNSIGNED_BYTE, // type
+            NULL              //
+        );
 
     glTexParameteri(format, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(format, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -46,7 +46,7 @@ Texture::Texture(const std::string &textureFilepath) {
     LOG_TRACE("Creating Texture");
 
     m_Format=textureFormat::TEXTURE;
-    glCreateTextures(GL_TEXTURE_2D, 1, &m_TextureID);
+    glCreateTextures(m_Format, 1, &m_TextureID);
 
     LoadImage(textureFilepath);
 }
@@ -65,9 +65,8 @@ void Texture::Unbind() {
 }
 
 void Texture::LoadImage(const std::string &textureFilepath) {
-    glBindTexture(GL_TEXTURE_2D, m_TextureID);
     m_Format=textureFormat::TEXTURE;
-
+    glBindTexture(m_Format, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
     unsigned char *data =
@@ -79,7 +78,7 @@ void Texture::LoadImage(const std::string &textureFilepath) {
     }
 
     glTexImage2D(                           //
-        GL_TEXTURE_2D,                      // target
+        m_Format,                      // target
         0,                                  // level
         channels == 4 ? GL_RGBA8 : GL_RGB8, // internal format
         width,                              //
@@ -90,13 +89,13 @@ void Texture::LoadImage(const std::string &textureFilepath) {
         data                                //
     );
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+    glTexParameteri(m_Format, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(m_Format, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(m_Format, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(m_Format, GL_TEXTURE_MIN_FILTER,
                     GL_LINEAR_MIPMAP_LINEAR);
 
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glGenerateMipmap(m_Format);
 
     stbi_image_free(data);
 }
