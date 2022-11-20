@@ -40,9 +40,25 @@ glm::mat4 Light::GetLightProjection() {
     // //lightProjection = glm::perspective(glm::radians(45.0f), (GLfloat)SHADOW_WIDTH / (GLfloat)SHADOW_HEIGHT, near_plane, far_plane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
     glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
     glm::mat4 lightView = glm::lookAt(m_Transform.GetPosition(), glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
-    // return lightSpaceMatrix;
-    return lightProjection;
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
+    return lightSpaceMatrix;
+    // return lightProjection;
+};
+std::vector<glm::mat4> Light::GetLightProjectionCube() {
+
+    float nearPlane = 1.0f;
+    float farPlane = 7.5f;
+    glm::mat4 lightProjection = glm::perspective(glm::radians(90.0f), (GLfloat)1280/ (GLfloat)1280, nearPlane, farPlane); // note that if you use a perspective projection matrix you'll have to change the light position as the current light position isn't enough to reflect the whole scene
+    // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+    glm::vec3 lightPos=m_Transform.GetPosition();
+    std::vector<glm::mat4> shadowTransforms;
+    shadowTransforms.push_back(lightProjection * glm::lookAt(lightPos, lightPos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    shadowTransforms.push_back(lightProjection * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    shadowTransforms.push_back(lightProjection * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)));
+    shadowTransforms.push_back(lightProjection * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)));
+    shadowTransforms.push_back(lightProjection * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    shadowTransforms.push_back(lightProjection * glm::lookAt(lightPos, lightPos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f)));
+    return shadowTransforms;
 };
 LightData Light::GetLightData() {
     LightData data = {
@@ -53,7 +69,7 @@ LightData Light::GetLightData() {
         m_LightType,
         m_InnerCone,
         m_OuterCone,
-
+        this->GetLightProjectionCube(),
     };
 
     return data;

@@ -8,9 +8,9 @@ uniform sampler2D screenTexture;
 uniform sampler2D depthTexture;
 
 void main() {
-    vec3 col = texture(screenTexture, TexCoords).rgb;
     vec3 screen = texture(screenTexture, TexCoords).rgb;
     vec3 depth = texture(depthTexture, TexCoords).rgb;
+    vec3 col = screen;
     if(TexCoords.x < 0.5) {
         col = vec3(0);
         const float offset = 1.0 / 300.0;

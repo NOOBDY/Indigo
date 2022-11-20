@@ -9,10 +9,44 @@ layout(location = 4) in vec3 vertBitangent;
 out vec3 geoPosition;
 out vec3 worldPosition;
 // out mat4 modelR;
+#define LIGHT_NUMBER 2
 
+struct TransformData {
+    mat4 transform;
+    vec3 position;
+    float pad1;
+    vec3 rotation;
+    float pad2;
+    vec3 scale;
+    float pad3;
+    vec3 direction;
+    float pad4;
+};
+
+struct LightData {
+    TransformData transform;
+
+    vec3 lightColor;
+    float radius;
+    float power;
+    int lightType;
+    float innerCone;
+    float outerCone;
+    mat4 lightProjections[6];
+};
+
+struct MaterialData {
+    vec3 baseColor;
+    float maxShine;
+    // vec3 normal;
+};
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
+};
+
+layout(std140, binding = 2) uniform Lights {
+    LightData lights[LIGHT_NUMBER];
 };
 
 void main() {

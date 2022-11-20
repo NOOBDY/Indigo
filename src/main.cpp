@@ -143,24 +143,34 @@ int main(int, char **) {
     shadowFbo.Bind();
     Texture depthTexture(1280, 720,Texture::DEPTH);
     shadowFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
+    Texture shadowTexture(1280, 720,Texture::COLOR);
+    shadowFbo.AttachTexture(shadowTexture.GetTextureID(), GL_COLOR_ATTACHMENT0);
 
     float i = 0;
 
     do {
+        Renderer::EnableDepthTest();
+        float tempValue = glm::sin(i += 0.1f);
+        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
+        // light1.SetRadius(3 * glm::abs(tempValue));
+        lightInfo[0] = light1.GetLightData();
+        lightInfo[1] = light2.GetLightData();
+
         shadowFbo.Bind();
         programShadow.Bind();
-        Matrices lightMat;
-        lightMat.model = model1Trans.GetTransform();
-        lightMat.viewProjection = light1.GetLightProjection();
-        vao1.Bind();
-        // Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
-        shadowFbo.Unbind();
-        colorFbo.Bind();
 
         Renderer::Clear();
-        Renderer::EnableDepthTest();
+        Matrices lightMat;
+        lightMat.model = model1Trans.GetTransform();
+        // lightMat.viewProjection = light1.GetLightProjection();
+        lightMat.viewProjection = camera.GetViewProjection();
+        vao1.Bind();
+        Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+        shadowFbo.Unbind();
 
+        colorFbo.Bind();
         programColor.Bind();
+        Renderer::Clear();
 
         tex1.Bind(1);
         tex2.Bind(2);
@@ -172,12 +182,6 @@ int main(int, char **) {
         programColor.SetInt("texture3", 3);
         programColor.SetInt("texture4", 4);
 
-        float tempValue = glm::sin(i += 0.1f);
-        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
-        // light1.SetRadius(3 * glm::abs(tempValue));
-
-        lightInfo[0] = light1.GetLightData();
-        lightInfo[1] = light2.GetLightData();
 
         vao1.Bind();
 
@@ -223,8 +227,9 @@ int main(int, char **) {
         programScreen.SetInt("screenTexture", 0);
         programScreen.SetInt("depthTexture", 1);
         renderSurface.Bind(0);
-        renderSurface.Bind(1);
+        // renderSurface.Bind(1);
         // depthTexture.Bind(1);
+        shadowTexture.Bind(1);
         planeVao.Bind();
         Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
         // done frame buffer

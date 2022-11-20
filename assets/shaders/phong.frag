@@ -32,6 +32,7 @@ struct LightData {
     int lightType;
     float innerCone;
     float outerCone;
+    mat4 lightProjections[6];
 };
 
 struct MaterialData {

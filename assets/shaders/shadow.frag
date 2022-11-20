@@ -5,7 +5,7 @@
 in vec3 geoPosition;
 in vec3 worldPosition;
 
-// out vec4 color;
+out vec4 color;
 
 struct TransformData {
     mat4 transform;
@@ -28,6 +28,7 @@ struct LightData {
     int lightType;
     float innerCone;
     float outerCone;
+    mat4 lightProjections[6];
 };
 
 struct MaterialData {
@@ -45,5 +46,5 @@ void main() {
     vec3 color3 = vec3(0.);
     gl_FragDepth = gl_FragCoord.z;
     // color = vec4(vec3(gl_FragCoord.z), 1.0);
-    // color = vec4(vec3(0,0,1), 1.0);
+    color = vec4(vec3(0, 1, 1), 1.0);
 }
