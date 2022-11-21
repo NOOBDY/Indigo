@@ -40,9 +40,10 @@ void Renderer::Init() {
     glDebugMessageCallback(OpenGLDebugMessageCallback, 0);
 
     LOG_TRACE("Successfully Initialized OpenGL");
-    LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
-    LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
-    LOG_INFO("Version: {}", glGetString(GL_VERSION));
+    LOG_INFO("OpenGL Info");
+    LOG_INFO("  Vendor: {}", glGetString(GL_VENDOR));
+    LOG_INFO("  Renderer: {}", glGetString(GL_RENDERER));
+    LOG_INFO("  Version: {}", glGetString(GL_VERSION));
 }
 
 void Renderer::ClearColor(float r, float g, float b, float a) {
