@@ -141,13 +141,21 @@ int main(int, char **) {
 
     glm::vec3 pos = camera.GetPosition();
 
+    GLint cameraUniform =
+        glGetUniformLocation(program.GetProgramID(), "cameraPosition");
+
     do {
+        glm::vec2 delta = window.GetCursorDelta();
+        window.UpdateCursorPosition();
+
         fbo.Bind();
 
         Renderer::Clear();
         Renderer::EnableDepthTest();
 
         program.Bind();
+
+        glUniform3fv(cameraUniform, 1, &pos.x);
 
         tex1.Bind(1);
         tex2.Bind(2);
@@ -180,21 +188,6 @@ int main(int, char **) {
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
-
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-            glm::mat4 cameraMat =
-                glm::rotate(glm::mat4(1.0f),
-                            window.GetCursorDelta().x * -2 / window.GetWidth(),
-                            glm::vec3(0, 1, 0)) *
-                glm::translate(glm::mat4(1.0f), pos);
-
-            pos = glm::vec3(cameraMat[3]);
-        }
-        window.UpdateCursorPosition();
-
-        camera.SetPosition(pos);
-        camera.SetDirection(pos * -1.0f);
-        camera.UpdateView();
 
         vao2.Bind();
 
@@ -229,12 +222,31 @@ int main(int, char **) {
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+            glm::mat4 cameraMat =
+                glm::rotate(glm::mat4(1.0f), delta.x * -2 / window.GetWidth(),
+                            glm::vec3(0, 1, 0)) *
+                glm::rotate(glm::mat4(1.0f), delta.y * -2 / window.GetWidth(),
+                            glm::vec3(1, 0, 0)) *
+                glm::translate(glm::mat4(1.0f), pos);
+
+            pos = glm::vec3(cameraMat[3]);
+        }
+
+        camera.SetPosition(pos);
+        camera.SetDirection(pos * -1.0f);
+        camera.UpdateView();
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Framerate");
-        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        float framerate = ImGui::GetIO().Framerate;
+
+        ImGui::Begin("Debug Info");
+        ImGui::Text("%.1f FPS", framerate);
+        ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
+        ImGui::Text("%f", 1.0 / framerate);
         ImGui::End();
 
         ImGui::Begin("Model 1");
