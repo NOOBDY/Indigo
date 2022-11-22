@@ -52,11 +52,12 @@ int main(int, char **) {
     ImGui_ImplOpenGL3_Init("#version 460");
 
     Program programShadow("../assets/shaders/shadow.vert",
-                     "../assets/shaders/shadow.frag");
+                          "../assets/shaders/shadow.geom",
+                          "../assets/shaders/shadow.frag");
     Program programColor("../assets/shaders/phong.vert",
-                    "../assets/shaders/phong.frag");
+                         "../assets/shaders/phong.frag");
     Program programScreen("../assets/shaders/frame_screen.vert",
-                     "../assets/shaders/frame_screen.frag");
+                          "../assets/shaders/frame_screen.frag");
     LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
@@ -79,8 +80,7 @@ int main(int, char **) {
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    VertexArray vao1 =
-        Importer::LoadFile("../assets/models/wall.obj");
+    VertexArray vao1 = Importer::LoadFile("../assets/models/wall.obj");
     // end model 1
 
     // begin model 2
@@ -92,8 +92,7 @@ int main(int, char **) {
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
-    VertexArray vao2 =
-        Importer::LoadFile("../assets/models/suzanne.obj");
+    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
     // end model 2
     // 2D plane for framebuffer
     std::vector<float> quadVertices = {
@@ -123,7 +122,7 @@ int main(int, char **) {
     colorFbo.Bind();
 
     // color buffer
-    Texture renderSurface(1280, 720,Texture::COLOR);
+    Texture renderSurface(1280, 720, Texture::COLOR);
     colorFbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
 
     // render buffer
@@ -134,18 +133,24 @@ int main(int, char **) {
     glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, 1280, 720);
     // glNamedRenderbufferStorage(rbo, GL_DEPTH_COMPONENT, 1280, 720);
 
-    glNamedFramebufferRenderbuffer(
-        colorFbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    glNamedFramebufferRenderbuffer(colorFbo.GetBufferID(),
+                                   GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                   rbo);
 
     // when colorFbo is bind all render will storage and not display
     colorFbo.Unbind();
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
-    Texture depthTexture(1024, 1024,Texture::DEPTH,Texture::CUBE);
+    Texture depthTexture(1024, 1024, Texture::DEPTH, Texture::CUBE);
     shadowFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
-    Texture shadowTexture(1024, 1024,Texture::COLOR,Texture::CUBE);
+    Texture shadowTexture(1024, 1024, Texture::COLOR, Texture::CUBE);
     shadowFbo.AttachTexture(shadowTexture.GetTextureID(), GL_COLOR_ATTACHMENT0);
 
+    // shadow mat
+    Matrices lightMat;
+    glm::mat4 tt[6];
+    LOG_INFO(sizeof(LightData));
+    LOG_INFO(sizeof(tt));
     float i = 0;
 
     do {
@@ -156,18 +161,23 @@ int main(int, char **) {
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
 
+        lightMat.model = model1Trans.GetTransform();
+        // lightMat.viewProjection = light1.GetLightProjection();
+        // lightMat.viewProjection = light1.GetLightProjectionCube()[0];
+        // lightMat.viewProjection = camera.GetViewProjection();
+        // lightMat.model = model2Trans.GetTransform();
+        matrices.SetData(0, sizeof(lightMat), &lightMat);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        // shadow
         shadowFbo.Bind();
         programShadow.Bind();
 
         Renderer::Clear();
-        Matrices lightMat;
-        lightMat.model = model1Trans.GetTransform();
-        // lightMat.viewProjection = light1.GetLightProjection();
-        // lightMat.viewProjection = camera.GetViewProjection();
         vao1.Bind();
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
         shadowFbo.Unbind();
 
+        // color (phong shader)
         colorFbo.Bind();
         programColor.Bind();
         Renderer::Clear();
@@ -182,7 +192,6 @@ int main(int, char **) {
         programColor.SetInt("texture2", 2);
         programColor.SetInt("texture3", 3);
         programColor.SetInt("texture4", 4);
-
 
         vao1.Bind();
 
@@ -227,10 +236,13 @@ int main(int, char **) {
 
         programScreen.SetInt("screenTexture", 0);
         programScreen.SetInt("depthTexture", 1);
+        programScreen.SetInt("uvcheck", 2);
         renderSurface.Bind(0);
-        renderSurface.Bind(1);
+        // renderSurface.Bind(1);
         // depthTexture.Bind(1);
-        // shadowTexture.Bind(1);
+        shadowTexture.Bind(1);
+        tex2.Bind(2);
+
         planeVao.Bind();
         Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
         // done frame buffer

@@ -40,11 +40,16 @@ struct MaterialData {
 layout(std140, binding = 1) uniform Materials {
     MaterialData material;
 };
+layout(std140, binding = 2) uniform Lights {
+    LightData lights[LIGHT_NUMBER];
+};
 
 uniform sampler2D texture1; // samplers are opaque types and
 void main() {
     vec3 color3 = vec3(0.);
     gl_FragDepth = gl_FragCoord.z;
     // color = vec4(vec3(gl_FragCoord.z), 1.0);
+    float len = length(vec3(geoPosition - lights[0].transform.position));
+    // color = vec4(vec3(len), 1.0);
     color = vec4(vec3(1), 1.0);
 }

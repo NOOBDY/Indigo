@@ -18,12 +18,12 @@ struct LightData {
 
     glm::vec3 lightColor;
     float radius;
-
     float power;
     LightType lightType;
-    float cutoff;
-    float temp;
-    std::vector<glm::mat4> lightProjections;
+    float innerCone;
+    float outerCone;
+    // std::vector<glm::mat4> lightProjections;
+    glm::mat4 lightProjections[6];
 };
 
 class Light {
@@ -37,8 +37,8 @@ public:
     void SetLightType(LightType lightType);
     void SetInner(float inner);
     void SetOuter(float outer);
-    glm::mat4 GetLightProjection ();
-    std::vector<glm::mat4> GetLightProjectionCube ();
+    glm::mat4 GetLightProjection();
+    std::vector<glm::mat4> GetLightProjectionCube();
 
     glm::vec3 GetLightColor() const { return m_LightColor; };
     float GetRadius() const { return m_Radius; };

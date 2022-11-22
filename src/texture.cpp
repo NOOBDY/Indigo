@@ -4,48 +4,53 @@
 #include <stb_image.h>
 
 #include "log.hpp"
-Texture::Texture(const int width, const int height,textureType type,textureFormat format) {
+Texture::Texture(const int width, const int height, TextureType type,
+                 TextureFormat format) {
     LOG_TRACE("Creating Texture");
 
-    m_Format=format;
+    m_Format = format;
     glCreateTextures(format, 1, &m_TextureID);
     glBindTexture(format, m_TextureID);
 
-    if(format==textureFormat::CUBE)
-        for(int i=0;i<6;i++)
-            glTexImage2D(         //
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,    // target
-                0,                // level
-                type,           // internal format
-                width,            //
-                height,           //
-                0,                // border
-                type,           // format
-                GL_UNSIGNED_BYTE, // type
-                NULL              //
+    if (format == TextureFormat::CUBE)
+        for (int i = 0; i < 6; i++)
+            glTexImage2D(                           //
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
+                0,                                  // level
+                type,                               // internal format
+                width,                              //
+                height,                             //
+                0,                                  // border
+                type,                               // format
+                GL_FLOAT,                           // type
+                NULL                                //
             );
 
     else
-        glTexImage2D(         //
-            format,    // target
-            0,                // level
-            type,           // internal format
-            width,            //
-            height,           //
-            0,                // border
-            type,           // format
-            GL_UNSIGNED_BYTE, // type
-            NULL              //
+        glTexImage2D( //
+            format,   // target
+            0,        // level
+            type,     // internal format
+            width,    //
+            height,   //
+            0,        // border
+            type,     // format
+            GL_FLOAT, // type
+            NULL      //
         );
 
     glTexParameteri(format, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(format, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexParameteri(format, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(format, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(format, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
 Texture::Texture(const std::string &textureFilepath) {
     LOG_TRACE("Creating Texture");
 
-    m_Format=textureFormat::TEXTURE;
+    m_Format = TextureFormat::TEXTURE;
     glCreateTextures(m_Format, 1, &m_TextureID);
 
     LoadImage(textureFilepath);
@@ -65,7 +70,7 @@ void Texture::Unbind() {
 }
 
 void Texture::LoadImage(const std::string &textureFilepath) {
-    m_Format=textureFormat::TEXTURE;
+    m_Format = TextureFormat::TEXTURE;
     glBindTexture(m_Format, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
@@ -78,7 +83,7 @@ void Texture::LoadImage(const std::string &textureFilepath) {
     }
 
     glTexImage2D(                           //
-        m_Format,                      // target
+        m_Format,                           // target
         0,                                  // level
         channels == 4 ? GL_RGBA8 : GL_RGB8, // internal format
         width,                              //
@@ -92,8 +97,7 @@ void Texture::LoadImage(const std::string &textureFilepath) {
     glTexParameteri(m_Format, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(m_Format, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(m_Format, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(m_Format, GL_TEXTURE_MIN_FILTER,
-                    GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(m_Format, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
     glGenerateMipmap(m_Format);
 
