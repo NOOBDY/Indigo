@@ -155,8 +155,8 @@ int main(int, char **) {
 
     do {
         Renderer::EnableDepthTest();
-        float tempValue = glm::sin(i += 0.1f);
-        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
+        float tempValue = glm::sin(i += 0.05f);
+        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 6, 0));
         // light1.SetRadius(3 * glm::abs(tempValue));
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
@@ -164,6 +164,7 @@ int main(int, char **) {
         lightMat.model = model1Trans.GetTransform();
         // lightMat.viewProjection = light1.GetLightProjection();
         // lightMat.viewProjection = light1.GetLightProjectionCube()[0];
+        LOG_INFO("{}", lightInfo[0].lightProjections[0][0][0]);
         // lightMat.viewProjection = camera.GetViewProjection();
         // lightMat.model = model2Trans.GetTransform();
         matrices.SetData(0, sizeof(lightMat), &lightMat);

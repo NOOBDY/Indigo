@@ -50,10 +50,11 @@ glm::mat4 Light::GetLightProjection() {
     return lightSpaceMatrix;
 };
 std::vector<glm::mat4> Light::GetLightProjectionCube() {
-    float nearPlane = 1.0f;
-    float farPlane = 1000.0f;
-    glm::mat4 lightProjection = glm::perspective(
-        glm::radians(90.0f), (GLfloat)1280 / (GLfloat)720, nearPlane, farPlane);
+    float nearPlane = 0.01f;
+    float farPlane = 100.0f;
+    glm::mat4 lightProjection =
+        glm::perspective(glm::radians(90.0f), (GLfloat)1280 / (GLfloat)1280,
+                         nearPlane, farPlane);
     // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f,
     // nearPlane, farPlane);
     glm::vec3 lightPos = m_Transform.GetPosition();

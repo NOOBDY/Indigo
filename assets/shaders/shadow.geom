@@ -7,6 +7,7 @@ out vec3 normal;
 out vec3 worldPosition;
 out vec3 geoPosition;
 out vec2 UV;
+out vec4 test;
 
 in pointData {
     vec3 normal;
@@ -29,6 +30,8 @@ void main() {
             worldPosition = dataIn[i].worldPosition;
             geoPosition = dataIn[i].geoPosition;
             UV = dataIn[i].UV;
+            test = dataIn[i].lightProjections[face][0];
+            // test = vec4(0, 1, 0, 0);
             EmitVertex();
         }
         EndPrimitive();

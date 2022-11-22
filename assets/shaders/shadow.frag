@@ -2,8 +2,11 @@
 
 #define LIGHT_NUMBER 2
 
-in vec3 geoPosition;
+in vec3 normal;
 in vec3 worldPosition;
+in vec3 geoPosition;
+in vec2 UV;
+in vec4 test;
 
 out vec4 color;
 
@@ -49,7 +52,10 @@ void main() {
     vec3 color3 = vec3(0.);
     gl_FragDepth = gl_FragCoord.z;
     // color = vec4(vec3(gl_FragCoord.z), 1.0);
-    float len = length(vec3(geoPosition - lights[0].transform.position));
-    // color = vec4(vec3(len), 1.0);
+    float len = length(vec3(worldPosition - lights[0].transform.position));
+    // color = vec4(vec3(len) / 2, 1.0);
+    // color = vec4(worldPosition - lights[0].transform.position, 1.0);
+
     color = vec4(vec3(1), 1.0);
+    color = test;
 }

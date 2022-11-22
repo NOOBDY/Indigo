@@ -1,6 +1,7 @@
 #version 460 core
 
-#define LIGHT_NUMBER 2
+//so far only one cube map
+#define LIGHT_NUMBER 1
 
 in vec3 normal;
 in vec3 worldPosition;
@@ -91,6 +92,10 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // ambient light not specular
     vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
+    float shadow = shadow(normalize(position - light.transform.position));
+    // diffuse *= shadow;
+    // specular *= shadow;
+
     return (diffuse + specular) * light.lightColor * light.power * fadeOut * spot;
 }
 vec3 PhongLight(vec3 cameraPosition, vec3 position, LightData lights[LIGHT_NUMBER], MaterialData material) {
@@ -101,14 +106,15 @@ vec3 PhongLight(vec3 cameraPosition, vec3 position, LightData lights[LIGHT_NUMBE
         if(light.lightType == 0)
             continue;
         color3 += AllLight(cameraPosition, position, light, material);
-        // return color3 = vec3(shadow(normalize(position - light.transform.position)));
-        // return texture(texture4, normalize(-position + light.transform.position)).xyz;
+        color3 = texture(texture4, normalize(-position + light.transform.position)).xyz;
+        // float len = length(position - light.transform.position);
+        // color3 /= pow(len / 10, 5);
         // return texture(texture4, vec3(1, 1, 1)).xyz;
         // return normalize(position - light.transform.position);
         // return normalize(-position + light.transform.position);
         // return color3 = vec3(shadow(normalize(position - light.transform.position)));
         // return color3 = vec3(normalize(position - light.transform.position));
-        // return color3 = vec3(length(position - light.transform.position) / 10);
+        // return color3 = vec3(pow(len / 10, 5));
     }
 
     return color3;
@@ -123,7 +129,6 @@ void main() {
     vec3 cameraPosition = vec3(0, 3, 4);
     vec3 color3 = vec3(0.);
     color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
     color = vec4(color3, 1.);
 }

@@ -84,5 +84,9 @@ void main() {
     dataOut.geoPosition = geoPosition;
     dataOut.UV = vertUV;
     dataOut.modelRotation = modelRotation;
-    dataOut.lightProjections = lights[0].lightProjections;
+    // dataOut.lightProjections = lights[0].lightProjections;
+    for(int i = 0; i < 6; i++) dataOut.lightProjections[i] = lights[0].lightProjections[i];
+    // mat4 tem = mat4(0.0);
+    // tem[0][2] = 1.0;
+    // for(int i = 0; i < 6; i++) dataOut.lightProjections[i] = tem;
 }
