@@ -22,7 +22,6 @@ struct LightData {
     LightType lightType;
     float innerCone;
     float outerCone;
-    // std::vector<glm::mat4> lightProjections;
     glm::mat4 lightProjections[6];
 };
 
@@ -52,12 +51,14 @@ public:
     Transform m_Transform;
 
 private:
+    LightType m_LightType = LightType::POINT;
     glm::vec3 m_LightColor;
     float m_Radius = 100000.0f;
     float m_Power = 0.5f;
-    LightType m_LightType = LightType::POINT;
     float m_InnerCone = 20.0f;
     float m_OuterCone = 30.0f;
+    float m_NearPlane = 0.01f;
+    float m_FarPlane = 1000.0f;
 };
 
 #endif

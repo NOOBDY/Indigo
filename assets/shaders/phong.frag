@@ -58,8 +58,15 @@ float fade(vec3 center, vec3 position, float radius) {
     return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
-float shadow(vec3 lightDirection) {
-    return texture(texture4, lightDirection).x;
+float shadow(vec3 position, vec3 lightPos) {
+    float map_dis = texture(texture4, normalize(position - lightPos)).x;
+    // return map_dis;
+    float mesh_dis = length(position - lightPos);
+    float range = 2;
+    if(mesh_dis - range > map_dis)
+        return 0;
+    return 1;
+    // return texture(texture4, lightDirection).x;
 }
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
@@ -84,6 +91,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // diffuse lighting
     float dotLN = max(dot(halfwayVec, n), 0.0);
     vec3 diffuse = texture(texture1, UV).xyz * (dotLN + ambient);
+
     //color tranform
     // diffuse = pow(diffuse, vec3(2.2));
 
@@ -92,9 +100,10 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // ambient light not specular
     vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
-    float shadow = shadow(normalize(position - light.transform.position));
-    // diffuse *= shadow;
-    // specular *= shadow;
+    float shadow = shadow(position, light.transform.position);
+    return vec3(shadow + vec3(0.1, 0, 0));
+    diffuse *= 1 - shadow;
+    specular *= 1 - shadow;
 
     return (diffuse + specular) * light.lightColor * light.power * fadeOut * spot;
 }
@@ -106,15 +115,6 @@ vec3 PhongLight(vec3 cameraPosition, vec3 position, LightData lights[LIGHT_NUMBE
         if(light.lightType == 0)
             continue;
         color3 += AllLight(cameraPosition, position, light, material);
-        color3 = texture(texture4, normalize(-position + light.transform.position)).xyz;
-        // float len = length(position - light.transform.position);
-        // color3 /= pow(len / 10, 5);
-        // return texture(texture4, vec3(1, 1, 1)).xyz;
-        // return normalize(position - light.transform.position);
-        // return normalize(-position + light.transform.position);
-        // return color3 = vec3(shadow(normalize(position - light.transform.position)));
-        // return color3 = vec3(normalize(position - light.transform.position));
-        // return color3 = vec3(pow(len / 10, 5));
     }
 
     return color3;

@@ -37,16 +37,17 @@ vec3 cnn(vec3 color) {
 }
 vec3 cube_uv(vec2 uv) {
     vec3 nuv = vec3(0.0);
-    nuv.x = sin(uv.x * 2 * PI);
+    uv = (uv - vec2(0.5)) * 2 * PI;
+    nuv.x = sin(uv.x);
     // nuv.x = cos(uv.x * 2 * PI);
     // nuv.x = uv.x * 2 - 1;
 
-    nuv.z = cos(uv.x * 2 * PI);
+    nuv.z = cos(uv.x);
     // nuv.z = sin(uv.x * 2 * PI);
     // nuv.z = uv.x * 2 - 1;
 
-    nuv.y = cos(uv.y * 2 * PI);
-    // nuv.y = sin(uv.y * 2 * PI);
+    nuv.y = cos(uv.y);
+    // nuv.y = sin(uv.y);
     // nuv.y = uv.y * 2 - 1;
     // return nuv;
     // return texture(uvcheck, uv).xyz;
@@ -67,7 +68,8 @@ void main() {
     // vec3 depth = texture(depthTexture, TexCoords).rgb;
     // vec3 depth = textureCube(depthTexture, TexCoords).rgb;
     vec3 col = screen;
-    // col = cube_uv(TexCoords);
+    // if(TexCoords.x < 0.5)
+    //     col = cube_uv(TexCoords);
     // col = test(col);
     FragColor = vec4(col, 1.0);
 }

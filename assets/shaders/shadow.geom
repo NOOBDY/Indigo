@@ -24,8 +24,8 @@ void main() {
         gl_Layer = face;
         for(int i = 0; i < 3; i++) {
 
-            // gl_Position = dataIn[i].lightProjections[face] * vec4(dataIn[i].worldPosition, 1.0);
-            gl_Position = vec4(dataIn[i].worldPosition, 1);
+            gl_Position = dataIn[i].lightProjections[face] * vec4(dataIn[i].worldPosition, 1.0);
+            // gl_Position = vec4(dataIn[i].worldPosition, 1);
             normal = dataIn[i].normal;
             worldPosition = dataIn[i].worldPosition;
             geoPosition = dataIn[i].geoPosition;

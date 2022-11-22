@@ -36,10 +36,8 @@ void Light::SetOuter(float outer) {
 
 glm::mat4 Light::GetLightProjection() {
 
-    float nearPlane = 0.01f;
-    float farPlane = 100.5f;
     glm::mat4 lightProjection =
-        glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, nearPlane, farPlane);
+        glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, m_NearPlane, m_FarPlane);
     // glm::mat4 lightProjection = glm::perspective(
     //     glm::radians(90.0f), (GLfloat)1280 / (GLfloat)720, nearPlane,
     //     farPlane);
@@ -50,11 +48,9 @@ glm::mat4 Light::GetLightProjection() {
     return lightSpaceMatrix;
 };
 std::vector<glm::mat4> Light::GetLightProjectionCube() {
-    float nearPlane = 0.01f;
-    float farPlane = 100.0f;
     glm::mat4 lightProjection =
         glm::perspective(glm::radians(90.0f), (GLfloat)1280 / (GLfloat)1280,
-                         nearPlane, farPlane);
+                         m_NearPlane, m_FarPlane);
     // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f,
     // nearPlane, farPlane);
     glm::vec3 lightPos = m_Transform.GetPosition();
@@ -98,7 +94,6 @@ LightData Light::GetLightData() {
     data.outerCone = m_OuterCone;
     for (int i = 0; i < 6; i++)
         data.lightProjections[i] = lightProjectionVector[i];
-    // data.lightProjections.push_back(lightProjectionVector[i]);
 
     return data;
 };

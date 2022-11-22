@@ -154,28 +154,32 @@ int main(int, char **) {
     float i = 0;
 
     do {
-        Renderer::EnableDepthTest();
         float tempValue = glm::sin(i += 0.05f);
-        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 6, 0));
+        // light1.m_Transform.SetPosition(glm::vec3(1, tempValue * 3, -3));
+        light1.m_Transform.SetPosition(pos2);
         // light1.SetRadius(3 * glm::abs(tempValue));
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
 
-        lightMat.model = model1Trans.GetTransform();
-        // lightMat.viewProjection = light1.GetLightProjection();
-        // lightMat.viewProjection = light1.GetLightProjectionCube()[0];
-        LOG_INFO("{}", lightInfo[0].lightProjections[0][0][0]);
-        // lightMat.viewProjection = camera.GetViewProjection();
-        // lightMat.model = model2Trans.GetTransform();
-        matrices.SetData(0, sizeof(lightMat), &lightMat);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
         // shadow
         shadowFbo.Bind();
         programShadow.Bind();
-
         Renderer::Clear();
+        Renderer::EnableDepthTest();
+
+        // vao1 shadow
         vao1.Bind();
+        lightMat.model = model1Trans.GetTransform();
+        matrices.SetData(0, sizeof(lightMat), &lightMat);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
         Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+
+        // vao2 shadow
+        vao2.Bind();
+        lightMat.model = model2Trans.GetTransform();
+        matrices.SetData(0, sizeof(lightMat), &lightMat);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
         shadowFbo.Unbind();
 
         // color (phong shader)
@@ -211,7 +215,7 @@ int main(int, char **) {
 
         vao2.Bind();
 
-        model2Trans.SetPosition(pos2);
+        // model2Trans.SetPosition(pos2);
         model2Trans.SetRotation(rot2);
         model2Trans.SetScale(scale2);
 
