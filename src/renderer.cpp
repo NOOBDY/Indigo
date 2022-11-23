@@ -56,3 +56,11 @@ void Renderer::Clear() {
 void Renderer::Draw(const unsigned int indexCount) {
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void *)0);
 }
+
+void Renderer::EnableDepthTest() {
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::DisableDepthTest() {
+    glDisable(GL_DEPTH_TEST);
+}

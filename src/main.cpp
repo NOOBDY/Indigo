@@ -1,12 +1,9 @@
 #include "pch.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
+#include "controller.hpp"
 #include "program.hpp"
 #include "camera.hpp"
 #include "importer.hpp"
@@ -40,16 +37,7 @@ int main(int, char **) {
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    IMGUI_CHECKVERSION();
-    LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    io.IniFilename = "../assets/imgui.ini";
-
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    Controller::InitGUI(window);
 
     Program programShadow("../assets/shaders/shadow.vert",
                           "../assets/shaders/shadow.geom",
@@ -94,14 +82,24 @@ int main(int, char **) {
 
     VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
     // end model 2
+
     // 2D plane for framebuffer
     std::vector<float> quadVertices = {
-        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
-        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+        -1.0f, 1.0f,  //
+        -1.0f, -1.0f, //
+        1.0f,  -1.0f, //
+        1.0f,  1.0f,  //
     };
-    std::vector<float> quadUV = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-                                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-    std::vector<unsigned int> quadIndex = {0, 1, 2, 3, 4, 5};
+    std::vector<float> quadUV = {
+        0.0f, 1.0f, //
+        0.0f, 0.0f, //
+        1.0f, 0.0f, //
+        1.0f, 1.0f, //
+    };
+    std::vector<unsigned int> quadIndex = {
+        0, 1, 2, //
+        0, 2, 3, //
+    };
 
     VertexArray planeVao;
 
@@ -153,6 +151,11 @@ int main(int, char **) {
     LOG_INFO(sizeof(tt));
     float i = 0;
 
+    glm::vec3 pos = camera.GetPosition();
+
+    GLint cameraUniform =
+        glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
+
     do {
         float tempValue = glm::sin(i += 0.05f);
         // light1.m_Transform.SetPosition(glm::vec3(1, tempValue * 3, -3));
@@ -160,6 +163,8 @@ int main(int, char **) {
         // light1.SetRadius(3 * glm::abs(tempValue));
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
+        glm::vec2 delta = window.GetCursorDelta();
+        window.UpdateCursorPosition();
 
         // shadow
         shadowFbo.Bind();
@@ -186,6 +191,8 @@ int main(int, char **) {
         colorFbo.Bind();
         programColor.Bind();
         Renderer::Clear();
+
+        glUniform3fv(cameraUniform, 1, &pos.x);
 
         tex1.Bind(1);
         tex2.Bind(2);
@@ -252,21 +259,40 @@ int main(int, char **) {
         Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
         // done frame buffer
 
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+            glm::mat4 cameraMat =
+                glm::rotate(glm::mat4(1.0f), delta.x * -2 / window.GetWidth(),
+                            glm::vec3(0, 1, 0)) *
+                glm::rotate(glm::mat4(1.0f), delta.y * -2 / window.GetWidth(),
+                            glm::vec3(1, 0, 0)) *
+                glm::translate(glm::mat4(1.0f), pos);
+
+            pos = glm::vec3(cameraMat[3]);
+        }
+
+        camera.SetPosition(pos);
+        camera.SetDirection(pos * -1.0f);
+        camera.UpdateView();
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Framerate");
-        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        float framerate = ImGui::GetIO().Framerate;
+
+        ImGui::Begin("Debug Info");
+        ImGui::Text("%.1f FPS", framerate);
+        ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
+        ImGui::Text("%f", 1.0 / framerate);
         ImGui::End();
 
-        ImGui::Begin("Donut");
+        ImGui::Begin("Model 1");
         ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
         ImGui::End();
 
-        ImGui::Begin("Suzanne");
+        ImGui::Begin("Model 2");
         ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);

@@ -49,6 +49,8 @@ layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
 
+uniform vec3 cameraPosition;
+
 uniform sampler2D texture1; // samplers are opaque types and
 uniform sampler2D texture2; // cannot exist in uniform blocks
 uniform sampler2D texture3;
@@ -126,7 +128,6 @@ vec3 ColorTransform(vec3 color) {
 }
 
 void main() {
-    vec3 cameraPosition = vec3(0, 3, 4);
     vec3 color3 = vec3(0.);
     color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     // color3 = ColorTransform(color3);
