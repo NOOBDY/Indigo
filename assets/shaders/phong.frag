@@ -33,6 +33,8 @@ struct LightData {
     float innerCone;
     float outerCone;
     mat4 lightProjections[6];
+    float m_NearPlane;
+    float m_FarPlane;
 };
 
 struct MaterialData {
@@ -60,14 +62,16 @@ float fade(vec3 center, vec3 position, float radius) {
     return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
-float shadow(vec3 position, vec3 lightPos) {
-    float map_dis = texture(texture4, normalize(position - lightPos)).x;
-    // return map_dis;
-    float mesh_dis = length(position - lightPos);
-    float range = 2;
+float shadow(vec3 position, LightData light) {
+    float map_dis = texture(texture4, (-light.transform.position)).x;
+    return map_dis;
+    map_dis *= light.m_FarPlane;
+    // return map_dis / 100;
+    float mesh_dis = length(position - light.transform.position);
+    float range = .1;
     if(mesh_dis - range > map_dis)
-        return 0;
-    return 1;
+        return 1;
+    return 0;
     // return texture(texture4, lightDirection).x;
 }
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
@@ -102,7 +106,10 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // ambient light not specular
     vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
-    float shadow = shadow(position, light.transform.position);
+    float shadow = shadow(position, light);
+    vec3 t = texture(texture4, (worldPosition - light.transform.position)).xyz;
+    return t;
+    return t + vec3(0, 0.1, 0);
     return vec3(shadow + vec3(0.1, 0, 0));
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
@@ -111,8 +118,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
 }
 vec3 PhongLight(vec3 cameraPosition, vec3 position, LightData lights[LIGHT_NUMBER], MaterialData material) {
     vec3 color3 = vec3(0);
-    // for(int i = 0; i < LIGHT_NUMBER; i++) {
-    for(int i = 0; i < 1; i++) {
+    for(int i = 0; i < LIGHT_NUMBER; i++) {
         LightData light = lights[i];
         if(light.lightType == 0)
             continue;

@@ -49,7 +49,7 @@ glm::mat4 Light::GetLightProjection() {
 };
 std::vector<glm::mat4> Light::GetLightProjectionCube() {
     glm::mat4 lightProjection =
-        glm::perspective(glm::radians(90.0f), (GLfloat)1280 / (GLfloat)1280,
+        glm::perspective(glm::radians(90.0f), (GLfloat)1024 / (GLfloat)1024,
                          m_NearPlane, m_FarPlane);
     // glm::mat4 lightProjection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f,
     // nearPlane, farPlane);
@@ -94,6 +94,8 @@ LightData Light::GetLightData() {
     data.outerCone = m_OuterCone;
     for (int i = 0; i < 6; i++)
         data.lightProjections[i] = lightProjectionVector[i];
+    data.m_NearPlane = m_NearPlane;
+    data.m_FarPlane = m_FarPlane;
 
     return data;
 };

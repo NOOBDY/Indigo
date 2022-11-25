@@ -9,8 +9,9 @@ layout(location = 4) in vec3 vertBitangent;
 out vec3 normal;
 out vec3 worldPosition;
 out vec3 geoPosition;
+out vec2 UV;
 // out mat4 modelR;
-#define LIGHT_NUMBER 2
+#define LIGHT_NUMBER 1
 
 struct TransformData {
     mat4 transform;
@@ -40,6 +41,8 @@ struct LightData {
     float outerCone;
 
     mat4 lightProjections[6];
+    float m_NearPlane;
+    float m_FarPlane;
 };
 
 struct MaterialData {
@@ -66,8 +69,8 @@ layout(std140, binding = 2) uniform Lights {
 
 void main() {
     // do projection on geo shader
-    // gl_Position = model * vec4(vertPosition, 1);
-    gl_Position = (model * vec4(vertPosition, 1));
+    gl_Position = model * vec4(vertPosition, 1);
+    // gl_Position = (model * vec4(vertPosition, 1));
 
     mat4 modelRotation = model;
 
@@ -76,8 +79,10 @@ void main() {
     modelRotation[3][1] = 0;
     modelRotation[3][2] = 0;
 
+    normal = vertNormal;
     geoPosition = vertPosition;
     worldPosition = (model * vec4(vertPosition, 1)).xyz;
+    UV = vertUV;
 
     dataOut.normal = vertNormal;
     dataOut.worldPosition = worldPosition;
@@ -86,7 +91,4 @@ void main() {
     dataOut.modelRotation = modelRotation;
     // dataOut.lightProjections = lights[0].lightProjections;
     for(int i = 0; i < 6; i++) dataOut.lightProjections[i] = lights[0].lightProjections[i];
-    // mat4 tem = mat4(0.0);
-    // tem[0][2] = 1.0;
-    // for(int i = 0; i < 6; i++) dataOut.lightProjections[i] = tem;
 }

@@ -23,6 +23,8 @@ struct LightData {
     float innerCone;
     float outerCone;
     glm::mat4 lightProjections[6];
+    float m_NearPlane;
+    float m_FarPlane;
 };
 
 class Light {
@@ -57,8 +59,8 @@ private:
     float m_Power = 0.5f;
     float m_InnerCone = 20.0f;
     float m_OuterCone = 30.0f;
-    float m_NearPlane = 0.01f;
-    float m_FarPlane = 1000.0f;
+    float m_NearPlane = 5;
+    float m_FarPlane = 25.0f;
 };
 
 #endif

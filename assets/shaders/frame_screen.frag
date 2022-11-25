@@ -69,7 +69,7 @@ void main() {
     // vec3 depth = textureCube(depthTexture, TexCoords).rgb;
     vec3 col = screen;
     // if(TexCoords.x < 0.5)
-    //     col = cube_uv(TexCoords);
+    // col = cube_uv(TexCoords);
     // col = test(col);
     FragColor = vec4(col, 1.0);
 }
