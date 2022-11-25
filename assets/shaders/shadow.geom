@@ -33,5 +33,4 @@ void main() {
         }
         EndPrimitive();
     }
-    // setData();
 }

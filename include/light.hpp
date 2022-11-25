@@ -59,8 +59,8 @@ private:
     float m_Power = 0.5f;
     float m_InnerCone = 20.0f;
     float m_OuterCone = 30.0f;
-    float m_NearPlane = 5;
-    float m_FarPlane = 25.0f;
+    float m_NearPlane = .1;
+    float m_FarPlane = 10.0f;
 };
 
 #endif

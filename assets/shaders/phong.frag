@@ -33,8 +33,8 @@ struct LightData {
     float innerCone;
     float outerCone;
     mat4 lightProjections[6];
-    float m_NearPlane;
-    float m_FarPlane;
+    float nearPlane;
+    float farPlane;
 };
 
 struct MaterialData {
@@ -62,17 +62,16 @@ float fade(vec3 center, vec3 position, float radius) {
     return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
-float shadow(vec3 position, LightData light) {
-    float map_dis = texture(texture4, (-light.transform.position)).x;
-    return map_dis;
-    map_dis *= light.m_FarPlane;
-    // return map_dis / 100;
-    float mesh_dis = length(position - light.transform.position);
-    float range = .1;
-    if(mesh_dis - range > map_dis)
-        return 1;
-    return 0;
-    // return texture(texture4, lightDirection).x;
+vec3 shadow(vec3 position, LightData light) {
+    float lightDepth = texture(texture4, (worldPosition - light.transform.position)).x;
+    // lightDepth *= 10;
+    lightDepth *= light.farPlane;
+    float currentDepth = length(position - light.transform.position);
+    float range = .05;
+    // float range = lightDepth / 1000;
+    if(currentDepth - range > lightDepth)
+        return vec3(1);
+    return vec3(0);
 }
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
@@ -106,11 +105,9 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // ambient light not specular
     vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
-    float shadow = shadow(position, light);
+    vec3 shadow = shadow(position, light);
     vec3 t = texture(texture4, (worldPosition - light.transform.position)).xyz;
-    return t;
-    return t + vec3(0, 0.1, 0);
-    return vec3(shadow + vec3(0.1, 0, 0));
+    // return shadow + vec3(0.1, 0, 0);
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
 

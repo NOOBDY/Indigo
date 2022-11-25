@@ -78,9 +78,9 @@ int main(int, char **) {
 
     glm::vec3 pos2(-2, 0, 0);
     glm::vec3 rot2(180, 180, 180);
-    glm::vec3 scale2(1, 1, 1);
+    glm::vec3 scale2(.3);
 
-    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
+    VertexArray vao2 = Importer::LoadFile("../assets/models/cube.obj");
     // end model 2
 
     // 2D plane for framebuffer
@@ -139,19 +139,24 @@ int main(int, char **) {
     colorFbo.Unbind();
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
-    Texture depthTexture(1024, 1024, Texture::DEPTH, Texture::CUBE);
+    int shadowSize = 1024 * 4;
+    int screenWidth = 1280;
+    int screenHeight = 720;
+
+    Texture depthTexture(shadowSize, shadowSize, Texture::DEPTH, Texture::CUBE);
     shadowFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
-    Texture shadowTexture(1024, 1024, Texture::COLOR, Texture::CUBE);
+    Texture shadowTexture(shadowSize, shadowSize, Texture::COLOR,
+                          Texture::CUBE);
     shadowFbo.AttachTexture(shadowTexture.GetTextureID(), GL_COLOR_ATTACHMENT0);
 
     // shadow mat
     Matrices lightMat;
     glm::mat4 tt[6];
     LOG_INFO(sizeof(LightData));
-    LOG_INFO(sizeof(tt));
     float i = 0;
 
     glm::vec3 pos = camera.GetPosition();
+    VertexArray vao3 = Importer::LoadFile("../assets/models/sphere.obj");
 
     GLint cameraUniform =
         glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
@@ -167,6 +172,9 @@ int main(int, char **) {
         window.UpdateCursorPosition();
 
         // shadow
+
+        // make sure render size is same as texture
+        glViewport(0, 0, shadowSize, shadowSize);
         shadowFbo.Bind();
         programShadow.Bind();
         Renderer::Clear();
@@ -181,6 +189,9 @@ int main(int, char **) {
 
         // vao2 shadow
         vao2.Bind();
+        model2Trans.SetPosition(glm::vec3(-1, 0, 0));
+        model2Trans.SetRotation(rot2);
+        model2Trans.SetScale(scale2);
         lightMat.model = model2Trans.GetTransform();
         matrices.SetData(0, sizeof(lightMat), &lightMat);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
@@ -188,6 +199,7 @@ int main(int, char **) {
         shadowFbo.Unbind();
 
         // color (phong shader)
+        glViewport(0, 0, screenWidth, screenHeight);
         colorFbo.Bind();
         programColor.Bind();
         Renderer::Clear();
@@ -222,6 +234,7 @@ int main(int, char **) {
 
         vao2.Bind();
 
+        model2Trans.SetPosition(glm::vec3(-1, 0, 0));
         // model2Trans.SetPosition(pos2);
         model2Trans.SetRotation(rot2);
         model2Trans.SetScale(scale2);
@@ -239,6 +252,15 @@ int main(int, char **) {
         tex4.Bind(4);
 
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
+        vao3.Bind();
+        model2Trans.SetScale(glm::vec3(0.3));
+        model2Trans.SetPosition(pos2);
+
+        mat2.model = model2Trans.GetTransform();
+        mat2.viewProjection = camera.GetViewProjection();
+        matrices.SetData(0, sizeof(mat2), &mat2);
+        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        Renderer::Draw(vao3.GetIndexBuffer()->GetCount());
 
         // frame buffer part
         colorFbo.Unbind();
