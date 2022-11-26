@@ -5,6 +5,8 @@
 Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)
     : m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip),
       m_FarClip(farClip) {
+
+    m_Transform.SetPosition({0, 500, 500});
     UpdateProjection();
     UpdateView();
 }
@@ -15,8 +17,9 @@ void Camera::UpdateProjection() {
 }
 
 void Camera::UpdateView() {
-    m_View =
-        glm::lookAt(m_Position, m_Position + m_Direction, glm::vec3(0, 1, 0));
+    m_View = glm::lookAt(m_Transform.GetPosition(),
+                         m_Transform.GetPosition() + m_Transform.GetRotation(),
+                         glm::vec3(0, 1, 0));
     // glm::lookAt(m_Position, glm::vec3(0.0f), glm::vec3(0, 1, 0));
 }
 

@@ -55,7 +55,7 @@ int main(int, char **) {
     Light light2(glm::vec3(1.0f));
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
-    light2.SetPower(0.2f);
+    light2.SetPower(12);
     // begin model 1
     Transform model1Trans;
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
@@ -66,7 +66,8 @@ int main(int, char **) {
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    VertexArray vao1 = Importer::LoadFile("../assets/models/wall.obj");
+    VertexArray vao1 =
+        Importer::LoadFile("../assets/models/little_city/main.glb");
     // end model 1
 
     // begin model 2
@@ -109,7 +110,7 @@ int main(int, char **) {
 
     planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
 
-    Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
+    Texture tex1("../assets/textures/little_city/main_color.jpg");
     Texture tex2("../assets/textures/uv.png");
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
@@ -139,7 +140,7 @@ int main(int, char **) {
 
     float i = 0;
 
-    glm::vec3 pos = camera.GetPosition();
+    glm::vec3 pos = camera.GetTransform().GetPosition();
 
     GLint cameraUniform =
         glGetUniformLocation(program.GetProgramID(), "cameraPosition");
@@ -226,15 +227,15 @@ int main(int, char **) {
             glm::mat4 cameraMat =
                 glm::rotate(glm::mat4(1.0f), delta.x * -2 / window.GetWidth(),
                             glm::vec3(0, 1, 0)) *
-                glm::rotate(glm::mat4(1.0f), delta.y * -2 / window.GetWidth(),
+                glm::rotate(glm::mat4(1.0f), delta.y * -2 / window.GetHeight(),
                             glm::vec3(1, 0, 0)) *
                 glm::translate(glm::mat4(1.0f), pos);
 
             pos = glm::vec3(cameraMat[3]);
         }
 
-        camera.SetPosition(pos);
-        camera.SetDirection(pos * -1.0f);
+        camera.GetTransform().SetPosition(pos);
+        camera.GetTransform().SetRotation(pos * -1.0f);
         camera.UpdateView();
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -246,7 +247,12 @@ int main(int, char **) {
         ImGui::Begin("Debug Info");
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
-        ImGui::Text("%f", 1.0 / framerate);
+        ImGui::Text("%d, %d, %d", (int)camera.GetTransform().GetRotation().x,
+                    (int)camera.GetTransform().GetRotation().y,
+                    (int)camera.GetTransform().GetRotation().z);
+        ImGui::Text("%.2f, %.2f, %.2f", camera.GetTransform().GetDirection().x,
+                    camera.GetTransform().GetDirection().y,
+                    camera.GetTransform().GetDirection().z);
         ImGui::End();
 
         ImGui::Begin("Model 1");
