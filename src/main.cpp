@@ -223,12 +223,35 @@ int main(int, char **) {
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
+        /**
+         * I'm very sorry for this abomination
+         *
+         * This solution hard codes a transformation matrix that rotates the
+         * current direction by 90 degrees as the vertical rotational axis
+         */
         if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+            // Since the camera will always point at (0, 0, 0), normalizing the
+            // position vector can be used as the direction
+            glm::vec3 normalizedVec =
+                glm::normalize(camera.GetTransform().GetPosition());
+
+            // This is sprinkles a bit of magic called "linear algebra"
+            glm::mat3 rotMat({
+                {0, 0, 1},
+                {0, 1, 0},
+                {-1, 0, 0},
+            });
+
+            // I think C/C++ applies operations from the back or something so
+            // Ax=b needs to be written as `b = x * A`
+            glm::vec3 rightVec = normalizedVec * rotMat;
+
+            // I'm not sure why this works
             glm::mat4 cameraMat =
                 glm::rotate(glm::mat4(1.0f), delta.x * -2 / window.GetWidth(),
                             glm::vec3(0, 1, 0)) *
                 glm::rotate(glm::mat4(1.0f), delta.y * -2 / window.GetHeight(),
-                            glm::vec3(1, 0, 0)) *
+                            glm::vec3(rightVec.x, 0, rightVec.z)) *
                 glm::translate(glm::mat4(1.0f), pos);
 
             pos = glm::vec3(cameraMat[3]);
@@ -250,9 +273,6 @@ int main(int, char **) {
         ImGui::Text("%d, %d, %d", (int)camera.GetTransform().GetRotation().x,
                     (int)camera.GetTransform().GetRotation().y,
                     (int)camera.GetTransform().GetRotation().z);
-        ImGui::Text("%.2f, %.2f, %.2f", camera.GetTransform().GetDirection().x,
-                    camera.GetTransform().GetDirection().y,
-                    camera.GetTransform().GetDirection().z);
         ImGui::End();
 
         ImGui::Begin("Model 1");
