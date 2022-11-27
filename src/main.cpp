@@ -1,12 +1,9 @@
 #include "pch.hpp"
 
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-
 #include "log.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
+#include "controller.hpp"
 #include "program.hpp"
 #include "camera.hpp"
 #include "importer.hpp"
@@ -43,21 +40,12 @@ int main(int, char **) {
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 
-    IMGUI_CHECKVERSION();
-    LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
-    ImGui::CreateContext();
-    ImGuiIO &io = ImGui::GetIO();
-    io.IniFilename = "../assets/imgui.ini";
-
-    ImGui::StyleColorsDark();
-
-    ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    Controller::InitGUI(window);
 
     Program program("../assets/shaders/phong.vert",
                     "../assets/shaders/phong.frag");
-    Program program1("../assets/shaders/frame_screen.vert",
-                     "../assets/shaders/frame_screen.frag");
+    Program framebufferProgram("../assets/shaders/frame_screen.vert",
+                               "../assets/shaders/frame_screen.frag");
 
     LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
@@ -70,7 +58,7 @@ int main(int, char **) {
     Light light2(glm::vec3(1.0f));
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
-    light2.SetPower(0.2f);
+    light2.SetPower(12);
     // begin model 1
     Transform model1Trans;
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
@@ -82,7 +70,7 @@ int main(int, char **) {
     glm::vec3 scale1(1, 1, 1);
 
     VertexArray vao1 =
-        Importer::LoadFile("../assets/models/high-poly-suzanne.glb");
+        Importer::LoadFile("../assets/models/little_city/main.glb");
     // end model 1
 
     // begin model 2
@@ -94,17 +82,26 @@ int main(int, char **) {
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
-    VertexArray vao2 =
-        Importer::LoadFile("../assets/models/high-poly-suzanne.obj");
+    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
     // end model 2
+
     // 2D plane for framebuffer
     std::vector<float> quadVertices = {
-        -1.0f, 1.0f,  1.0f,  -1.0f, 1.0f,  1.0f,
-        1.0f,  -1.0f, -1.0f, 1.0f,  -1.0f, -1.0f,
+        -1.0f, 1.0f,  //
+        -1.0f, -1.0f, //
+        1.0f,  -1.0f, //
+        1.0f,  1.0f,  //
     };
-    std::vector<float> quadUV = {0.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-                                 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-    std::vector<unsigned int> quadIndex = {0, 1, 2, 3, 4, 5};
+    std::vector<float> quadUV = {
+        0.0f, 1.0f, //
+        0.0f, 0.0f, //
+        1.0f, 0.0f, //
+        1.0f, 1.0f, //
+    };
+    std::vector<unsigned int> quadIndex = {
+        0, 1, 2, //
+        0, 2, 3, //
+    };
 
     VertexArray planeVao;
 
@@ -116,7 +113,7 @@ int main(int, char **) {
 
     planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
 
-    Texture tex1("../assets/textures/T_Wall_Damaged_2x1_A_BC.png");
+    Texture tex1("../assets/textures/little_city/main_color.jpg");
     Texture tex2("../assets/textures/uv.png");
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
@@ -147,13 +144,24 @@ int main(int, char **) {
 
     float i = 0;
 
+    // Small hack to put camera position into the shader
+    // TODO: Find somewhere on the UBO to put this in
+    GLint cameraUniform =
+        glGetUniformLocation(program.GetProgramID(), "cameraPosition");
+
     do {
+        glm::vec2 delta = window.GetCursorDelta();
+        window.UpdateCursorPosition();
+
         fbo.Bind();
 
         Renderer::Clear();
         Renderer::EnableDepthTest();
 
         program.Bind();
+
+        glm::vec3 pos = camera.GetTransform().GetPosition();
+        glUniform3fv(cameraUniform, 1, &pos.x);
 
         tex1.Bind(1);
         tex2.Bind(2);
@@ -211,8 +219,8 @@ int main(int, char **) {
         fbo.Unbind();
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
-        program1.Bind();
-        program1.SetInt("screenTexture", 0);
+        framebufferProgram.Bind();
+        framebufferProgram.SetInt("screenTexture", 0);
         // glBindVertexArray(quadVAO);
         planeVao.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
@@ -220,21 +228,32 @@ int main(int, char **) {
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                 delta.y * -2 / window.GetHeight());
+        }
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::Begin("Framerate");
-        ImGui::Text("%.1f FPS", ImGui::GetIO().Framerate);
+        float framerate = ImGui::GetIO().Framerate;
+
+        ImGui::Begin("Debug Info");
+        ImGui::Text("%.1f FPS", framerate);
+        ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
+        ImGui::Text("%d, %d, %d", (int)camera.GetTransform().GetRotation().x,
+                    (int)camera.GetTransform().GetRotation().y,
+                    (int)camera.GetTransform().GetRotation().z);
         ImGui::End();
 
-        ImGui::Begin("Donut");
+        ImGui::Begin("Model 1");
         ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
         ImGui::End();
 
-        ImGui::Begin("Suzanne");
+        ImGui::Begin("Model 2");
         ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
         ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
         ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);
