@@ -3,7 +3,7 @@
 #include "log.hpp"
 
 Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
-    : m_Position(position), m_Rotation(rotation), m_Scale(scale){};
+    : m_Position(position), m_Rotation(rotation), m_Scale(scale) {}
 
 void Transform::SetTransform(glm::mat4 transform) {
     m_Transform = transform;
@@ -71,7 +71,8 @@ glm::mat4 Transform::GetTransform() {
     UpdateMat();
 
     return m_Transform;
-};
+}
+
 glm::vec3 Transform::GetDirection() {
     glm::vec4 direction = glm::vec4(0, 1, 0, 1);
     glm::mat4 transform = glm::mat4(1.f);
@@ -80,7 +81,7 @@ glm::vec3 Transform::GetDirection() {
     transform = RotationMat(transform);
     direction = transform * direction;
     return glm::vec3(direction);
-};
+}
 
 glm::mat4 Transform::GetDirection4() {
     glm::mat4 transform = glm::mat4(1.f);
@@ -88,7 +89,8 @@ glm::mat4 Transform::GetDirection4() {
     transform = RotationMat(transform);
 
     return transform;
-};
+}
+
 TransformData Transform::GetTransformData() {
     UpdateMat();
 

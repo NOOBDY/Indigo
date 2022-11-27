@@ -140,8 +140,8 @@ int main(int, char **) {
 
     float i = 0;
 
-    glm::vec3 pos = camera.GetTransform().GetPosition();
-
+    // Small hack to put camera position into the shader
+    // TODO: Find somewhere on the UBO to put this in
     GLint cameraUniform =
         glGetUniformLocation(program.GetProgramID(), "cameraPosition");
 
@@ -156,6 +156,7 @@ int main(int, char **) {
 
         program.Bind();
 
+        glm::vec3 pos = camera.GetTransform().GetPosition();
         glUniform3fv(cameraUniform, 1, &pos.x);
 
         tex1.Bind(1);
@@ -223,43 +224,10 @@ int main(int, char **) {
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
-        /**
-         * I'm very sorry for this abomination
-         *
-         * This solution hard codes a transformation matrix that rotates the
-         * current direction by 90 degrees as the vertical rotational axis
-         */
         if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-            // Since the camera will always point at (0, 0, 0), normalizing the
-            // position vector can be used as the direction
-            glm::vec3 normalizedVec =
-                glm::normalize(camera.GetTransform().GetPosition());
-
-            // This is sprinkles a bit of magic called "linear algebra"
-            glm::mat3 rotMat({
-                {0, 0, 1},
-                {0, 1, 0},
-                {-1, 0, 0},
-            });
-
-            // I think C/C++ applies operations from the back or something so
-            // Ax=b needs to be written as `b = x * A`
-            glm::vec3 rightVec = normalizedVec * rotMat;
-
-            // I'm not sure why this works
-            glm::mat4 cameraMat =
-                glm::rotate(glm::mat4(1.0f), delta.x * -2 / window.GetWidth(),
-                            glm::vec3(0, 1, 0)) *
-                glm::rotate(glm::mat4(1.0f), delta.y * -2 / window.GetHeight(),
-                            glm::vec3(rightVec.x, 0, rightVec.z)) *
-                glm::translate(glm::mat4(1.0f), pos);
-
-            pos = glm::vec3(cameraMat[3]);
+            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                 delta.y * -2 / window.GetHeight());
         }
-
-        camera.GetTransform().SetPosition(pos);
-        camera.GetTransform().SetRotation(pos * -1.0f);
-        camera.UpdateView();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

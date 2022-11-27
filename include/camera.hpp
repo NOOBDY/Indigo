@@ -19,13 +19,15 @@ public:
 
     void SetViewportSize(float width, float height);
 
+    void RotateByDelta(const float deltaX, const float deltaY);
+
+    void Pan() {}
+
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }
-
-    void Pan() {}
 
 private:
     float m_FOV; // measured in degrees
