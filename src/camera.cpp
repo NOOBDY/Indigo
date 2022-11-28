@@ -8,7 +8,6 @@ Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)
 
     glm::vec3 initPos = {0, 500, 500};
     m_Transform.SetPosition(initPos);
-    m_Transform.SetRotation(initPos * -1.0f);
     UpdateProjection();
     UpdateView();
 }
@@ -20,8 +19,7 @@ void Camera::UpdateProjection() {
 
 void Camera::UpdateView() {
     m_View = glm::lookAt(m_Transform.GetPosition(),
-                         m_Transform.GetPosition() + m_Transform.GetRotation(),
-                         glm::vec3(0, 1, 0));
+                         -1.0f * m_Transform.GetPosition(), glm::vec3(0, 1, 0));
     // glm::lookAt(m_Position, glm::vec3(0.0f), glm::vec3(0, 1, 0));
 }
 
@@ -72,7 +70,6 @@ void Camera::RotateByDelta(const float deltaX, const float deltaY) {
         glm::translate(glm::mat4(1.0f), m_Transform.GetPosition());
 
     m_Transform.SetPosition(glm::vec3(cameraMat[3]));
-    m_Transform.SetRotation(glm::vec3(cameraMat[3]) * -1.0f);
 
     UpdateView();
 }
