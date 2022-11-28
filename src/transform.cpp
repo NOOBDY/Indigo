@@ -47,7 +47,7 @@ void Transform::SetTransform(glm::mat4 transform) {
     m_Rotation = rot;
 }
 
-glm::mat4 Transform::RotationMat(glm::mat4 transform) {
+glm::mat4 Transform::RotationMat(glm::mat4 transform) const {
     transform = glm::rotate(transform, glm::radians(m_Rotation.x),
                             glm::vec3(1.f, 0.f, 0.f));
     transform = glm::rotate(transform, glm::radians(m_Rotation.y),
@@ -73,7 +73,7 @@ glm::mat4 Transform::GetTransform() {
     return m_Transform;
 }
 
-glm::vec3 Transform::GetDirection() {
+glm::vec3 Transform::GetDirection() const {
     glm::vec4 direction = glm::vec4(0, 1, 0, 1);
     glm::mat4 transform = glm::mat4(1.f);
     transform = glm::translate(transform, glm::vec3(0));
@@ -83,7 +83,7 @@ glm::vec3 Transform::GetDirection() {
     return glm::vec3(direction);
 }
 
-glm::mat4 Transform::GetDirection4() {
+glm::mat4 Transform::GetDirection4() const {
     glm::mat4 transform = glm::mat4(1.f);
     transform = glm::translate(transform, glm::vec3(0));
     transform = RotationMat(transform);
