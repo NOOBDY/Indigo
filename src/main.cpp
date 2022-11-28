@@ -63,10 +63,11 @@ int main(int, char **) {
     model1Trans.SetPosition(glm::vec3(2, 0, 0));
 
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
+    glm::vec3 uidata[9];
 
-    glm::vec3 pos1(1.35, 0, 0);
-    glm::vec3 rot1(180, 180, 180);
-    glm::vec3 scale1(1, 1, 1);
+    uidata[0] = glm::vec3(1.35, 0, 0);
+    uidata[1] = glm::vec3(180, 180, 180);
+    uidata[2] = glm::vec3(1, 1, 1);
 
     VertexArray vao1 = Importer::LoadFile("../assets/models/wall.obj");
     // end model 1
@@ -76,9 +77,9 @@ int main(int, char **) {
     model2Trans.SetPosition({2, 0, 0});
     Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    glm::vec3 pos2(-2, 0, 0);
-    glm::vec3 rot2(180, 180, 180);
-    glm::vec3 scale2(.3);
+    uidata[3] = glm::vec3(-2, 0, 0);
+    uidata[4] = glm::vec3(180, 180, 180);
+    uidata[5] = glm::vec3(.3);
 
     VertexArray vao2 = Importer::LoadFile("../assets/models/cube.obj");
     // end model 2
@@ -145,15 +146,14 @@ int main(int, char **) {
 
     Texture depthTexture(shadowSize, shadowSize, Texture::DEPTH, Texture::CUBE);
     shadowFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
-    Texture shadowTexture(shadowSize, shadowSize, Texture::COLOR,
-                          Texture::CUBE);
-    shadowFbo.AttachTexture(shadowTexture.GetTextureID(), GL_COLOR_ATTACHMENT0);
+    // Texture shadowTexture(shadowSize, shadowSize, Texture::COLOR,
+    //                       Texture::CUBE);
+    // shadowFbo.AttachTexture(shadowTexture.GetTextureID(),
+    // GL_COLOR_ATTACHMENT0);
 
     // shadow mat
     Matrices lightMat;
-    glm::mat4 tt[6];
-    LOG_INFO(sizeof(LightData));
-    float i = 0;
+    float frameCount = 0;
 
     glm::vec3 pos = camera.GetPosition();
     VertexArray vao3 = Importer::LoadFile("../assets/models/sphere.obj");
@@ -162,9 +162,9 @@ int main(int, char **) {
         glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
 
     do {
-        float tempValue = glm::sin(i += 0.05f);
-        // light1.m_Transform.SetPosition(glm::vec3(1, tempValue * 3, -3));
-        light1.m_Transform.SetPosition(pos2);
+        // float tempValue = glm::sin(frameCount += 0.05f);
+        // light1.m_Transform.Setition(glm::vec3(1, tempValue * 3, -3));
+        light1.m_Transform.SetPosition(uidata[3]);
         // light1.SetRadius(3 * glm::abs(tempValue));
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
@@ -180,6 +180,16 @@ int main(int, char **) {
         Renderer::Clear();
         Renderer::EnableDepthTest();
 
+        // for (int j = 0; j < models.size() - 1; j++) {
+        //     model m1 = models.at(j);
+        //     m1.m_Transform.SetPosition(uidata[3 * j]);
+        //     m1.m_Transform.SetRotation(uidata[3 * j + 1]);
+        //     m1.m_Transform.SetScale(uidata[3 * j + 2]);
+        //     lightMat.viewProjection = camera.GetViewProjection();
+        //     lightMat.model = m1.m_Transform.GetTransform();
+        //     matrices.SetData(0, sizeof(lightMat), &lightMat);
+        //     lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        // }
         // vao1 shadow
         vao1.Bind();
         lightMat.model = model1Trans.GetTransform();
@@ -190,8 +200,8 @@ int main(int, char **) {
         // vao2 shadow
         vao2.Bind();
         model2Trans.SetPosition(glm::vec3(-1, 0, 0));
-        model2Trans.SetRotation(rot2);
-        model2Trans.SetScale(scale2);
+        model2Trans.SetRotation(uidata[4]);
+        model2Trans.SetScale(uidata[5]);
         lightMat.model = model2Trans.GetTransform();
         matrices.SetData(0, sizeof(lightMat), &lightMat);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
@@ -209,7 +219,8 @@ int main(int, char **) {
         tex1.Bind(1);
         tex2.Bind(2);
         tex3.Bind(3);
-        shadowTexture.Bind(4);
+        // shadowTexture.Bind(4);
+        depthTexture.Bind(4);
         // tex4.Bind(4);
 
         programColor.SetInt("texture1", 1);
@@ -219,9 +230,9 @@ int main(int, char **) {
 
         vao1.Bind();
 
-        model1Trans.SetPosition(pos1);
-        model1Trans.SetRotation(rot1);
-        model1Trans.SetScale(scale1);
+        model1Trans.SetPosition(uidata[0]);
+        model1Trans.SetRotation(uidata[1]);
+        model1Trans.SetScale(uidata[2]);
 
         Matrices mat1;
         mat1.model = model1Trans.GetTransform();
@@ -236,8 +247,8 @@ int main(int, char **) {
 
         model2Trans.SetPosition(glm::vec3(-1, 0, 0));
         // model2Trans.SetPosition(pos2);
-        model2Trans.SetRotation(rot2);
-        model2Trans.SetScale(scale2);
+        model2Trans.SetRotation(uidata[4]);
+        model2Trans.SetScale(uidata[5]);
 
         Matrices mat2;
         mat2.model = model2Trans.GetTransform();
@@ -254,7 +265,7 @@ int main(int, char **) {
         Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
         vao3.Bind();
         model2Trans.SetScale(glm::vec3(0.3));
-        model2Trans.SetPosition(pos2);
+        model2Trans.SetPosition(uidata[3]);
 
         mat2.model = model2Trans.GetTransform();
         mat2.viewProjection = camera.GetViewProjection();
@@ -273,8 +284,8 @@ int main(int, char **) {
         programScreen.SetInt("uvcheck", 2);
         renderSurface.Bind(0);
         // renderSurface.Bind(1);
-        // depthTexture.Bind(1);
-        shadowTexture.Bind(1);
+        depthTexture.Bind(1);
+        // shadowTexture.Bind(1);
         tex2.Bind(2);
 
         planeVao.Bind();
@@ -309,15 +320,15 @@ int main(int, char **) {
         ImGui::End();
 
         ImGui::Begin("Model 1");
-        ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
-        ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
-        ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uidata[0][0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &uidata[1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[2][0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Begin("Model 2");
-        ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
-        ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
-        ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uidata[3][0], -3, 3);
+        ImGui::SliderFloat3("Rotation", &uidata[4][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[5][0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Render();

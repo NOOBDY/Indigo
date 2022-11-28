@@ -65,6 +65,7 @@ float fade(vec3 center, vec3 position, float radius) {
 vec3 shadow(vec3 position, LightData light) {
     float lightDepth = texture(texture4, (worldPosition - light.transform.position)).x;
     // lightDepth *= 10;
+    // lightDepth = (lightDepth + 1.0) / 2;
     lightDepth *= light.farPlane;
     float currentDepth = length(position - light.transform.position);
     float range = .05;

@@ -52,12 +52,13 @@ layout(std140, binding = 2) uniform Lights {
 uniform sampler2D texture1; // samplers are opaque types and
 void main() {
     vec3 color3 = vec3(0.);
-    gl_FragDepth = gl_FragCoord.z;
-    // color = vec4(vec3(gl_FragCoord.z), 1.0);
+    // gl_FragDepth = gl_FragCoord.z;
     float len = length(vec3(worldPosition - lights[0].transform.position));
     len /= lights[0].m_FarPlane;
     // len /= 10;
     color = vec4(vec3(len), 1.0);
+    gl_FragDepth = len;
+
     // color = vec4(worldPosition - lights[0].transform.position, 1.0);
     // color = vec4(normalize(worldPosition - lights[0].transform.position), 1.0);
 
