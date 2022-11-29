@@ -29,9 +29,11 @@ void OpenGLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
 void Renderer::Init() {
     LOG_TRACE("Initializing OpenGL");
 
-    if (glewInit() != GLEW_OK) {
+    if (glewInit() != GLEW_OK)
         LOG_ERROR("Failed to Initialize GLEW\n");
-    }
+
+    if (!GL_ARB_direct_state_access)
+        LOG_ERROR("OpenGL driver doesn't support ARB_direct_state_access");
 
     glEnable(GL_CULL_FACE);
 

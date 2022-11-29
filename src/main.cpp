@@ -58,14 +58,13 @@ int main(int, char **) {
     Light light2(glm::vec3(1.0f));
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
-    light2.SetPower(12);
+    light2.SetPower(50);
     // begin model 1
     Transform model1Trans;
-    model1Trans.SetPosition(glm::vec3(2, 0, 0));
 
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
 
-    glm::vec3 pos1(1.35, 0, 0);
+    glm::vec3 pos1(0, 0, 0);
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
@@ -75,10 +74,9 @@ int main(int, char **) {
 
     // begin model 2
     Transform model2Trans;
-    model2Trans.SetPosition({2, 0, 0});
     Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    glm::vec3 pos2(-2, 0, 0);
+    glm::vec3 pos2(0, 0, 0);
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
@@ -103,18 +101,18 @@ int main(int, char **) {
         0, 2, 3, //
     };
 
-    VertexArray planeVao;
+    VertexArray planeVAO;
 
-    planeVao.AddVertexBuffer(
+    planeVAO.AddVertexBuffer(
         std::make_shared<VertexBuffer>(quadVertices, 2 * sizeof(float)));
 
-    planeVao.AddVertexBuffer(
+    planeVAO.AddVertexBuffer(
         std::make_shared<VertexBuffer>(quadUV, 2 * sizeof(float)));
 
-    planeVao.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
+    planeVAO.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
 
     Texture tex1("../assets/textures/little_city/main_color.jpg");
-    Texture tex2("../assets/textures/uv.png");
+    Texture tex2("../assets/textures/little_city/misc.png");
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
@@ -160,6 +158,11 @@ int main(int, char **) {
 
         program.Bind();
 
+        program.SetInt("texture1", 1);
+        program.SetInt("texture2", 2);
+        program.SetInt("texture3", 3);
+        program.SetInt("texture4", 4);
+
         glm::vec3 pos = camera.GetTransform().GetPosition();
         glUniform3fv(cameraUniform, 1, &pos.x);
 
@@ -167,11 +170,6 @@ int main(int, char **) {
         tex2.Bind(2);
         tex3.Bind(3);
         tex4.Bind(4);
-
-        program.SetInt("texture1", 1);
-        program.SetInt("texture2", 2);
-        program.SetInt("texture3", 3);
-        program.SetInt("texture4", 4);
 
         float tempValue = glm::sin(i += 0.1f);
         light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
@@ -222,13 +220,13 @@ int main(int, char **) {
         framebufferProgram.Bind();
         framebufferProgram.SetInt("screenTexture", 0);
         // glBindVertexArray(quadVAO);
-        planeVao.Bind();
+        planeVAO.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
-        Renderer::Draw(planeVao.GetIndexBuffer()->GetCount());
+        Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
             camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
                                  delta.y * -2 / window.GetHeight());
         }
