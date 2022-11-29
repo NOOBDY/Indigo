@@ -6,10 +6,10 @@
 
 #include "log.hpp"
 
-VertexArray Importer::LoadFile(const std::string &filepath) {
+std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
 
-    VertexArray va;
+    std::shared_ptr<VertexArray> va = std::make_shared<VertexArray>();
     Assimp::Importer importer;
 
     std::vector<float> sharedBuffer;
@@ -50,7 +50,7 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
     // Vertices
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mVertices[0].x,
                         &mesh->mVertices[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // UVs
@@ -60,25 +60,25 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
         sharedBuffer.insert(sharedBuffer.end(), &mesh->mTextureCoords[0][i].x,
                             &mesh->mTextureCoords[0][i].x + 2);
     }
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 2 * sizeof(float)));
 
     // Normals
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mNormals[0].x,
                         &mesh->mNormals[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // Tangents
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mTangents[0].x,
                         &mesh->mTangents[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // Bitangents
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mBitangents[0].x,
                         &mesh->mBitangents[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // Indices
@@ -96,7 +96,7 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
                            &mesh->mFaces[i].mIndices[0] +
                                mesh->mFaces[i].mNumIndices);
     }
-    va.SetIndexBuffer(std::make_shared<IndexBuffer>(indexBuffer));
+    va->SetIndexBuffer(std::make_shared<IndexBuffer>(indexBuffer));
 
     LOG_INFO("Loaded {} Vertices", mesh->mNumVertices);
 

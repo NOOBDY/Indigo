@@ -32,6 +32,11 @@ struct Material {
     float maxShine;
 };
 
+struct Model {
+    std::shared_ptr<VertexArray> VAO;
+    Transform transform;
+};
+
 int main(int, char **) {
     Log::Init();
 
@@ -59,28 +64,30 @@ int main(int, char **) {
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
     light2.SetPower(50);
-    // begin model 1
-    Transform model1Trans;
 
+    std::vector<Model> scene;
+
+    // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
 
     glm::vec3 pos1(0, 0, 0);
     glm::vec3 rot1(180, 180, 180);
     glm::vec3 scale1(1, 1, 1);
 
-    VertexArray vao1 =
-        Importer::LoadFile("../assets/models/little_city/main.glb");
+    scene.push_back(
+        Model{Importer::LoadFile("../assets/models/little_city/main.glb")});
     // end model 1
 
     // begin model 2
-    Transform model2Trans;
     Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
     glm::vec3 pos2(0, 0, 0);
     glm::vec3 rot2(180, 180, 180);
     glm::vec3 scale2(1, 1, 1);
 
-    VertexArray vao2 = Importer::LoadFile("../assets/models/suzanne.obj");
+    scene.push_back(
+        Model{Importer::LoadFile("../assets/models/little_city/misc.glb")});
+    // Importer::LoadFile("../assets/models/cube.obj");
     // end model 2
 
     // 2D plane for framebuffer
@@ -112,7 +119,7 @@ int main(int, char **) {
     planeVAO.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
 
     Texture tex1("../assets/textures/little_city/main_color.jpg");
-    Texture tex2("../assets/textures/little_city/misc.png");
+    Texture tex2("../assets/textures/little_city/inter_view.jpg");
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
@@ -178,29 +185,29 @@ int main(int, char **) {
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
 
-        vao1.Bind();
+        scene[0].VAO->Bind();
 
-        model1Trans.SetPosition(pos1);
-        model1Trans.SetRotation(rot1);
-        model1Trans.SetScale(scale1);
+        scene[0].transform.SetPosition(pos1);
+        scene[0].transform.SetRotation(rot1);
+        scene[0].transform.SetScale(scale1);
 
         Matrices mat1;
-        mat1.model = model1Trans.GetTransform();
+        mat1.model = scene[0].transform.GetTransform();
         mat1.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat1), &mat1);
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        Renderer::Draw(vao1.GetIndexBuffer()->GetCount());
+        Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
 
-        vao2.Bind();
+        scene[1].VAO->Bind();
 
-        model2Trans.SetPosition(pos2);
-        model2Trans.SetRotation(rot2);
-        model2Trans.SetScale(scale2);
+        scene[1].transform.SetPosition(pos2);
+        scene[1].transform.SetRotation(rot2);
+        scene[1].transform.SetScale(scale2);
 
         Matrices mat2;
-        mat2.model = model2Trans.GetTransform();
+        mat2.model = scene[1].transform.GetTransform();
         mat2.viewProjection = camera.GetViewProjection();
         matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor2);
@@ -211,7 +218,7 @@ int main(int, char **) {
         tex3.Bind(3);
         tex4.Bind(4);
 
-        Renderer::Draw(vao2.GetIndexBuffer()->GetCount());
+        Renderer::Draw(scene[1].VAO->GetIndexBuffer()->GetCount());
 
         // frame buffer part
         fbo.Unbind();
@@ -240,9 +247,9 @@ int main(int, char **) {
         ImGui::Begin("Debug Info");
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
-        ImGui::Text("%d, %d, %d", (int)camera.GetTransform().GetRotation().x,
-                    (int)camera.GetTransform().GetRotation().y,
-                    (int)camera.GetTransform().GetRotation().z);
+        ImGui::Text("%f, %f, %f", scene[0].transform.GetPosition().x,
+                    scene[0].transform.GetPosition().y,
+                    scene[0].transform.GetPosition().z);
         ImGui::End();
 
         ImGui::Begin("Model 1");

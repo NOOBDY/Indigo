@@ -11,7 +11,7 @@
 
 class Camera {
 public:
-    Camera(float fov, float aspectRatio, float nearClip = 0.1f,
+    Camera(float fov, float aspectRatio, float nearClip = 10.0f,
            float farClip = 1000.0f);
 
     void UpdateProjection();
