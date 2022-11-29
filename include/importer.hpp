@@ -18,9 +18,9 @@
  *
  * Only the first mesh and the first UV will be loaded
  */
-class Importer {
-public:
-    static VertexArray LoadFile(const std::string &filepath);
-};
+namespace Importer {
+// Returns `std::shared_ptr` due to some C++ optimization dark magic
+std::shared_ptr<VertexArray> LoadFile(const std::string &filepath);
+}; // namespace Importer
 
 #endif
