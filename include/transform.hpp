@@ -37,7 +37,6 @@ public:
 
 private:
     glm::mat4 UpdateMat();
-    glm::mat4 RotationMat(glm::mat4 transform) const;
 
 private:
     glm::mat4 m_Transform = glm::mat4(1.0f);
