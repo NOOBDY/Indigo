@@ -29,14 +29,15 @@ public:
     glm::vec3 GetPosition() const { return m_Position; }
     glm::vec3 GetRotation() const { return m_Rotation; }
     glm::vec3 GetScale() const { return m_Scale; }
-    glm::vec3 GetDirection() const;
+
+    glm::vec3 GetDirection(glm::vec3 dir) const;
     glm::mat4 GetDirection4() const;
 
     glm::mat4 GetTransform();
     TransformData GetTransformData();
 
 private:
-    glm::mat4 UpdateMat();
+    void UpdateMat();
 
 private:
     glm::mat4 m_Transform = glm::mat4(1.0f);
