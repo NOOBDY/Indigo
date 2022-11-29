@@ -1,10 +1,7 @@
 #ifndef LOG_HPP
 #define LOG_HPP
 
-#include <memory> // for circular dependency issues
-                  // pch.hpp can't be included here
-
-#include <spdlog/spdlog.h>
+#include "pch.hpp"
 
 namespace Log {
 enum Level {
