@@ -11,11 +11,20 @@ void GLFWErrorCallback(int, const char *errorMessage) {
     LOG_ERROR("{}", errorMessage);
 }
 
-Window::Window(int width, int height, const char *title)
-    : m_Width(width), m_Height(height) {
-    LOG_TRACE("Creating Window");
+/**
+ * The GLFW API for scrolling only supports callbacks
+ *
+ * The callback function can't be a non-static method so this pointer `hack` is
+ * necessary
+ */
+void GLFWScrollCallback(GLFWwindow *window, double offsetX, double offsetY) {
+    ((Window *)glfwGetWindowUserPointer(window))->m_ScrollOffset = {offsetX,
+                                                                    offsetY};
+}
 
-    glfwSetErrorCallback(GLFWErrorCallback);
+Window::Window(int width, int height, const char *title)
+    : m_Width(width), m_Height(height), m_ScrollOffset(0) {
+    LOG_TRACE("Creating Window");
 
     if (glfwInit() != GLFW_TRUE) {
         LOG_ERROR("Failed to Initialize GLFW");
@@ -36,10 +45,17 @@ Window::Window(int width, int height, const char *title)
         throw;
     }
 
+    // Binds the `this` pointer to the `m_Window` pointer so it can be
+    // referenced in the callback function
+    glfwSetWindowUserPointer(m_Window, this);
+
     glfwMakeContextCurrent(m_Window);
     glfwSwapInterval(1); // enable v-sync
 
     glfwSetInputMode(m_Window, GLFW_STICKY_KEYS, GL_TRUE);
+
+    glfwSetErrorCallback(GLFWErrorCallback);
+    glfwSetScrollCallback(m_Window, GLFWScrollCallback);
 }
 
 Window::~Window() {
@@ -75,4 +91,9 @@ glm::vec2 Window::GetCursorDelta() const {
 bool Window::ShouldClose() const {
     return GetKey(GLFW_KEY_ESCAPE) || GetKey(GLFW_KEY_Q) ||
            glfwWindowShouldClose(m_Window) == GLFW_TRUE;
+}
+
+void Window::PollEvents() {
+    m_ScrollOffset = {0, 0};
+    glfwPollEvents();
 }

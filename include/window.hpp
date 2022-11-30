@@ -32,8 +32,14 @@ public:
     bool GetKey(int key) const;
     bool GetMouseButton(int button) const;
     glm::vec2 GetCursorDelta() const;
+    glm::vec2 GetScrollOffset() const { return m_ScrollOffset; }
 
     bool ShouldClose() const;
+
+    void PollEvents();
+
+    friend void GLFWScrollCallback(GLFWwindow *window, double offsetX,
+                                   double offsetY);
 
 private:
     GLFWwindow *m_Window;
@@ -43,6 +49,8 @@ private:
 
     double m_XPos;
     double m_YPos;
+
+    glm::vec2 m_ScrollOffset;
 };
 
 #endif

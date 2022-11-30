@@ -247,9 +247,8 @@ int main(int, char **) {
         ImGui::Begin("Debug Info");
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
-        ImGui::Text("%f, %f, %f", scene[0].transform.GetPosition().x,
-                    scene[0].transform.GetPosition().y,
-                    scene[0].transform.GetPosition().z);
+        ImGui::Text("(%f, %f)", window.GetScrollOffset().x,
+                    window.GetScrollOffset().y);
         ImGui::End();
 
         ImGui::Begin("Model 1");
@@ -269,7 +268,7 @@ int main(int, char **) {
 
         // TODO: Figure this out and put it in `Window` class
         glfwSwapBuffers(window.GetWindow());
-        glfwPollEvents();
+        window.PollEvents();
     } while (!window.ShouldClose());
 
     ImGui_ImplOpenGL3_Shutdown();
