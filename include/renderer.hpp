@@ -5,18 +5,18 @@
 
 #include "vertex_array.hpp"
 
-class Renderer {
-public:
-    static void Init();
-    /**
-     * Clears the color buffer the depth buffer
-     */
-    static void Clear();
-    static void ClearColor(float r, float g, float b, float a);
-    static void Draw(const unsigned int indexCount);
+namespace Renderer {
+void Init();
+/**
+ * Clears the color and depth buffer
+ */
+void Clear();
+void ClearColor(float r, float g, float b, float a);
+void Draw(const unsigned int indexCount);
 
-    static void EnableDepthTest() { glEnable(GL_DEPTH_TEST); }
-    static void DisableDepthTest() { glDisable(GL_DEPTH_TEST); }
-};
+void EnableDepthTest();
+void DisableDepthTest();
+
+}; // namespace Renderer
 
 #endif

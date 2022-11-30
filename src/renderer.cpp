@@ -29,9 +29,11 @@ void OpenGLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
 void Renderer::Init() {
     LOG_TRACE("Initializing OpenGL");
 
-    if (glewInit() != GLEW_OK) {
+    if (glewInit() != GLEW_OK)
         LOG_ERROR("Failed to Initialize GLEW\n");
-    }
+
+    if (!GL_ARB_direct_state_access)
+        LOG_ERROR("OpenGL driver doesn't support ARB_direct_state_access");
 
     glEnable(GL_CULL_FACE);
 
@@ -40,9 +42,10 @@ void Renderer::Init() {
     glDebugMessageCallback(OpenGLDebugMessageCallback, 0);
 
     LOG_TRACE("Successfully Initialized OpenGL");
-    LOG_INFO("Vendor: {}", glGetString(GL_VENDOR));
-    LOG_INFO("Renderer: {}", glGetString(GL_RENDERER));
-    LOG_INFO("Version: {}", glGetString(GL_VERSION));
+    LOG_INFO("OpenGL Info");
+    LOG_INFO("  Vendor: {}", glGetString(GL_VENDOR));
+    LOG_INFO("  Renderer: {}", glGetString(GL_RENDERER));
+    LOG_INFO("  Version: {}", glGetString(GL_VERSION));
 }
 
 void Renderer::ClearColor(float r, float g, float b, float a) {
@@ -55,4 +58,12 @@ void Renderer::Clear() {
 
 void Renderer::Draw(const unsigned int indexCount) {
     glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, (void *)0);
+}
+
+void Renderer::EnableDepthTest() {
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Renderer::DisableDepthTest() {
+    glDisable(GL_DEPTH_TEST);
 }

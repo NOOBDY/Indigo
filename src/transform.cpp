@@ -3,7 +3,7 @@
 #include "log.hpp"
 
 Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
-    : m_Position(position), m_Rotation(rotation), m_Scale(scale){};
+    : m_Position(position), m_Rotation(rotation), m_Scale(scale) {}
 
 void Transform::SetTransform(glm::mat4 transform) {
     m_Transform = transform;
@@ -47,54 +47,51 @@ void Transform::SetTransform(glm::mat4 transform) {
     m_Rotation = rot;
 }
 
-glm::mat4 Transform::RotationMat(glm::mat4 transform) {
-    transform = glm::rotate(transform, glm::radians(m_Rotation.x),
-                            glm::vec3(1.f, 0.f, 0.f));
-    transform = glm::rotate(transform, glm::radians(m_Rotation.y),
-                            glm::vec3(0.f, 1.f, 0.f));
-    transform = glm::rotate(transform, glm::radians(m_Rotation.z),
-                            glm::vec3(0.f, 0.f, 1.f));
-    return transform;
-}
+void Transform::UpdateMat() {
+    glm::mat4 eye(1.f);
 
-glm::mat4 Transform::UpdateMat() {
-    glm::mat4 transform = glm::mat4(1.f);
-    // transform = glm::translate(transform, glm::vec3(0.f));
-    transform = glm::translate(transform, m_Position);
-    transform = RotationMat(transform);
-    transform = glm::scale(transform, m_Scale);
-    m_Transform = transform;
-    return transform;
+    m_Transform = glm::translate(eye, m_Position) *
+                  glm::toMat4(glm::quat(glm::radians(m_Rotation))) *
+                  glm::scale(eye, m_Scale);
 }
 
 glm::mat4 Transform::GetTransform() {
     UpdateMat();
 
     return m_Transform;
-};
-glm::vec3 Transform::GetDirection() {
-    glm::vec4 direction = glm::vec4(0, 1, 0, 1);
+}
+
+glm::vec3 Transform::GetDirection(glm::vec3 dir) const {
+    glm::vec4 direction = glm::vec4(glm::vec3(dir), 1);
     glm::mat4 transform = glm::mat4(1.f);
     transform = glm::translate(transform, glm::vec3(0));
-    transform = glm::scale(transform, glm::vec3(1));
-    transform = RotationMat(transform);
+    transform = glm::toMat4(glm::quat(glm::radians(m_Rotation)));
+    transform = glm::scale(transform, glm::vec3(1)); // scale size to 1
     direction = transform * direction;
     return glm::vec3(direction);
-};
+}
 
-glm::mat4 Transform::GetDirection4() {
+glm::mat4 Transform::GetDirection4() const {
     glm::mat4 transform = glm::mat4(1.f);
     transform = glm::translate(transform, glm::vec3(0));
-    transform = RotationMat(transform);
+    transform = glm::toMat4(glm::quat(glm::radians(m_Rotation)));
 
     return transform;
-};
+}
+
 TransformData Transform::GetTransformData() {
     UpdateMat();
 
     TransformData data = {
-        m_Transform, m_Position, 0.0f,           m_Rotation, 0.0f,
-        m_Scale,     0.0f,       GetDirection(), 0.0f,
+        m_Transform,
+        m_Position,
+        0.0f, //
+        m_Rotation,
+        0.0f, //
+        m_Scale,
+        0.0f, //
+        GetDirection({0, 1, 0}),
+        0.0f, //
     };
 
     return data;
