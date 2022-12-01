@@ -62,7 +62,7 @@ uniform sampler2D texture3;
 // uniform sampler2D texture4; // frame buffer texture
 uniform samplerCube texture4; // frame buffer texture
 float fade(vec3 center, vec3 position, float radius) {
-    return (1 - clamp(length(position - center) / 200, 0, 1));
+    return (1 - clamp(length(position - center) / 300, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
@@ -88,7 +88,7 @@ vec3 shadow(vec3 position, LightData light) {
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
     vec3 n = normal;
-    n = TBN * (texture(texture3, UV).xyz * 2 - 1);
+    // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
     vec3 direction = light.transform.direction;
     // direction :light to mesh
     vec3 l = light.lightType == 3 ? direction : normalize(light.transform.position - position);
