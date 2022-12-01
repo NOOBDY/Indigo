@@ -72,6 +72,7 @@ int main(int, char **) {
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
     glm::vec3 uidata[10];
+    float lightPower = 5;
 
     uidata[0] = glm::vec3(1.35, 0, 0);
     uidata[1] = glm::vec3(180, 180, 180);
@@ -179,6 +180,7 @@ int main(int, char **) {
         // light1.m_Transform.Setition(glm::vec3(1, tempValue * 3, -3));
         light1.m_Transform.SetPosition(uidata[6]);
         // light1.SetRadius(3 * glm::abs(tempValue));
+        light1.SetPower(lightPower);
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
         glm::vec2 delta = window.GetCursorDelta();
@@ -298,6 +300,7 @@ int main(int, char **) {
         ImGui::SliderFloat3("Position", &uidata[6][0], -200, 200);
         ImGui::SliderFloat3("Rotation", &uidata[7][0], 0, 360);
         ImGui::SliderFloat3("Scale", &uidata[8][0], 0.1f, 100.0f);
+        ImGui::SliderFloat("Power", &lightPower, 0.1f, 10.0f);
         ImGui::End();
 
         ImGui::Render();
