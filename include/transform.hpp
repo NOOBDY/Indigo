@@ -26,18 +26,18 @@ public:
     void SetRotation(glm::vec3 rotation) { m_Rotation = rotation; }
     void SetScale(glm::vec3 scale) { m_Scale = scale; }
 
-    glm::mat4 GetTransform();
-    glm::vec3 GetPosition() const { return m_Position; };
-    glm::vec3 GetRotation() const { return m_Rotation; };
-    glm::vec3 GetScale() const { return m_Scale; };
-    glm::vec3 GetDirection();
-    glm::mat4 GetDirection4();
+    glm::vec3 GetPosition() const { return m_Position; }
+    glm::vec3 GetRotation() const { return m_Rotation; }
+    glm::vec3 GetScale() const { return m_Scale; }
 
+    glm::vec3 GetDirection(glm::vec3 dir) const;
+    glm::mat4 GetDirection4() const;
+
+    glm::mat4 GetTransform();
     TransformData GetTransformData();
 
 private:
-    glm::mat4 UpdateMat();
-    glm::mat4 RotationMat(glm::mat4 transform);
+    void UpdateMat();
 
 private:
     glm::mat4 m_Transform = glm::mat4(1.0f);

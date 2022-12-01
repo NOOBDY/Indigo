@@ -3,22 +3,22 @@
 #include "log.hpp"
 
 VertexArray::VertexArray() {
-    LOG_TRACE("Creating Vertex Array");
     glCreateVertexArrays(1, &m_ArrayID);
+    LOG_TRACE("Creating Vertex Array {}", m_ArrayID);
 }
 
 VertexArray::~VertexArray() {
-    LOG_TRACE("Deleting Vertex Array");
+    LOG_TRACE("Deleting Vertex Array {}", m_ArrayID);
     glDeleteVertexArrays(1, &m_ArrayID);
 }
 
 void VertexArray::Bind() const {
-    LOG_TRACE("Binding Vertex Array");
+    LOG_TRACE("Binding Vertex Array {}", m_ArrayID);
     glBindVertexArray(m_ArrayID);
 }
 
 void VertexArray::Unbind() const {
-    LOG_TRACE("Unbinding Vertex Array");
+    LOG_TRACE("Unbinding Vertex Array {}", m_ArrayID);
     glBindVertexArray(0);
 }
 

@@ -28,11 +28,14 @@ struct LightData {
 
     vec3 lightColor;
     float radius;
+
     float power;
     int lightType;
     float innerCone;
     float outerCone;
+
     mat4 lightProjections[6];
+
     float nearPlane;
     float farPlane;
 };
@@ -59,20 +62,29 @@ uniform sampler2D texture3;
 // uniform sampler2D texture4; // frame buffer texture
 uniform samplerCube texture4; // frame buffer texture
 float fade(vec3 center, vec3 position, float radius) {
-    return 1.0 / (length(position - center) / radius + 0.1);
+    // return 1;
+    return (1 - clamp(length(position - center) / 2000, 0, 1));
+    // return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
+vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
 vec3 shadow(vec3 position, LightData light) {
-    float lightDepth = texture(texture4, (worldPosition - light.transform.position)).x;
-    // lightDepth *= 10;
-    // lightDepth = (lightDepth + 1.0) / 2;
+    vec3 dir = position - light.transform.position;
+    float lightDepth = texture(texture4, dir).x;
     lightDepth *= light.farPlane;
-    float currentDepth = length(position - light.transform.position);
-    float range = .05;
-    // float range = lightDepth / 1000;
-    if(currentDepth - range > lightDepth)
-        return vec3(1);
-    return vec3(0);
+    float currentDepth = length(dir);
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+    float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 25.0;
+    for(int i = 0; i < samples; ++i) {
+        float closestDepth = texture(texture4, dir + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= light.farPlane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+    return vec3(1 - shadow);
 }
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
@@ -109,6 +121,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     vec3 shadow = shadow(position, light);
     vec3 t = texture(texture4, (worldPosition - light.transform.position)).xyz;
     // return shadow + vec3(0.1, 0, 0);
+    // return vec3(fadeOut);
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
 
@@ -134,6 +147,7 @@ vec3 ColorTransform(vec3 color) {
 void main() {
     vec3 color3 = vec3(0.);
     color3 = PhongLight(cameraPosition, worldPosition, lights, material);
+    // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
     color = vec4(color3, 1.);
 }

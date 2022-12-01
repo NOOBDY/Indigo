@@ -6,10 +6,10 @@
 
 #include "log.hpp"
 
-VertexArray Importer::LoadFile(const std::string &filepath) {
+std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
 
-    VertexArray va;
+    std::shared_ptr<VertexArray> va = std::make_shared<VertexArray>();
     Assimp::Importer importer;
 
     std::vector<float> sharedBuffer;
@@ -28,8 +28,16 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
      * // There's probably a better way to predetermine vector size and
      * // load entire blocks of memory instead of `push_back()` each element
      *
-     * ? Update: changed from `push_back()` to `insert()` for some elements, but
-     * ? IDK if there are more optimizing space
+     * // Update 1: changed from `push_back()` to `insert()` for some elements,
+     * // but IDK if there are more optimizing space
+     *
+     * Update 2: Currently loads only the first mesh and uses a shared buffer to
+     * load mesh data into the GPU. This probably breaks OOP principles but the
+     * extra memory saved is pretty substantial(~2/3 less but unverified)
+     * especially on large files.
+     * Another index buffer vector has to be used due to type differences. If
+     * this problem can solved, the memory usage can be cut down to ~5/6 less
+     * than the original implementation.
      */
 
     // ! hard-coded to read only the first mesh
@@ -39,13 +47,10 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
     indexBuffer.reserve(sizeof(float) * mesh->mFaces[0].mNumIndices *
                         mesh->mNumFaces);
 
-    LOG_DEBUG("{}", sharedBuffer.capacity());
-    LOG_DEBUG("{}", indexBuffer.capacity());
-
     // Vertices
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mVertices[0].x,
                         &mesh->mVertices[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // UVs
@@ -55,25 +60,25 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
         sharedBuffer.insert(sharedBuffer.end(), &mesh->mTextureCoords[0][i].x,
                             &mesh->mTextureCoords[0][i].x + 2);
     }
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 2 * sizeof(float)));
 
     // Normals
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mNormals[0].x,
                         &mesh->mNormals[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // Tangents
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mTangents[0].x,
                         &mesh->mTangents[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // Bitangents
     sharedBuffer.insert(sharedBuffer.begin(), &mesh->mBitangents[0].x,
                         &mesh->mBitangents[0].x + 3 * mesh->mNumVertices);
-    va.AddVertexBuffer(
+    va->AddVertexBuffer(
         std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
 
     // Indices
@@ -91,7 +96,7 @@ VertexArray Importer::LoadFile(const std::string &filepath) {
                            &mesh->mFaces[i].mIndices[0] +
                                mesh->mFaces[i].mNumIndices);
     }
-    va.SetIndexBuffer(std::make_shared<IndexBuffer>(indexBuffer));
+    va->SetIndexBuffer(std::make_shared<IndexBuffer>(indexBuffer));
 
     LOG_INFO("Loaded {} Vertices", mesh->mNumVertices);
 

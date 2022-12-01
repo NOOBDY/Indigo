@@ -18,11 +18,14 @@ struct LightData {
 
     glm::vec3 lightColor;
     float radius;
+
     float power;
     LightType lightType;
     float innerCone;
     float outerCone;
+
     glm::mat4 lightProjections[6];
+
     float m_NearPlane;
     float m_FarPlane;
 };
@@ -55,12 +58,12 @@ public:
 private:
     LightType m_LightType = LightType::POINT;
     glm::vec3 m_LightColor;
-    float m_Radius = 100000.0f;
+    float m_Radius = 200.0f;
     float m_Power = 0.5f;
     float m_InnerCone = 20.0f;
     float m_OuterCone = 30.0f;
-    float m_NearPlane = .1;
-    float m_FarPlane = 10.0f;
+    float m_NearPlane = 1;
+    float m_FarPlane = 1000.0f;
 };
 
 #endif

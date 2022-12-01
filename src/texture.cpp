@@ -82,6 +82,15 @@ void Texture::LoadImage(const std::string &textureFilepath) {
         throw;
     }
 
+    /**
+     * TODO: Add support for 1 channel png files
+     * The seg fault when loading the reflection(?) and AO map is caused by
+     * these images only having one channel. Currently the function only loads
+     * images as `GL_RGB` and `GL_RGBA` which has 3 and 4 channels, which causes
+     * the program to read addresses out of bounds `glTexImage2D` documentation
+     * for format table
+     * https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
+     */
     glTexImage2D(                           //
         m_Format,                           // target
         0,                                  // level
