@@ -70,6 +70,4 @@ void Camera::RotateByDelta(const float deltaX, const float deltaY) {
         glm::translate(glm::mat4(1.0f), m_Transform.GetPosition());
 
     m_Transform.SetPosition(glm::vec3(cameraMat[3]));
-
-    UpdateView();
 }

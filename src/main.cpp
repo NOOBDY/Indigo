@@ -170,8 +170,20 @@ int main(int, char **) {
         program.SetInt("texture3", 3);
         program.SetInt("texture4", 4);
 
+        camera.GetTransform().SetPosition(
+            camera.GetTransform().GetPosition() +
+            10 * window.GetScrollOffset().y *
+                glm::normalize(camera.GetTransform().GetPosition()));
+
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
+            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                 delta.y * -2 / window.GetHeight());
+        }
+
         glm::vec3 pos = camera.GetTransform().GetPosition();
         glUniform3fv(cameraUniform, 1, &pos.x);
+
+        camera.UpdateView();
 
         tex1.Bind(1);
         tex2.Bind(2);
@@ -232,11 +244,6 @@ int main(int, char **) {
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
-
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                 delta.y * -2 / window.GetHeight());
-        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
