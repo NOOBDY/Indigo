@@ -170,8 +170,20 @@ int main(int, char **) {
         program.SetInt("texture3", 3);
         program.SetInt("texture4", 4);
 
+        camera.GetTransform().SetPosition(
+            camera.GetTransform().GetPosition() +
+            10 * window.GetScrollOffset().y *
+                glm::normalize(camera.GetTransform().GetPosition()));
+
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
+            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                 delta.y * -2 / window.GetHeight());
+        }
+
         glm::vec3 pos = camera.GetTransform().GetPosition();
         glUniform3fv(cameraUniform, 1, &pos.x);
+
+        camera.UpdateView();
 
         tex1.Bind(1);
         tex2.Bind(2);
@@ -233,11 +245,6 @@ int main(int, char **) {
         // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                 delta.y * -2 / window.GetHeight());
-        }
-
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -247,9 +254,8 @@ int main(int, char **) {
         ImGui::Begin("Debug Info");
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
-        ImGui::Text("%f, %f, %f", scene[0].transform.GetPosition().x,
-                    scene[0].transform.GetPosition().y,
-                    scene[0].transform.GetPosition().z);
+        ImGui::Text("(%f, %f)", window.GetScrollOffset().x,
+                    window.GetScrollOffset().y);
         ImGui::End();
 
         ImGui::Begin("Model 1");
@@ -269,7 +275,7 @@ int main(int, char **) {
 
         // TODO: Figure this out and put it in `Window` class
         glfwSwapBuffers(window.GetWindow());
-        glfwPollEvents();
+        window.PollEvents();
     } while (!window.ShouldClose());
 
     ImGui_ImplOpenGL3_Shutdown();
