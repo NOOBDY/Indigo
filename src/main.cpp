@@ -192,36 +192,17 @@ int main(int, char **) {
         Renderer::Clear();
         Renderer::EnableDepthTest();
 
-        // for (int j = 0; j < models.size() - 1; j++) {
-        //     model m1 = models.at(j);
-        //     m1.m_Transform.SetPosition(uidata[3 * j]);
-        //     m1.m_Transform.SetRotation(uidata[3 * j + 1]);
-        //     m1.m_Transform.SetScale(uidata[3 * j + 2]);
-        //     lightMat.viewProjection = camera.GetViewProjection();
-        //     lightMat.model = m1.m_Transform.GetTransform();
-        //     matrices.SetData(0, sizeof(lightMat), &lightMat);
-        //     lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-        // }
-        // vao1 shadow
-        scene[0].VAO->Bind();
-        scene[0].transform.SetPosition(uidata[0]);
-        scene[0].transform.SetRotation(uidata[1]);
-        scene[0].transform.SetScale(uidata[2]);
-        lightMat.model = scene[0].transform.GetTransform();
-        matrices.SetData(0, sizeof(lightMat), &lightMat);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-        Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
-
-        // vao2 shadow
-        scene[1].VAO->Bind();
-        scene[1].transform.SetPosition(glm::vec3(-1, 0, 0));
-        scene[1].transform.SetRotation(uidata[4]);
-        scene[1].transform.SetScale(uidata[5]);
-        lightMat.model = scene[1].transform.GetTransform();
-        matrices.SetData(0, sizeof(lightMat), &lightMat);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-        Renderer::Draw(scene[1].VAO->GetIndexBuffer()->GetCount());
-        shadowFbo.Unbind();
+        // shadow
+        for (int j = 0; j < scene.size() - 1; j++) {
+            scene[j].VAO->Bind();
+            scene[j].transform.SetPosition(uidata[3 * j]);
+            scene[j].transform.SetRotation(uidata[3 * j + 1]);
+            scene[j].transform.SetScale(uidata[3 * j + 2]);
+            lightMat.model = scene[j].transform.GetTransform();
+            matrices.SetData(0, sizeof(lightMat), &lightMat);
+            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
+        }
 
         // color (phong shader)
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -229,14 +210,12 @@ int main(int, char **) {
         programColor.Bind();
         Renderer::Clear();
 
+        glm::vec3 pos = camera.GetTransform().GetPosition();
+        glUniform3fv(cameraUniform, 1, &pos.x);
         programColor.SetInt("texture1", 1);
         programColor.SetInt("texture2", 2);
         programColor.SetInt("texture3", 3);
         programColor.SetInt("texture4", 4);
-
-        glm::vec3 pos = camera.GetTransform().GetPosition();
-        glUniform3fv(cameraUniform, 1, &pos.x);
-
         tex1.Bind(1);
         tex2.Bind(2);
         tex3.Bind(3);
@@ -244,56 +223,21 @@ int main(int, char **) {
         LightDepthTexture.Bind(4);
         // tex4.Bind(4);
 
-        programColor.SetInt("texture1", 1);
-        programColor.SetInt("texture2", 2);
-        programColor.SetInt("texture3", 3);
-        programColor.SetInt("texture4", 4);
+        for (int j = 0; j < scene.size() - 1; j++) {
+            scene[j].VAO->Bind();
 
-        scene[0].VAO->Bind();
+            scene[j].transform.SetPosition(uidata[3 * j + 0]);
+            scene[j].transform.SetRotation(uidata[3 * j + 1]);
+            scene[j].transform.SetScale(uidata[3 * j + 2]);
 
-        scene[0].transform.SetPosition(uidata[0]);
-        scene[0].transform.SetRotation(uidata[1]);
-        scene[0].transform.SetScale(uidata[2]);
-
-        Matrices mat1;
-        mat1.model = scene[0].transform.GetTransform();
-        mat1.viewProjection = camera.GetViewProjection();
-        matrices.SetData(0, sizeof(mat1), &mat1);
-        materials.SetData(0, sizeof(Material), &matColor1);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-
-        Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
-
-        scene[1].VAO->Bind();
-
-        scene[1].transform.SetPosition(glm::vec3(-1, 0, 0));
-        scene[1].transform.SetRotation(uidata[4]);
-        scene[1].transform.SetScale(uidata[5]);
-
-        Matrices mat2;
-        mat2.model = scene[1].transform.GetTransform();
-        mat2.viewProjection = camera.GetViewProjection();
-        matrices.SetData(0, sizeof(mat2), &mat2);
-        materials.SetData(0, sizeof(Material), &matColor2);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-
-        tex1.Bind(2);
-        tex2.Bind(1);
-        tex3.Bind(3);
-        tex4.Bind(4);
-
-        Renderer::Draw(scene[1].VAO->GetIndexBuffer()->GetCount());
-
-        // vao3.Bind();
-        // model2Trans.SetScale(glm::vec3(0.3));
-        // model2Trans.SetPosition(uidata[3]);
-
-        // mat2.model = model2Trans.GetTransform();
-        // mat2.viewProjection = camera.GetViewProjection();
-        // matrices.SetData(0, sizeof(mat2), &mat2);
-        // lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-        // Renderer::Draw(vao3.GetIndexBuffer()->GetCount());
-        // Renderer::Draw(scene[1].VAO->GetIndexBuffer()->GetCount());
+            Matrices mat1;
+            mat1.model = scene[0].transform.GetTransform();
+            mat1.viewProjection = camera.GetViewProjection();
+            matrices.SetData(0, sizeof(mat1), &mat1);
+            materials.SetData(0, sizeof(Material), &matColor1);
+            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
+        }
 
         // frame buffer part
         colorFbo.Unbind();
