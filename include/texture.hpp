@@ -37,8 +37,8 @@ private:
 
 private:
     GLuint m_TextureID;
-    Target m_Format;
-    Format m_Type;
+    Target m_Target;
+    Format m_Format;
 };
 
 #endif
