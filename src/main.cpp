@@ -44,7 +44,6 @@ int main(int, char **) {
 
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
     Controller::InitGUI(window);
 
     Program programShadow("../assets/shaders/shadow.vert",
@@ -71,12 +70,12 @@ int main(int, char **) {
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    glm::vec3 uidata[10];
+    glm::mat3 uidata[3];
     float lightPower = 5;
 
-    uidata[0] = glm::vec3(1.35, 0, 0);
-    uidata[1] = glm::vec3(180, 180, 180);
-    uidata[2] = glm::vec3(1, 1, 1);
+    uidata[0][0] = glm::vec3(1.35, 0, 0);
+    uidata[0][1] = glm::vec3(180, 180, 180);
+    uidata[0][2] = glm::vec3(1, 1, 1);
     scene.push_back(
         Model{Importer::LoadFile("../assets/models/little_city/main.glb")});
     // end model 1
@@ -84,9 +83,9 @@ int main(int, char **) {
     // begin model 2
     // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    uidata[3] = glm::vec3(-2, 0, 0);
-    uidata[4] = glm::vec3(180, 180, 180);
-    uidata[5] = glm::vec3(1);
+    uidata[1][0] = glm::vec3(-2, 0, 0);
+    uidata[1][1] = glm::vec3(180, 180, 180);
+    uidata[1][2] = glm::vec3(1);
     scene.push_back(
         Model{Importer::LoadFile("../assets/models/little_city/misc.glb")});
     // Importer::LoadFile("../assets/models/cube.obj");
@@ -165,9 +164,9 @@ int main(int, char **) {
 
     // float frameCount = 0;
 
-    uidata[6] = glm::vec3(0, 0, 0);
-    uidata[7] = glm::vec3(0, 0, 0);
-    uidata[8] = glm::vec3(20);
+    uidata[2][0] = glm::vec3(0, 0, 0);
+    uidata[2][1] = glm::vec3(0, 0, 0);
+    uidata[2][2] = glm::vec3(20);
     scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
     // Small hack to put camera position into the shader
     // TODO: Find somewhere on the UBO to put this in
@@ -178,7 +177,7 @@ int main(int, char **) {
     do {
         // float tempValue = glm::sin(frameCount += 0.05f);
         // light1.m_Transform.Setition(glm::vec3(1, tempValue * 3, -3));
-        light1.m_Transform.SetPosition(uidata[6]);
+        light1.m_Transform.SetPosition(uidata[2][0]);
         // light1.SetRadius(3 * glm::abs(tempValue));
         light1.SetPower(lightPower);
         lightInfo[0] = light1.GetLightData();
@@ -196,11 +195,12 @@ int main(int, char **) {
         Renderer::EnableDepthTest();
         glDisable(GL_CULL_FACE);
 
+        // not render light ball
         for (int j = 0; j < scene.size() - 1; j++) {
             scene[j].VAO->Bind();
-            scene[j].transform.SetPosition(uidata[3 * j]);
-            scene[j].transform.SetRotation(uidata[3 * j + 1]);
-            scene[j].transform.SetScale(uidata[3 * j + 2]);
+            scene[j].transform.SetPosition(uidata[j][0]);
+            scene[j].transform.SetRotation(uidata[j][1]);
+            scene[j].transform.SetScale(uidata[j][2]);
             lightMat.model = scene[j].transform.GetTransform();
             matrices.SetData(0, sizeof(lightMat), &lightMat);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
@@ -227,15 +227,12 @@ int main(int, char **) {
         // shadowTexture.Bind(4);
         // tex4.Bind(4);
 
-        LOG_INFO(scene.size());
         for (int j = 0; j < scene.size(); j++) {
             scene[j].VAO->Bind();
 
-            scene[j].transform.SetPosition(uidata[3 * j + 0]);
-            scene[j].transform.SetRotation(uidata[3 * j + 1]);
-            scene[j].transform.SetScale(uidata[3 * j + 2]);
-            // if (j == 2)
-            //     scene[j].transform.SetPosition(uidata[6]);
+            scene[j].transform.SetPosition(uidata[j][0]);
+            scene[j].transform.SetRotation(uidata[j][1]);
+            scene[j].transform.SetScale(uidata[j][2]);
 
             Matrices mat1;
             mat1.model = scene[j].transform.GetTransform();
@@ -286,20 +283,20 @@ int main(int, char **) {
         ImGui::End();
 
         ImGui::Begin("Model 1");
-        ImGui::SliderFloat3("Position", &uidata[0][0], -100, 100);
-        ImGui::SliderFloat3("Rotation", &uidata[1][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uidata[2][0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uidata[0][0][0], -200, 200);
+        ImGui::SliderFloat3("Rotation", &uidata[0][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[0][2][0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Begin("Model 2");
-        ImGui::SliderFloat3("Position", &uidata[3][0], -200, 200);
-        ImGui::SliderFloat3("Rotation", &uidata[4][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uidata[5][0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uidata[1][0][0], -200, 200);
+        ImGui::SliderFloat3("Rotation", &uidata[1][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[1][2][0], 0.1f, 5.0f);
         ImGui::End();
         ImGui::Begin("light 3");
-        ImGui::SliderFloat3("Position", &uidata[6][0], -200, 200);
-        ImGui::SliderFloat3("Rotation", &uidata[7][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uidata[8][0], 0.1f, 100.0f);
+        ImGui::SliderFloat3("Position", &uidata[2][0][0], -300, 300);
+        ImGui::SliderFloat3("Rotation", &uidata[2][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[2][2][0], 0.1f, 100.0f);
         ImGui::SliderFloat("Power", &lightPower, 0.1f, 10.0f);
         ImGui::End();
 
