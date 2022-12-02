@@ -7,15 +7,16 @@
 
 class Texture {
 public:
-    enum TextureType{
-        DEPTH=GL_DEPTH_COMPONENT,
-        COLOR=GL_RGB,
+    enum Format {
+        DEPTH = GL_DEPTH_COMPONENT,
+        COLOR = GL_RGB,
     };
-    enum TextureFormat{
-        CUBE=GL_TEXTURE_CUBE_MAP,
-        TEXTURE=GL_TEXTURE_2D,
+    enum Target {
+        CUBE = GL_TEXTURE_CUBE_MAP,
+        TEXTURE = GL_TEXTURE_2D,
     };
-    Texture(const int width, const int height,TextureType type,TextureFormat format=TextureFormat::TEXTURE);
+    Texture(const int width, const int height, Format type,
+            Target format = Target::TEXTURE);
     Texture(const std::string &textureFilepath);
     ~Texture();
 
@@ -36,8 +37,8 @@ private:
 
 private:
     GLuint m_TextureID;
-    TextureFormat m_Format;
-    TextureType m_Type;
+    Target m_Target;
+    Format m_Format;
 };
 
 #endif

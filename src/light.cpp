@@ -1,7 +1,4 @@
 #include "light.hpp"
-#include "log.hpp"
-
-#include "log.hpp"
 
 #pragma pack(16) // std140 layout pads by multiple of 16
 Light::Light(glm::vec3 lightColor, float radius, float power,

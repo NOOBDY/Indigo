@@ -4,54 +4,54 @@
 #include <stb_image.h>
 
 #include "log.hpp"
-Texture::Texture(const int width, const int height, TextureType type,
-                 TextureFormat format) {
+Texture::Texture(const int width, const int height, Format format,
+                 Target target) {
     LOG_TRACE("Creating Texture");
 
-    m_Format = format;
-    glCreateTextures(format, 1, &m_TextureID);
-    glBindTexture(format, m_TextureID);
+    m_Target = target;
+    glCreateTextures(target, 1, &m_TextureID);
+    glBindTexture(target, m_TextureID);
 
-    if (format == TextureFormat::CUBE)
+    if (target == Target::CUBE)
         for (int i = 0; i < 6; i++)
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
                 0,                                  // level
-                type,                               // internal format
+                format,                             // internal format
                 width,                              //
                 height,                             //
                 0,                                  // border
-                type,                               // format
+                format,                             // format
                 GL_FLOAT,                           // type
                 NULL                                //
             );
 
     else
         glTexImage2D( //
-            format,   // target
+            target,   // target
             0,        // level
-            type,     // internal format
+            format,   // internal format
             width,    //
             height,   //
             0,        // border
-            type,     // format
+            format,   // format
             GL_FLOAT, // type
             NULL      //
         );
 
-    glTexParameteri(format, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(format, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTexParameteri(format, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(format, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(format, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
 Texture::Texture(const std::string &textureFilepath) {
     LOG_TRACE("Creating Texture");
 
-    m_Format = TextureFormat::TEXTURE;
-    glCreateTextures(m_Format, 1, &m_TextureID);
+    m_Target = Target::TEXTURE;
+    glCreateTextures(m_Target, 1, &m_TextureID);
 
     LoadImage(textureFilepath);
 }
@@ -66,12 +66,12 @@ void Texture::Bind(unsigned int slot) {
     glBindTextureUnit(slot, m_TextureID);
 }
 void Texture::Unbind() {
-    glBindTexture(m_Format, 0);
+    glBindTexture(m_Target, 0);
 }
 
 void Texture::LoadImage(const std::string &textureFilepath) {
-    m_Format = TextureFormat::TEXTURE;
-    glBindTexture(m_Format, m_TextureID);
+    m_Target = Target::TEXTURE;
+    glBindTexture(m_Target, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
     unsigned char *data =
@@ -92,7 +92,7 @@ void Texture::LoadImage(const std::string &textureFilepath) {
      * https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
      */
     glTexImage2D(                           //
-        m_Format,                           // target
+        m_Target,                           // target
         0,                                  // level
         channels == 4 ? GL_RGBA8 : GL_RGB8, // internal format
         width,                              //
@@ -103,12 +103,12 @@ void Texture::LoadImage(const std::string &textureFilepath) {
         data                                //
     );
 
-    glTexParameteri(m_Format, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(m_Format, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(m_Format, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(m_Format, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(m_Target, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(m_Target, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(m_Target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(m_Target, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
-    glGenerateMipmap(m_Format);
+    glGenerateMipmap(m_Target);
 
     stbi_image_free(data);
 }
