@@ -4,15 +4,15 @@
 #include <stb_image.h>
 
 #include "log.hpp"
-Texture::Texture(const int width, const int height, TextureType type,
-                 TextureFormat format) {
+Texture::Texture(const int width, const int height, Format type,
+                 Target format) {
     LOG_TRACE("Creating Texture");
 
     m_Format = format;
     glCreateTextures(format, 1, &m_TextureID);
     glBindTexture(format, m_TextureID);
 
-    if (format == TextureFormat::CUBE)
+    if (format == Target::CUBE)
         for (int i = 0; i < 6; i++)
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
@@ -50,7 +50,7 @@ Texture::Texture(const int width, const int height, TextureType type,
 Texture::Texture(const std::string &textureFilepath) {
     LOG_TRACE("Creating Texture");
 
-    m_Format = TextureFormat::TEXTURE;
+    m_Format = Target::TEXTURE;
     glCreateTextures(m_Format, 1, &m_TextureID);
 
     LoadImage(textureFilepath);
@@ -70,7 +70,7 @@ void Texture::Unbind() {
 }
 
 void Texture::LoadImage(const std::string &textureFilepath) {
-    m_Format = TextureFormat::TEXTURE;
+    m_Format = Target::TEXTURE;
     glBindTexture(m_Format, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
