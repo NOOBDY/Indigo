@@ -44,14 +44,15 @@ int main(int, char **) {
 
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-
     Controller::InitGUI(window);
 
-    Program program("../assets/shaders/phong.vert",
-                    "../assets/shaders/phong.frag");
-    Program framebufferProgram("../assets/shaders/frame_screen.vert",
-                               "../assets/shaders/frame_screen.frag");
-
+    Program programShadow("../assets/shaders/shadow.vert",
+                          "../assets/shaders/shadow.geom",
+                          "../assets/shaders/shadow.frag");
+    Program programColor("../assets/shaders/phong.vert",
+                         "../assets/shaders/phong.frag");
+    Program programScreen("../assets/shaders/frame_screen.vert",
+                          "../assets/shaders/frame_screen.frag");
     LightData lightInfo[LIGHT_NUMBER];
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
@@ -69,22 +70,22 @@ int main(int, char **) {
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
+    glm::mat3 uidata[3];
+    float lightPower = 5;
 
-    glm::vec3 pos1(0, 0, 0);
-    glm::vec3 rot1(180, 180, 180);
-    glm::vec3 scale1(1, 1, 1);
-
+    uidata[0][0] = glm::vec3(0, 0, 0);
+    uidata[0][1] = glm::vec3(180, 180, 180);
+    uidata[0][2] = glm::vec3(1, 1, 1);
     scene.push_back(
         Model{Importer::LoadFile("../assets/models/little_city/main.glb")});
     // end model 1
 
     // begin model 2
-    Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
+    // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    glm::vec3 pos2(0, 0, 0);
-    glm::vec3 rot2(180, 180, 180);
-    glm::vec3 scale2(1, 1, 1);
-
+    uidata[1][0] = glm::vec3(0, 0, 0);
+    uidata[1][1] = glm::vec3(180, 180, 180);
+    uidata[1][2] = glm::vec3(1);
     scene.push_back(
         Model{Importer::LoadFile("../assets/models/little_city/misc.glb")});
     // Importer::LoadFile("../assets/models/cube.obj");
@@ -123,52 +124,95 @@ int main(int, char **) {
     Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
-    FrameBuffer fbo;
-    fbo.Bind();
+    FrameBuffer colorFbo;
+    colorFbo.Bind();
 
     // color buffer
-    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT);
-    fbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
-    Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT);
-    fbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
+    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    colorFbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
+    Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
+    colorFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
 
     // render buffer
     GLuint rbo;
 
     glCreateRenderbuffers(1, &rbo);
-    // glBindRenderbuffer(GL_RENDERBUFFER, rbo);
     glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
                                SCREEN_HEIGHT);
-    // glNamedRenderbufferStorage(rbo, GL_DEPTH_COMPONENT, 1280, 720);
 
-    glNamedFramebufferRenderbuffer(
-        fbo.GetBufferID(), GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+    glNamedFramebufferRenderbuffer(colorFbo.GetBufferID(),
+                                   GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                   rbo);
 
-    // when fbo is bind all render will storage and not display
-    fbo.Unbind();
+    // when colorFbo is bind all render will storage and not display
+    colorFbo.Unbind();
+    FrameBuffer shadowFbo;
+    shadowFbo.Bind();
+    int shadowSize = 1024 * .5;
+    Texture lightDepthTexture(shadowSize, shadowSize, Texture::DEPTH,
+                              Texture::CUBE);
+    shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
+                            GL_DEPTH_ATTACHMENT);
 
-    float i = 0;
+    // Texture depthTexture(shadowSize, shadowSize, Texture::DEPTH,
+    // Texture::CUBE); shadowFbo.AttachTexture(depthTexture.GetTextureID(),
+    // GL_DEPTH_ATTACHMENT); Texture shadowTexture(shadowSize, shadowSize,
+    // Texture::COLOR,
+    //                       Texture::CUBE);
+    // shadowFbo.AttachTexture(shadowTexture.GetTextureID(),
+    // GL_COLOR_ATTACHMENT0);
 
+    // float frameCount = 0;
+
+    uidata[2][0] = glm::vec3(0, 0, 0);
+    uidata[2][1] = glm::vec3(0, 0, 0);
+    uidata[2][2] = glm::vec3(20);
+    scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
     // Small hack to put camera position into the shader
     // TODO: Find somewhere on the UBO to put this in
     GLint cameraUniform =
-        glGetUniformLocation(program.GetProgramID(), "cameraPosition");
+        glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
+    Matrices lightMat;
 
     do {
+        // float tempValue = glm::sin(frameCount += 0.05f);
+        // light1.m_Transform.Setition(glm::vec3(1, tempValue * 3, -3));
+        light1.m_Transform.SetPosition(uidata[2][0]);
+        // light1.SetRadius(3 * glm::abs(tempValue));
+        light1.SetPower(lightPower);
+        lightInfo[0] = light1.GetLightData();
+        lightInfo[1] = light2.GetLightData();
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
 
-        fbo.Bind();
+        // shadow
 
+        // make sure render size is same as texture
+        glViewport(0, 0, shadowSize, shadowSize);
+        shadowFbo.Bind();
+        programShadow.Bind();
         Renderer::Clear();
         Renderer::EnableDepthTest();
+        glDisable(GL_CULL_FACE);
 
-        program.Bind();
+        // not render light ball
+        for (int j = 0; j < scene.size() - 1; j++) {
+            scene[j].VAO->Bind();
+            scene[j].transform.SetPosition(uidata[j][0]);
+            scene[j].transform.SetRotation(uidata[j][1]);
+            scene[j].transform.SetScale(uidata[j][2]);
+            lightMat.model = scene[j].transform.GetTransform();
+            matrices.SetData(0, sizeof(lightMat), &lightMat);
+            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
+        }
 
-        program.SetInt("texture1", 1);
-        program.SetInt("texture2", 2);
-        program.SetInt("texture3", 3);
-        program.SetInt("texture4", 4);
+        // color (phong shader)
+        glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        // glEnable(GL_CULL_FACE);
+        colorFbo.Bind();
+        programColor.Bind();
+        Renderer::Clear();
 
         camera.GetTransform().SetPosition(
             camera.GetTransform().GetPosition() +
@@ -180,69 +224,55 @@ int main(int, char **) {
                                  delta.y * -2 / window.GetHeight());
         }
 
-        glm::vec3 pos = camera.GetTransform().GetPosition();
-        glUniform3fv(cameraUniform, 1, &pos.x);
-
+        glm::vec3 cameraPos = camera.GetTransform().GetPosition();
+        glUniform3fv(cameraUniform, 1, &cameraPos.x);
+        programColor.SetInt("texture1", 1);
+        programColor.SetInt("texture2", 2);
+        programColor.SetInt("texture3", 3);
+        programColor.SetInt("texture4", 4);
         camera.UpdateView();
 
         tex1.Bind(1);
         tex2.Bind(2);
         tex3.Bind(3);
-        tex4.Bind(4);
+        lightDepthTexture.Bind(4);
+        // shadowTexture.Bind(4);
+        // tex4.Bind(4);
 
-        float tempValue = glm::sin(i += 0.1f);
-        light1.m_Transform.SetPosition(glm::vec3(tempValue * 3, 2, 0));
-        // light1.SetRadius(3 * glm::abs(tempValue));
+        for (int j = 0; j < scene.size(); j++) {
+            scene[j].VAO->Bind();
 
-        lightInfo[0] = light1.GetLightData();
-        lightInfo[1] = light2.GetLightData();
+            scene[j].transform.SetPosition(uidata[j][0]);
+            scene[j].transform.SetRotation(uidata[j][1]);
+            scene[j].transform.SetScale(uidata[j][2]);
 
-        scene[0].VAO->Bind();
-
-        scene[0].transform.SetPosition(pos1);
-        scene[0].transform.SetRotation(rot1);
-        scene[0].transform.SetScale(scale1);
-
-        Matrices mat1;
-        mat1.model = scene[0].transform.GetTransform();
-        mat1.viewProjection = camera.GetViewProjection();
-        matrices.SetData(0, sizeof(mat1), &mat1);
-        materials.SetData(0, sizeof(Material), &matColor1);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-
-        Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
-
-        scene[1].VAO->Bind();
-
-        scene[1].transform.SetPosition(pos2);
-        scene[1].transform.SetRotation(rot2);
-        scene[1].transform.SetScale(scale2);
-
-        Matrices mat2;
-        mat2.model = scene[1].transform.GetTransform();
-        mat2.viewProjection = camera.GetViewProjection();
-        matrices.SetData(0, sizeof(mat2), &mat2);
-        materials.SetData(0, sizeof(Material), &matColor2);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-
-        tex1.Bind(2);
-        tex2.Bind(1);
-        tex3.Bind(3);
-        tex4.Bind(4);
-
-        Renderer::Draw(scene[1].VAO->GetIndexBuffer()->GetCount());
+            Matrices mat1;
+            mat1.model = scene[j].transform.GetTransform();
+            mat1.viewProjection = camera.GetViewProjection();
+            matrices.SetData(0, sizeof(mat1), &mat1);
+            materials.SetData(0, sizeof(Material), &matColor1);
+            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
+        }
 
         // frame buffer part
-        fbo.Unbind();
+        colorFbo.Unbind();
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
-        framebufferProgram.Bind();
-        framebufferProgram.SetInt("screenTexture", 0);
-        // glBindVertexArray(quadVAO);
+        programScreen.Bind();
+
+        programScreen.SetInt("screenTexture", 0);
+        programScreen.SetInt("depthTexture", 1);
+        programScreen.SetInt("uvcheck", 2);
+        renderSurface.Bind(0);
+        depthTexture.Bind(1);
+        // renderSurface.Bind(1);
+        // shadowTexture.Bind(1);
+        tex2.Bind(2);
+
         planeVAO.Bind();
         glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
-        // glDrawArrays(GL_TRIANGLES, 0, 6);
         // done frame buffer
 
         ImGui_ImplOpenGL3_NewFrame();
@@ -259,21 +289,28 @@ int main(int, char **) {
         ImGui::End();
 
         ImGui::Begin("Model 1");
-        ImGui::SliderFloat3("Position", &pos1[0], -3, 3);
-        ImGui::SliderFloat3("Rotation", &rot1[0], 0, 360);
-        ImGui::SliderFloat3("Scale", &scale1[0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uidata[0][0][0], -200, 200);
+        ImGui::SliderFloat3("Rotation", &uidata[0][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[0][2][0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Begin("Model 2");
-        ImGui::SliderFloat3("Position", &pos2[0], -3, 3);
-        ImGui::SliderFloat3("Rotation", &rot2[0], 0, 360);
-        ImGui::SliderFloat3("Scale", &scale2[0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uidata[1][0][0], -200, 200);
+        ImGui::SliderFloat3("Rotation", &uidata[1][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[1][2][0], 0.1f, 5.0f);
+        ImGui::End();
+        ImGui::Begin("light 3");
+        ImGui::SliderFloat3("Position", &uidata[2][0][0], -300, 300);
+        ImGui::SliderFloat3("Rotation", &uidata[2][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uidata[2][2][0], 0.1f, 100.0f);
+        ImGui::SliderFloat("Power", &lightPower, 0.1f, 10.0f);
         ImGui::End();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         // TODO: Figure this out and put it in `Window` class
+        // glfwSwapInterval(0);
         glfwSwapBuffers(window.GetWindow());
         window.PollEvents();
     } while (!window.ShouldClose());

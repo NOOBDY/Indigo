@@ -8,6 +8,7 @@ void Controller::InitGUI(Window &window) {
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename = "../assets/imgui.ini";
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     ImGui::StyleColorsDark();
 
