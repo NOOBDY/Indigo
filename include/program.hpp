@@ -8,6 +8,9 @@ public:
     Program(const std::string &vertexShaderFilepath,
             // const std::string &geometryShaderFilepath,
             const std::string &fragmentShaderFilepath);
+    Program(const std::string &vertexShaderFilepath,
+            const std::string &geometryShaderFilepath,
+            const std::string &fragmentShaderFilepath);
     ~Program();
 
     void Bind() const;
@@ -30,7 +33,7 @@ private:
 
     // perhaps can change this into a vector of shaders
     GLuint m_VertexShaderID;
-    // GLuint m_GeometryShaderID;
+    GLuint m_GeometryShaderID = 0;
     GLuint m_FragmentShaderID;
 };
 

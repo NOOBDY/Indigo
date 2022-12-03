@@ -42,6 +42,7 @@ private:
 private:
     glm::mat4 m_Transform = glm::mat4(1.0f);
     glm::vec3 m_Position = {0, 0, 0};
+    // degree 0-360
     glm::vec3 m_Rotation = {0, 0, 0};
     glm::vec3 m_Scale = {1, 1, 1};
 };
