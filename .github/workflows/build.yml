@@ -56,3 +56,11 @@ jobs:
         run: |
           cmake -B build -G "Ninja"
           cmake --build build
+
+      - name: Uploading Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: binaries-and-assets
+          path: |
+            build/Indigo.exe
+            assets/
