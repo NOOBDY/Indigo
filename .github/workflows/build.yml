@@ -26,7 +26,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
-        cmake_build_type: [Release]
+        build_type: [Release]
     steps:
       - name: Installing Dependencies
         run: |
