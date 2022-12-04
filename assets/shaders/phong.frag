@@ -1,4 +1,4 @@
-#version 460 core
+#version 450 core
 
 //so far only one cube map
 #define LIGHT_NUMBER 1
@@ -65,7 +65,7 @@ float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / 300, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
-};
+}
 vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
 vec3 shadow(vec3 position, LightData light) {
     vec3 dir = position - light.transform.position;
