@@ -53,17 +53,24 @@ public:
 
     LightData GetLightData();
 
-    Transform m_Transform;
+    Transform &GetTransform() { return m_Transform; }
+    const Transform &GetTransform() const { return m_Transform; }
 
 private:
     LightType m_LightType = LightType::POINT;
+
     glm::vec3 m_LightColor;
+
     float m_Radius = 200.0f;
     float m_Power = 0.5f;
+
     float m_InnerCone = 20.0f;
     float m_OuterCone = 30.0f;
+
     float m_NearPlane = 1;
     float m_FarPlane = 1000.0f;
+
+    Transform m_Transform;
 };
 
 #endif

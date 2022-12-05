@@ -56,11 +56,10 @@ layout(std140, binding = 2) uniform Lights {
 
 uniform vec3 cameraPosition;
 
-uniform sampler2D texture1; // samplers are opaque types and
-uniform sampler2D texture2; // cannot exist in uniform blocks
-uniform sampler2D texture3;
-// uniform sampler2D texture4; // frame buffer texture
-uniform samplerCube texture4; // frame buffer texture
+uniform sampler2D albedoMap; // samplers are opaque types and
+uniform sampler2D normalMap;
+uniform samplerCube shadowMap; // frame buffer texture
+
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / 300, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
@@ -69,7 +68,7 @@ float fade(vec3 center, vec3 position, float radius) {
 vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
 vec3 shadow(vec3 position, LightData light) {
     vec3 dir = position - light.transform.position;
-    float lightDepth = texture(texture4, dir).x;
+    float lightDepth = texture(shadowMap, dir).x;
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
@@ -77,7 +76,7 @@ vec3 shadow(vec3 position, LightData light) {
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 25.0;
     for(int i = 0; i < samples; ++i) {
-        float closestDepth = texture(texture4, dir + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(shadowMap, dir + gridSamplingDisk[i] * diskRadius).r;
         closestDepth *= light.farPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
@@ -107,7 +106,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
 
     // diffuse lighting
     float dotLN = max(dot(halfwayVec, n), 0.0);
-    vec3 diffuse = texture(texture1, UV).xyz * (dotLN + ambient);
+    vec3 diffuse = texture(albedoMap, UV).xyz * (dotLN + ambient);
 
     //color tranform
     // diffuse = pow(diffuse, vec3(2.2));
@@ -118,7 +117,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
     vec3 shadow = shadow(position, light);
-    vec3 t = texture(texture4, (worldPosition - light.transform.position)).xyz;
+    vec3 t = texture(shadowMap, (worldPosition - light.transform.position)).xyz;
     // return shadow + vec3(0.1, 0, 0);
     // return vec3(fadeOut);
     diffuse *= 1 - shadow;

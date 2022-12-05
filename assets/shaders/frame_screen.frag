@@ -4,7 +4,7 @@ out vec4 FragColor;
 
 uniform sampler2D screenTexture;
 uniform samplerCube depthTexture;
-uniform sampler2D uvcheck;
+uniform sampler2D uvCheck;
 #define PI 3.1415926
 vec3 cnn(vec3 color) {
     const float offset = 1.0 / 300.0;
@@ -59,7 +59,7 @@ vec3 test(vec3 nuv) {
     // uv.y= fract(2 * (nuv.y + 1));
     uv.x = 0.5 + atan(nuv.x, nuv.z) / (2 * PI);
     uv.y = 0.5 + asin(nuv.y) / (PI);
-    return texture(uvcheck, uv).xyz;
+    return texture(uvCheck, uv).xyz;
 }
 
 void main() {

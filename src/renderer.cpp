@@ -67,3 +67,11 @@ void Renderer::EnableDepthTest() {
 void Renderer::DisableDepthTest() {
     glDisable(GL_DEPTH_TEST);
 }
+
+void Renderer::EnableCullFace() {
+    glEnable(GL_CULL_FACE);
+}
+
+void Renderer::DisableCullFace() {
+    glDisable(GL_CULL_FACE);
+}
