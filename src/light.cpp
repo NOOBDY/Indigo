@@ -91,8 +91,8 @@ LightData Light::GetLightData() {
     data.outerCone = m_OuterCone;
     for (int i = 0; i < 6; i++)
         data.lightProjections[i] = lightProjectionVector[i];
-    data.m_NearPlane = m_NearPlane;
-    data.m_FarPlane = m_FarPlane;
+    data.nearPlane = m_NearPlane;
+    data.farPlane = m_FarPlane;
 
     return data;
 };

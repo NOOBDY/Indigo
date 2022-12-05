@@ -1,7 +1,12 @@
 #version 460 core
 
 //so far only one cube map
-#define LIGHT_NUMBER 1
+#define LIGHT_NUMBER 2
+#define NONE 0
+#define POINT 1
+#define SPOT  2
+#define DIRECTION 3
+#define AMBIENT  4
 
 in vec3 normal;
 in vec3 worldPosition;

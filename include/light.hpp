@@ -26,8 +26,8 @@ struct LightData {
 
     glm::mat4 lightProjections[6];
 
-    float m_NearPlane;
-    float m_FarPlane;
+    float nearPlane;
+    float farPlane;
 };
 
 class Light {
