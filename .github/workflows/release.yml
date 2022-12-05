@@ -1,0 +1,30 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: linux-binary
+          path: assets/
+
+      - name: Pre-Upload Setup
+        run: |
+          chmod +x assets/Indigo
+          mv assets Indigo
+
+      - name: Uploading Files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Indigo
