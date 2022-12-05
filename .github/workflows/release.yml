@@ -21,6 +21,8 @@ jobs:
           name: linux-binary
           path: assets/
 
+      - run: ls -R
+
       - name: Pre-Upload Setup
         run: |
           chmod +x assets/Indigo
