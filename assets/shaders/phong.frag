@@ -72,7 +72,7 @@ float fade(vec3 center, vec3 position, float radius) {
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
 vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
-vec3 shadow(vec3 position, LightData light) {
+float shadow(vec3 position, LightData light) {
     vec3 dir = position - light.transform.position;
     float lightDepth = texture(texture4, dir).x;
     lightDepth *= light.farPlane;
@@ -88,7 +88,8 @@ vec3 shadow(vec3 position, LightData light) {
             shadow += 1.0;
     }
     shadow /= float(samples);
-    return vec3(shadow);
+    return 0.0;
+    return (shadow);
 }
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
     // mesh normal
@@ -96,7 +97,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
     vec3 direction = light.transform.direction;
     // direction :light to mesh
-    vec3 l = light.lightType == 3 ? direction : normalize(light.transform.position - position);
+    vec3 l = light.lightType == DIRECTION ? direction : normalize(light.transform.position - position);
     // direction :cam to mesh
     vec3 v = normalize(cameraPosition - position);
     // direction :reflection
@@ -104,11 +105,11 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // for Blinn-Phong lighting
     vec3 halfwayVec = normalize(v + l);
 
-    float ambient = light.lightType == 4 ? 1.0 : 0.1;
-    float fadeOut = light.lightType == 2 ? 1.0 : fade(light.transform.position, position, light.radius);
+    float ambient = light.lightType == AMBIENT ? 1.0 : 0.1;
+    float fadeOut = light.lightType == SPOT ? 1.0 : fade(light.transform.position, position, light.radius);
     // spotlight
     float angle = clamp(dot(direction, l), 0.0, 1.0);
-    float spot = light.lightType == 2 ? clamp((angle - light.outerCone) / (light.innerCone - light.outerCone), 0.0, 1.0) : 1.0;
+    float spot = light.lightType == SPOT ? clamp((angle - light.outerCone) / (light.innerCone - light.outerCone), 0.0, 1.0) : 1.0;
 
     // diffuse lighting
     float dotLN = max(dot(halfwayVec, n), 0.0);
@@ -120,10 +121,9 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // specular lighting
     float dotRV = max(dot(r, v), 0.0);
     // ambient light not specular
-    vec3 specular = vec3(1) * (light.lightType == 4 || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
+    vec3 specular = vec3(1) * (light.lightType == AMBIENT || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
-    vec3 shadow = shadow(position, light);
-    vec3 t = texture(texture4, (worldPosition - light.transform.position)).xyz;
+    float shadow = shadow(position, light);
     // return shadow + vec3(0.1, 0, 0);
     // return vec3(fadeOut);
     diffuse *= 1 - shadow;
