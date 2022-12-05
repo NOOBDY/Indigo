@@ -64,7 +64,7 @@ int main(int, char **) {
     Light light2(glm::vec3(1.0f));
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
-    light2.SetPower(.5);
+    light2.SetPower(.2);
 
     std::vector<Model> scene;
 
@@ -72,7 +72,7 @@ int main(int, char **) {
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
     glm::mat3 uidata[3];
     float lightPower = 5;
-    float lightRadius = 300;
+    float lightRadius = 200;
 
     uidata[0][0] = glm::vec3(1.35, 0, 0);
     uidata[0][1] = glm::vec3(180, 180, 180);
@@ -228,6 +228,8 @@ int main(int, char **) {
         lightDepthTexture.Bind(4);
         // shadowTexture.Bind(4);
         // tex4.Bind(4);
+        Matrices mat1;
+        mat1.viewProjection = camera.GetViewProjection();
 
         for (int j = 0; j < scene.size(); j++) {
             scene[j].VAO->Bind();
@@ -236,13 +238,11 @@ int main(int, char **) {
             scene[j].transform.SetRotation(uidata[j][1]);
             scene[j].transform.SetScale(uidata[j][2]);
 
-            Matrices mat1;
             mat1.model = scene[j].transform.GetTransform();
-            mat1.viewProjection = camera.GetViewProjection();
             matrices.SetData(0, sizeof(mat1), &mat1);
             materials.SetData(0, sizeof(Material), &matColor1);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-            Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
+            Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
         }
 
         // frame buffer part

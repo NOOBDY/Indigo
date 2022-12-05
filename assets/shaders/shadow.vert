@@ -41,8 +41,11 @@ struct LightData {
     float outerCone;
 
     mat4 lightProjections[6];
-    float m_NearPlane;
-    float m_FarPlane;
+
+    float nearPlane;
+    float farPlane;
+    float pad1;
+    float pad2;
 };
 
 struct MaterialData {

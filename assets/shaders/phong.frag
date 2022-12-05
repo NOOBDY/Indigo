@@ -1,7 +1,7 @@
 #version 460 core
 
 //so far only one cube map
-#define LIGHT_NUMBER 1
+#define LIGHT_NUMBER 2
 #define NONE 0
 #define POINT 1
 #define SPOT  2
@@ -18,12 +18,16 @@ out vec4 color;
 
 struct TransformData {
     mat4 transform;
+
     vec3 position;
     float pad1;
+
     vec3 rotation;
     float pad2;
+
     vec3 scale;
     float pad3;
+
     vec3 direction;
     float pad4;
 };
@@ -106,13 +110,13 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     vec3 halfwayVec = normalize(v + l);
 
     float ambient = light.lightType == AMBIENT ? 1.0 : 0.1;
-    float fadeOut = light.lightType == SPOT ? 1.0 : fade(light.transform.position, position, light.radius);
+    float fadeOut = light.lightType == POINT ? fade(light.transform.position, position, light.radius) : 1.0;
     // spotlight
     float angle = clamp(dot(direction, l), 0.0, 1.0);
     float spot = light.lightType == SPOT ? clamp((angle - light.outerCone) / (light.innerCone - light.outerCone), 0.0, 1.0) : 1.0;
 
     // diffuse lighting
-    float dotLN = max(dot(halfwayVec, n), 0.0);
+    float dotLN = max(dot(l, n), 0.0);
     vec3 diffuse = texture(texture1, UV).xyz * (dotLN + ambient);
 
     //color tranform
@@ -124,8 +128,6 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     vec3 specular = vec3(1) * (light.lightType == AMBIENT || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
     float shadow = shadow(position, light);
-    // return shadow + vec3(0.1, 0, 0);
-    // return vec3(fadeOut);
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
 
