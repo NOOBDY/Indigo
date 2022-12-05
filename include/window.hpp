@@ -5,8 +5,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-
 /**
  * An OOP wrapper for `GLFWwindow`
  * using OpenGL 4.6 core profile
