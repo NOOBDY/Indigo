@@ -25,8 +25,10 @@ jobs:
         run: |
           chmod +x assets/Indigo
           mv assets Indigo
+          tar -cJvf Indigo-${{ github.ref_name }}-linux.tar.xz
+          ls -R
 
       - name: Uploading Files
         uses: softprops/action-gh-release@v1
         with:
-          files: Indigo
+          files: Indigo-${{ github.ref_name }}-linux.tar.xz
