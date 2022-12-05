@@ -21,13 +21,11 @@ jobs:
           name: linux-binary
           path: assets/
 
-      - run: ls -R
-
       - name: Pre-Upload Setup
         run: |
           chmod +x assets/Indigo
           mv assets Indigo
-          tar -cJvf Indigo-${{ github.ref_name }}-linux.tar.xz
+          tar -cJvf Indigo-${{ github.ref_name }}-linux.tar.xz Indigo
           ls -R
 
       - name: Uploading Files
