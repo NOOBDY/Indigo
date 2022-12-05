@@ -91,10 +91,8 @@ int main(int, char **) {
 
     Camera camera(45.0f, window.GetAspectRatio());
 
-    Light light1(glm::vec3(1.0f));
-    Light light2(glm::vec3(1.0f));
-    light1.SetLightType(LightType::POINT);
-    light2.SetLightType(LightType::DIRECTION);
+    Light light1(Light::POINT, glm::vec3(1.0f));
+    Light light2(Light::DIRECTION, glm::vec3(1.0f));
     light2.SetPower(50);
 
     float lightPower = 5;
