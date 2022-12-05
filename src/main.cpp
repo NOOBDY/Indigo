@@ -64,7 +64,7 @@ int main(int, char **) {
     Light light2(glm::vec3(1.0f));
     light1.SetLightType(LightType::POINT);
     light2.SetLightType(LightType::DIRECTION);
-    light2.SetPower(50);
+    light2.SetPower(.5);
 
     std::vector<Model> scene;
 
@@ -72,6 +72,7 @@ int main(int, char **) {
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
     glm::mat3 uidata[3];
     float lightPower = 5;
+    float lightRadius = 300;
 
     uidata[0][0] = glm::vec3(1.35, 0, 0);
     uidata[0][1] = glm::vec3(180, 180, 180);
@@ -180,6 +181,7 @@ int main(int, char **) {
         light1.m_Transform.SetPosition(uidata[2][0]);
         // light1.SetRadius(3 * glm::abs(tempValue));
         light1.SetPower(lightPower);
+        light1.SetRadius(lightRadius);
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
         glm::vec2 delta = window.GetCursorDelta();
@@ -298,6 +300,7 @@ int main(int, char **) {
         ImGui::SliderFloat3("Rotation", &uidata[2][1][0], 0, 360);
         ImGui::SliderFloat3("Scale", &uidata[2][2][0], 0.1f, 100.0f);
         ImGui::SliderFloat("Power", &lightPower, 0.1f, 10.0f);
+        ImGui::SliderFloat("Radius", &lightRadius, 1.0f, 1000.0f);
         ImGui::End();
 
         ImGui::Render();

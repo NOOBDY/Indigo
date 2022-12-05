@@ -1,7 +1,7 @@
 #version 460 core
 
 //so far only one cube map
-#define LIGHT_NUMBER 2
+#define LIGHT_NUMBER 1
 #define NONE 0
 #define POINT 1
 #define SPOT  2
@@ -67,7 +67,7 @@ uniform sampler2D texture3;
 // uniform sampler2D texture4; // frame buffer texture
 uniform samplerCube texture4; // frame buffer texture
 float fade(vec3 center, vec3 position, float radius) {
-    return (1 - clamp(length(position - center) / 300, 0, 1));
+    return (1 - clamp(length(position - center) / radius, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 };
