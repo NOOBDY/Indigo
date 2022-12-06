@@ -1,0 +1,53 @@
+name: release
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        platform: [linux, windows]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          lfs: true
+
+      - name: Pre-Download Setup
+        run: |
+          mkdir -p Indigo/build
+          mv assets Indigo
+
+      - name: Download Artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          workflow_conclusion: success
+          name: ${{ matrix.platform }}-binary
+          path: Indigo/build
+
+      - if: matrix.platform == 'linux'
+        run: |
+          chmod +x Indigo/build/Indigo
+          tar -cJvf Indigo-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz Indigo
+
+      - if: matrix.platform == 'windows'
+        run: |
+          zip -r Indigo-${{ github.ref_name }}-${{ matrix.platform }}.zip Indigo
+
+      - if: matrix.platform == 'linux'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Indigo-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz
+
+      - if: matrix.platform == 'windows'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: Indigo-${{ github.ref_name }}-${{ matrix.platform }}.zip
