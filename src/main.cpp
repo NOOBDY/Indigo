@@ -19,8 +19,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-#define SHADOW_WIDTH 1024 / 2
-#define SHADOW_HEIGHT 1024 / 2
+#define SHADOW_SIZE 1024 / 2
 
 #define LIGHT_NUMBER 2
 
@@ -171,7 +170,7 @@ int main(int, char **) {
 
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
-    Texture lightDepthTexture(SHADOW_WIDTH, SHADOW_HEIGHT, Texture::DEPTH,
+    Texture lightDepthTexture(SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH,
                               Texture::CUBE);
     shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
                             GL_DEPTH_ATTACHMENT);
@@ -195,7 +194,7 @@ int main(int, char **) {
         // shadow
 
         // make sure render size is same as texture
-        glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+        glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
         shadowFbo.Bind();
         programShadow.Bind();
         Renderer::Clear();
@@ -262,7 +261,6 @@ int main(int, char **) {
         depthTexture.Bind(1);
 
         planeVAO.Bind();
-        glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
         // done frame buffer
 
