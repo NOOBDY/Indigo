@@ -6,26 +6,25 @@
 #include "log.hpp"
 
 Program::Program(const std::string &vertexShaderFilepath,
-                 //  const std::string &geometryShaderFilepath,
                  const std::string &fragmentShaderFilepath) {
-    LOG_TRACE("Creating Program");
     m_ProgramID = glCreateProgram();
+    LOG_TRACE("Creating Program {}", m_ProgramID);
 
     m_VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-    // m_GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
     m_FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
     CompileShader(m_VertexShaderID, vertexShaderFilepath);
-    // CompileShader(m_GeometryShaderID, geometryShaderFilepath);
     CompileShader(m_FragmentShaderID, fragmentShaderFilepath);
 
     LinkProgram();
+    Validate();
 }
+
 Program::Program(const std::string &vertexShaderFilepath,
                  const std::string &geometryShaderFilepath,
                  const std::string &fragmentShaderFilepath) {
-    LOG_TRACE("Creating Program");
     m_ProgramID = glCreateProgram();
+    LOG_TRACE("Creating Program {}", m_ProgramID);
 
     m_VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     m_GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
@@ -36,10 +35,11 @@ Program::Program(const std::string &vertexShaderFilepath,
     CompileShader(m_FragmentShaderID, fragmentShaderFilepath);
 
     LinkProgram();
+    Validate();
 }
 
 Program::~Program() {
-    LOG_TRACE("Deleting Program");
+    LOG_TRACE("Deleting Program {}", m_ProgramID);
     glDeleteProgram(m_ProgramID);
 }
 
@@ -54,6 +54,24 @@ void Program::Unbind() const {
 void Program::SetInt(const std::string &name, int value) {
     GLuint location = glGetUniformLocation(m_ProgramID, name.c_str());
     glUniform1i(location, value);
+}
+
+void Program::Validate() const {
+    LOG_TRACE("Validating Program {}", m_ProgramID);
+
+    GLint status;
+
+    glValidateProgram(m_ProgramID);
+    glGetProgramiv(m_ProgramID, GL_VALIDATE_STATUS, &status);
+    if (status != GL_TRUE) {
+        int infoLogLength;
+        glGetProgramiv(m_ProgramID, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+        std::vector<char> errMessage(infoLogLength + 1);
+        glGetProgramInfoLog(m_ProgramID, infoLogLength, NULL, &errMessage[0]);
+
+        LOG_ERROR("Validation Failed:\n{}", &errMessage[0]);
+    }
 }
 
 std::string Program::LoadShaderFile(const std::string &filepath) {
@@ -103,7 +121,7 @@ void Program::CompileShader(const GLuint shaderID,
 }
 
 void Program::LinkProgram() {
-    LOG_TRACE("Linking Program");
+    LOG_TRACE("Linking Program {}", m_ProgramID);
 
     glAttachShader(m_ProgramID, m_VertexShaderID);
     if (m_GeometryShaderID != 0)

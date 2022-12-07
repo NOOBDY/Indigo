@@ -39,8 +39,16 @@ struct Model {
     Transform transform;
 };
 
-int main(int, char **) {
+int main(int argc, char **argv) {
     Log::Init();
+
+    if (argc > 1) {
+        if (strncmp(argv[1], "-d", 2) == 0)
+            Log::SetLevel(Log::DEBUG);
+
+        if (strncmp(argv[1], "-t", 2) == 0)
+            Log::SetLevel(Log::TRACE);
+    }
 
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
 

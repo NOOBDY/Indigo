@@ -18,18 +18,75 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 void OpenGLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
                                 GLenum severity, GLsizei length,
                                 const GLchar *message, const void *userParam) {
+    std::string sourceString;
+    std::string typeString;
+    std::string severityString;
+
+    // clang-format off
+    switch (source) {
+    case GL_DEBUG_SOURCE_API:               sourceString = "API"; break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:     sourceString = "WINDOW SYSTEM"; break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:   sourceString = "SHADER COMPILER"; break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:       sourceString = "THIRD PARTY"; break;
+    case GL_DEBUG_SOURCE_APPLICATION:       sourceString = "APPLICATION"; break;
+    case GL_DEBUG_SOURCE_OTHER:             sourceString = "UNKNOWN"; break;
+    default:                                sourceString = "UNKNOWN"; break;
+    }
+
+    switch (type) {
+    case GL_DEBUG_TYPE_ERROR:               typeString = "ERROR"; break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: typeString = "DEPRECATED BEHAVIOR"; break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  typeString = "UNDEFINED BEHAVIOR"; break;
+    case GL_DEBUG_TYPE_PORTABILITY:         typeString = "PORTABILITY"; break;
+    case GL_DEBUG_TYPE_PERFORMANCE:         typeString = "PERFORMANCE"; break;
+    case GL_DEBUG_TYPE_OTHER:               typeString = "OTHER"; break;
+    case GL_DEBUG_TYPE_MARKER:              typeString = "MARKER"; break;
+    default:                                typeString = "UNKNOWN"; break;
+    }
+
+    switch (severity) {
+    case GL_DEBUG_SEVERITY_HIGH:            severityString = "HIGH"; break;
+    case GL_DEBUG_SEVERITY_MEDIUM:          severityString = "MEDIUM"; break;
+    case GL_DEBUG_SEVERITY_LOW:             severityString = "LOW"; break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:    severityString = "NOTIFICATION"; break;
+    default:                                severityString = "UNKNOWN"; break;
+    }
+    // clang-format on
+
     switch (severity) {
     case GL_DEBUG_SEVERITY_HIGH:
-        LOG_ERROR("{}", message);
-        throw;
+        LOG_ERROR("OpenGL severity {}", severityString);
+        LOG_ERROR(" source: {}", sourceString);
+        LOG_ERROR(" type: {}", typeString);
+        LOG_ERROR(" message: {}", message);
+        break;
+
     case GL_DEBUG_SEVERITY_MEDIUM:
-        LOG_WARN("{}", message);
+        LOG_WARN("OpenGL severity {}", severityString);
+        LOG_WARN(" source: {} type: {}", sourceString);
+        LOG_WARN(" type: {}", typeString);
+        LOG_WARN(" message: {}", message);
         break;
+
     case GL_DEBUG_SEVERITY_LOW:
-        LOG_INFO("{}", message);
+        LOG_INFO("OpenGL severity {}", severityString);
+        LOG_INFO(" source: {}", sourceString);
+        LOG_INFO(" type: {}", typeString);
+        LOG_INFO(" message: {}", message);
         break;
+
     case GL_DEBUG_SEVERITY_NOTIFICATION:
-        LOG_DEBUG("{}", message);
+        LOG_DEBUG("OpenGL severity {}", severityString);
+        LOG_DEBUG(" source: {}", sourceString);
+        LOG_DEBUG(" type: {}", typeString);
+        LOG_DEBUG(" message: {}", message);
+        break;
+
+    default:
+        LOG_DEBUG("OpenGL severity {}", severityString);
+        LOG_DEBUG(" source: {}", sourceString);
+        LOG_DEBUG(" type: {}", typeString);
+        LOG_DEBUG(" message: {}", message);
         break;
     }
 }
@@ -40,8 +97,9 @@ void Renderer::Init() {
     if (glewInit() != GLEW_OK)
         LOG_ERROR("Failed to Initialize GLEW\n");
 
-    if (!GL_ARB_direct_state_access)
-        LOG_ERROR("OpenGL driver doesn't support ARB_direct_state_access");
+#ifndef GL_ARB_direct_state_access
+    LOG_ERROR("OpenGL driver doesn't support ARB_direct_state_access");
+#endif
 
     glEnable(GL_CULL_FACE);
 

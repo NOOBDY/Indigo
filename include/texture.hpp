@@ -13,10 +13,10 @@ public:
     };
     enum Target {
         CUBE = GL_TEXTURE_CUBE_MAP,
-        TEXTURE = GL_TEXTURE_2D,
+        IMAGE_2D = GL_TEXTURE_2D,
     };
     Texture(const int width, const int height, Format type,
-            Target format = Target::TEXTURE);
+            Target format = IMAGE_2D);
     Texture(const std::string &textureFilepath);
     ~Texture();
 

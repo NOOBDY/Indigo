@@ -5,14 +5,14 @@
 
 #include "log.hpp"
 Texture::Texture(const int width, const int height, Format format,
-                 Target target) {
-    LOG_TRACE("Creating Texture");
-
-    m_Target = target;
+                 Target target)
+    : m_Target(target) {
     glCreateTextures(target, 1, &m_TextureID);
+    LOG_TRACE("Creating Texture {}", m_TextureID);
+
     glBindTexture(target, m_TextureID);
 
-    if (target == Target::CUBE)
+    if (target == CUBE)
         for (int i = 0; i < 6; i++)
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
@@ -47,17 +47,15 @@ Texture::Texture(const int width, const int height, Format format,
     glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 }
 
-Texture::Texture(const std::string &textureFilepath) {
-    LOG_TRACE("Creating Texture");
-
-    m_Target = Target::TEXTURE;
+Texture::Texture(const std::string &textureFilepath) : m_Target(IMAGE_2D) {
     glCreateTextures(m_Target, 1, &m_TextureID);
+    LOG_TRACE("Creating Texture {}", m_TextureID);
 
     LoadImage(textureFilepath);
 }
 
 Texture::~Texture() {
-    LOG_TRACE("Deleting Texture");
+    LOG_TRACE("Deleting Texture {}", m_TextureID);
     glDeleteTextures(1, &m_TextureID);
 }
 
@@ -70,7 +68,7 @@ void Texture::Unbind() {
 }
 
 void Texture::LoadImage(const std::string &textureFilepath) {
-    m_Target = Target::TEXTURE;
+    m_Target = IMAGE_2D;
     glBindTexture(m_Target, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
@@ -79,6 +77,11 @@ void Texture::LoadImage(const std::string &textureFilepath) {
 
     if (data == NULL) {
         LOG_ERROR("Failed Opening File: '{}'", textureFilepath);
+        throw;
+    }
+
+    if (channels != 3 && channels != 4) {
+        LOG_ERROR("Only 3 and 4 Channel Images are Supported");
         throw;
     }
 

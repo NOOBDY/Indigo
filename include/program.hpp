@@ -27,6 +27,7 @@ private:
     std::string LoadShaderFile(const std::string &filepath);
     void CompileShader(const GLuint shaderID, const std::string &shaderSrc);
     void LinkProgram();
+    void Validate() const;
 
 private:
     GLuint m_ProgramID;
