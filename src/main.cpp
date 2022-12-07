@@ -40,14 +40,6 @@ struct Model {
     Transform transform;
 };
 
-// Force Windows devices with discrete GPU to enable it
-#ifdef _WIN32
-extern "C" {
-__declspec(dllexport) int NvOptimusEnablement = 1;
-__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
-}
-#endif
-
 int main(int, char **) {
     Log::Init();
 
