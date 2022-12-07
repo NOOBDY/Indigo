@@ -46,8 +46,10 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: Indigo-${{ github.ref_name }}-${{ matrix.platform }}.tar.xz
+          draft: true
 
       - if: matrix.platform == 'windows'
         uses: softprops/action-gh-release@v1
         with:
           files: Indigo-${{ github.ref_name }}-${{ matrix.platform }}.zip
+          draft: true
