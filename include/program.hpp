@@ -6,7 +6,6 @@
 class Program {
 public:
     Program(const std::string &vertexShaderFilepath,
-            // const std::string &geometryShaderFilepath,
             const std::string &fragmentShaderFilepath);
     Program(const std::string &vertexShaderFilepath,
             const std::string &geometryShaderFilepath,
@@ -15,6 +14,12 @@ public:
 
     void Bind() const;
     void Unbind() const;
+
+    /**
+     * Validate the current state of the current bound program. If there are no
+     * errors, the program is guaranteed to execute.
+     */
+    void Validate() const;
 
     /**
      * Map the sampler name in the shader to a texture slot
@@ -27,7 +32,6 @@ private:
     std::string LoadShaderFile(const std::string &filepath);
     void CompileShader(const GLuint shaderID, const std::string &shaderSrc);
     void LinkProgram();
-    void Validate() const;
 
 private:
     GLuint m_ProgramID;

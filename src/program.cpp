@@ -17,7 +17,6 @@ Program::Program(const std::string &vertexShaderFilepath,
     CompileShader(m_FragmentShaderID, fragmentShaderFilepath);
 
     LinkProgram();
-    Validate();
 }
 
 Program::Program(const std::string &vertexShaderFilepath,
@@ -35,7 +34,6 @@ Program::Program(const std::string &vertexShaderFilepath,
     CompileShader(m_FragmentShaderID, fragmentShaderFilepath);
 
     LinkProgram();
-    Validate();
 }
 
 Program::~Program() {

@@ -4,6 +4,7 @@
 #include <stb_image.h>
 
 #include "log.hpp"
+
 Texture::Texture(const int width, const int height, Format format,
                  Target target)
     : m_Target(target) {

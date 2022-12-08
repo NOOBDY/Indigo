@@ -218,6 +218,7 @@ int main(int argc, char **argv) {
             lightMat.model = scene[i].transform.GetTransform();
             matrices.SetData(0, sizeof(lightMat), &lightMat);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            programShadow.Validate();
             Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
         }
 
@@ -257,6 +258,7 @@ int main(int argc, char **argv) {
             matrices.SetData(0, sizeof(mat1), &mat1);
             materials.SetData(0, sizeof(Material), &matColor1);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            programColor.Validate();
             Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
         }
 
@@ -269,6 +271,7 @@ int main(int argc, char **argv) {
         depthTexture.Bind(1);
 
         planeVAO.Bind();
+        programScreen.Validate();
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
         // done frame buffer
 
