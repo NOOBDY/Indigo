@@ -19,6 +19,8 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
+#define SHADOW_SIZE 1024 / 2
+
 #define LIGHT_NUMBER 2
 
 #pragma pack(16) // std140 layout pads by multiple of 16
@@ -37,8 +39,16 @@ struct Model {
     Transform transform;
 };
 
-int main(int, char **) {
+int main(int argc, char **argv) {
     Log::Init();
+
+    if (argc > 1) {
+        if (strncmp(argv[1], "-d", 2) == 0)
+            Log::SetLevel(Log::DEBUG);
+
+        if (strncmp(argv[1], "-t", 2) == 0)
+            Log::SetLevel(Log::TRACE);
+    }
 
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -49,33 +59,52 @@ int main(int, char **) {
     Program programShadow("../assets/shaders/shadow.vert",
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
+
+    enum { ALBEDO, NORMAL, SHADOW };
     Program programColor("../assets/shaders/phong.vert",
                          "../assets/shaders/phong.frag");
+
+    programColor.Bind();
+    programColor.SetInt("albedoMap", ALBEDO);
+    programColor.SetInt("normalMap", NORMAL);
+    programColor.SetInt("shadowMap", SHADOW);
+
+    // Small hack to put camera position into the shader
+    // TODO: Find somewhere on the UBO to put this in
+    GLint cameraUniform =
+        glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
+
     Program programScreen("../assets/shaders/frame_screen.vert",
                           "../assets/shaders/frame_screen.frag");
+
+    programScreen.Bind();
+    programScreen.SetInt("screenTexture", 0);
+    programScreen.SetInt("depthTexture", 1);
+    programScreen.SetInt("uvCheck", 2);
+
     LightData lightInfo[LIGHT_NUMBER];
+
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
     UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
-    Light light1(glm::vec3(1.0f));
-    Light light2(glm::vec3(1.0f));
-    light1.SetLightType(LightType::POINT);
-    light2.SetLightType(LightType::DIRECTION);
+    Light light1(Light::POINT, glm::vec3(1.0f));
+    Light light2(Light::DIRECTION, glm::vec3(1.0f));
     light2.SetPower(50);
+
+    float lightPower = 5;
 
     std::vector<Model> scene;
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    glm::mat3 uidata[3];
-    float lightPower = 5;
+    glm::mat3 uiData[3];
 
-    uidata[0][0] = glm::vec3(1.35, 0, 0);
-    uidata[0][1] = glm::vec3(180, 180, 180);
-    uidata[0][2] = glm::vec3(1, 1, 1);
+    uiData[0][0] = glm::vec3(0, 0, 0);
+    uiData[0][1] = glm::vec3(180, 180, 180);
+    uiData[0][2] = glm::vec3(1, 1, 1);
     scene.push_back(
         Model{Importer::LoadFile("../assets/models/little_city/main.glb")});
     // end model 1
@@ -83,46 +112,45 @@ int main(int, char **) {
     // begin model 2
     // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    uidata[1][0] = glm::vec3(-2, 0, 0);
-    uidata[1][1] = glm::vec3(180, 180, 180);
-    uidata[1][2] = glm::vec3(1);
+    uiData[1][0] = glm::vec3(0, 0, 0);
+    uiData[1][1] = glm::vec3(180, 180, 180);
+    uiData[1][2] = glm::vec3(1, 1, 1);
     scene.push_back(
-        Model{Importer::LoadFile("../assets/models/little_city/misc.glb")});
-    // Importer::LoadFile("../assets/models/cube.obj");
+        Model{Importer::LoadFile("../assets/models/little_city/interior.glb")});
     // end model 2
 
     // 2D plane for framebuffer
-    std::vector<float> quadVertices = {
-        -1.0f, 1.0f,  //
-        -1.0f, -1.0f, //
-        1.0f,  -1.0f, //
-        1.0f,  1.0f,  //
-    };
-    std::vector<float> quadUV = {
-        0.0f, 1.0f, //
-        0.0f, 0.0f, //
-        1.0f, 0.0f, //
-        1.0f, 1.0f, //
-    };
-    std::vector<unsigned int> quadIndex = {
-        0, 1, 2, //
-        0, 2, 3, //
-    };
-
     VertexArray planeVAO;
 
-    planeVAO.AddVertexBuffer(
-        std::make_shared<VertexBuffer>(quadVertices, 2 * sizeof(float)));
+    // vertices
+    planeVAO.AddVertexBuffer(std::make_shared<VertexBuffer>(
+        std::vector<float>{
+            -1.0f, 1.0f,  //
+            -1.0f, -1.0f, //
+            1.0f, -1.0f,  //
+            1.0f, 1.0f,   //
+        },
+        2 * sizeof(float)));
 
-    planeVAO.AddVertexBuffer(
-        std::make_shared<VertexBuffer>(quadUV, 2 * sizeof(float)));
+    // UV
+    planeVAO.AddVertexBuffer(std::make_shared<VertexBuffer>(
+        std::vector<float>{
+            0.0f, 1.0f, //
+            0.0f, 0.0f, //
+            1.0f, 0.0f, //
+            1.0f, 1.0f, //
+        },
+        2 * sizeof(float)));
 
-    planeVAO.SetIndexBuffer(std::make_shared<IndexBuffer>(quadIndex));
+    // Indices
+    planeVAO.SetIndexBuffer(
+        std::make_shared<IndexBuffer>(std::vector<unsigned int>{
+            0, 1, 2, //
+            0, 2, 3, //
+        }));
 
-    Texture tex1("../assets/textures/little_city/main_color.jpg");
-    Texture tex2("../assets/textures/little_city/inter_view.jpg");
-    Texture tex3("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
-    Texture tex4("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    Texture texMainColor("../assets/textures/little_city/main_color.jpg");
+    Texture texInterior("../assets/textures/little_city/interior.jpg");
 
     FrameBuffer colorFbo;
     colorFbo.Bind();
@@ -134,6 +162,7 @@ int main(int, char **) {
     colorFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
 
     // render buffer
+    // TODO: Hide gl calls to somewhere else
     GLuint rbo;
 
     glCreateRenderbuffers(1, &rbo);
@@ -146,39 +175,24 @@ int main(int, char **) {
 
     // when colorFbo is bind all render will storage and not display
     colorFbo.Unbind();
+
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
-    int shadowSize = 1024 * .5;
-    Texture lightDepthTexture(shadowSize, shadowSize, Texture::DEPTH,
+    Texture lightDepthTexture(SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH,
                               Texture::CUBE);
     shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
                             GL_DEPTH_ATTACHMENT);
 
-    // Texture depthTexture(shadowSize, shadowSize, Texture::DEPTH,
-    // Texture::CUBE); shadowFbo.AttachTexture(depthTexture.GetTextureID(),
-    // GL_DEPTH_ATTACHMENT); Texture shadowTexture(shadowSize, shadowSize,
-    // Texture::COLOR,
-    //                       Texture::CUBE);
-    // shadowFbo.AttachTexture(shadowTexture.GetTextureID(),
-    // GL_COLOR_ATTACHMENT0);
+    uiData[2][0] = glm::vec3(0, 0, 0);
+    uiData[2][1] = glm::vec3(0, 0, 0);
+    uiData[2][2] = glm::vec3(20);
 
-    // float frameCount = 0;
-
-    uidata[2][0] = glm::vec3(0, 0, 0);
-    uidata[2][1] = glm::vec3(0, 0, 0);
-    uidata[2][2] = glm::vec3(20);
     scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
-    // Small hack to put camera position into the shader
-    // TODO: Find somewhere on the UBO to put this in
-    GLint cameraUniform =
-        glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
+
     Matrices lightMat;
 
     do {
-        // float tempValue = glm::sin(frameCount += 0.05f);
-        // light1.m_Transform.Setition(glm::vec3(1, tempValue * 3, -3));
-        light1.m_Transform.SetPosition(uidata[2][0]);
-        // light1.SetRadius(3 * glm::abs(tempValue));
+        light1.GetTransform().SetPosition(uiData[2][0]);
         light1.SetPower(lightPower);
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
@@ -188,58 +202,63 @@ int main(int, char **) {
         // shadow
 
         // make sure render size is same as texture
-        glViewport(0, 0, shadowSize, shadowSize);
+        glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
         shadowFbo.Bind();
         programShadow.Bind();
         Renderer::Clear();
         Renderer::EnableDepthTest();
-        glDisable(GL_CULL_FACE);
+        Renderer::DisableCullFace();
 
         // not render light ball
-        for (int j = 0; j < scene.size() - 1; j++) {
-            scene[j].VAO->Bind();
-            scene[j].transform.SetPosition(uidata[j][0]);
-            scene[j].transform.SetRotation(uidata[j][1]);
-            scene[j].transform.SetScale(uidata[j][2]);
-            lightMat.model = scene[j].transform.GetTransform();
+        for (unsigned int i = 0; i < scene.size() - 1; i++) {
+            scene[i].VAO->Bind();
+            scene[i].transform.SetPosition(uiData[i][0]);
+            scene[i].transform.SetRotation(uiData[i][1]);
+            scene[i].transform.SetScale(uiData[i][2]);
+            lightMat.model = scene[i].transform.GetTransform();
             matrices.SetData(0, sizeof(lightMat), &lightMat);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-            Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
+            programShadow.Validate();
+            Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
         }
 
         // color (phong shader)
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        // glEnable(GL_CULL_FACE);
         colorFbo.Bind();
         programColor.Bind();
         Renderer::Clear();
 
+        camera.GetTransform().SetPosition(
+            camera.GetTransform().GetPosition() +
+            10 * window.GetScrollOffset().y *
+                glm::normalize(camera.GetTransform().GetPosition()));
+
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
+            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                 delta.y * -2 / window.GetHeight());
+        }
+
         glm::vec3 cameraPos = camera.GetTransform().GetPosition();
         glUniform3fv(cameraUniform, 1, &cameraPos.x);
-        programColor.SetInt("texture1", 1);
-        programColor.SetInt("texture2", 2);
-        programColor.SetInt("texture3", 3);
-        programColor.SetInt("texture4", 4);
-        tex1.Bind(1);
-        tex2.Bind(2);
-        tex3.Bind(3);
-        lightDepthTexture.Bind(4);
-        // shadowTexture.Bind(4);
-        // tex4.Bind(4);
+        camera.UpdateView();
 
-        for (int j = 0; j < scene.size(); j++) {
-            scene[j].VAO->Bind();
+        texMainColor.Bind(ALBEDO);
+        lightDepthTexture.Bind(SHADOW);
 
-            scene[j].transform.SetPosition(uidata[j][0]);
-            scene[j].transform.SetRotation(uidata[j][1]);
-            scene[j].transform.SetScale(uidata[j][2]);
+        for (unsigned int i = 0; i < scene.size(); i++) {
+            scene[i].VAO->Bind();
+
+            scene[i].transform.SetPosition(uiData[i][0]);
+            scene[i].transform.SetRotation(uiData[i][1]);
+            scene[i].transform.SetScale(uiData[i][2]);
 
             Matrices mat1;
-            mat1.model = scene[j].transform.GetTransform();
+            mat1.model = scene[i].transform.GetTransform();
             mat1.viewProjection = camera.GetViewProjection();
             matrices.SetData(0, sizeof(mat1), &mat1);
             materials.SetData(0, sizeof(Material), &matColor1);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            programColor.Validate();
             Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
         }
 
@@ -248,25 +267,13 @@ int main(int, char **) {
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
-
-        programScreen.SetInt("screenTexture", 0);
-        programScreen.SetInt("depthTexture", 1);
-        programScreen.SetInt("uvcheck", 2);
         renderSurface.Bind(0);
         depthTexture.Bind(1);
-        // renderSurface.Bind(1);
-        // shadowTexture.Bind(1);
-        tex2.Bind(2);
 
         planeVAO.Bind();
-        glBindTexture(GL_TEXTURE_2D, renderSurface.GetTextureID());
+        programScreen.Validate();
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
         // done frame buffer
-
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                 delta.y * -2 / window.GetHeight());
-        }
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
@@ -277,26 +284,26 @@ int main(int, char **) {
         ImGui::Begin("Debug Info");
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
-        ImGui::Text("%f, %f, %f", scene[0].transform.GetPosition().x,
-                    scene[0].transform.GetPosition().y,
-                    scene[0].transform.GetPosition().z);
+        ImGui::Text("(%d, %d)", (int)window.GetScrollOffset().x,
+                    (int)window.GetScrollOffset().y);
         ImGui::End();
 
         ImGui::Begin("Model 1");
-        ImGui::SliderFloat3("Position", &uidata[0][0][0], -200, 200);
-        ImGui::SliderFloat3("Rotation", &uidata[0][1][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uidata[0][2][0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uiData[0][0][0], -200, 200);
+        ImGui::SliderFloat3("Rotation", &uiData[0][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uiData[0][2][0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Begin("Model 2");
-        ImGui::SliderFloat3("Position", &uidata[1][0][0], -200, 200);
-        ImGui::SliderFloat3("Rotation", &uidata[1][1][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uidata[1][2][0], 0.1f, 5.0f);
+        ImGui::SliderFloat3("Position", &uiData[1][0][0], -200, 200);
+        ImGui::SliderFloat3("Rotation", &uiData[1][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uiData[1][2][0], 0.1f, 5.0f);
         ImGui::End();
-        ImGui::Begin("light 3");
-        ImGui::SliderFloat3("Position", &uidata[2][0][0], -300, 300);
-        ImGui::SliderFloat3("Rotation", &uidata[2][1][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uidata[2][2][0], 0.1f, 100.0f);
+
+        ImGui::Begin("Light");
+        ImGui::SliderFloat3("Position", &uiData[2][0][0], -300, 300);
+        ImGui::SliderFloat3("Rotation", &uiData[2][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uiData[2][2][0], 0.1f, 100.0f);
         ImGui::SliderFloat("Power", &lightPower, 0.1f, 10.0f);
         ImGui::End();
 
@@ -306,7 +313,7 @@ int main(int, char **) {
         // TODO: Figure this out and put it in `Window` class
         // glfwSwapInterval(0);
         glfwSwapBuffers(window.GetWindow());
-        glfwPollEvents();
+        window.PollEvents();
     } while (!window.ShouldClose());
 
     ImGui_ImplOpenGL3_Shutdown();

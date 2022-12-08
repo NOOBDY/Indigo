@@ -5,8 +5,6 @@
 
 #include <GLFW/glfw3.h>
 
-#include <glm/glm.hpp>
-
 /**
  * An OOP wrapper for `GLFWwindow`
  * using OpenGL 4.6 core profile
@@ -32,8 +30,14 @@ public:
     bool GetKey(int key) const;
     bool GetMouseButton(int button) const;
     glm::vec2 GetCursorDelta() const;
+    glm::vec2 GetScrollOffset() const { return m_ScrollOffset; }
 
     bool ShouldClose() const;
+
+    void PollEvents();
+
+    friend void GLFWScrollCallback(GLFWwindow *window, double offsetX,
+                                   double offsetY);
 
 private:
     GLFWwindow *m_Window;
@@ -43,6 +47,8 @@ private:
 
     double m_XPos;
     double m_YPos;
+
+    glm::vec2 m_ScrollOffset;
 };
 
 #endif

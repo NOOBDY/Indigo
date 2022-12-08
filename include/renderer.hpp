@@ -17,6 +17,9 @@ void Draw(const unsigned int indexCount);
 void EnableDepthTest();
 void DisableDepthTest();
 
+void EnableCullFace();
+void DisableCullFace();
+
 }; // namespace Renderer
 
 #endif

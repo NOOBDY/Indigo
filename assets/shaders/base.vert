@@ -1,12 +1,12 @@
-#version 460 core
+#version 450 core
 
-layout (location = 0) in vec3 vertPos;
-layout (location = 1) in vec2 vertUV;
+layout(location = 0) in vec3 vertPos;
+layout(location = 1) in vec2 vertUV;
 
 out vec3 pos;
 out vec2 UV;
 
-layout (std140, binding = 0) uniform Matrices {
+layout(std140, binding = 0) uniform Matrices {
     mat4 MVP;
 };
 
