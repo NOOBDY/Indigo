@@ -67,8 +67,9 @@ int main(int argc, char **argv) {
     programColor.Bind();
     programColor.SetInt("albedoMap", ALBEDO);
     programColor.SetInt("normalMap", NORMAL);
-    programColor.SetInt("shadowMap", SHADOW);
+    // programColor.SetInt("shadowMap", SHADOW);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
+        // LOG_INFO("shadowMap[" + std::to_string(i) + "]");
         programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
     }
 
@@ -83,7 +84,12 @@ int main(int argc, char **argv) {
     programScreen.Bind();
     programScreen.SetInt("screenTexture", 0);
     programScreen.SetInt("depthTexture", 1);
-    programScreen.SetInt("uvCheck", 2);
+    programScreen.SetInt("depthTexture1", 2);
+    for (int i = 0; i < LIGHT_NUMBER; i++) {
+        // LOG_INFO("shadowMap[" + std::to_string(i) + "]");
+        programScreen.SetInt("shadowMap[" + std::to_string(i) + "]", 3 + i);
+    }
+    // programScreen.SetInt("uvCheck", 2);
 
     LightData lightInfo[LIGHT_NUMBER];
 
@@ -95,7 +101,8 @@ int main(int argc, char **argv) {
 
     Light light1(Light::POINT, glm::vec3(1.0f));
     Light light2(Light::POINT, glm::vec3(1.0f));
-    light2.SetPower(.2);
+    light2.SetPower(5);
+    light2.SetRadius(400);
 
     std::vector<Model> scene;
 
@@ -201,6 +208,7 @@ int main(int argc, char **argv) {
 
     do {
         light1.GetTransform().SetPosition(uiData[2][0]);
+        light2.GetTransform().SetPosition(uiData[1][0]);
         light1.SetPower(lightPower);
         light1.SetRadius(lightRadius);
         lightInfo[0] = light1.GetLightData();
@@ -219,8 +227,8 @@ int main(int argc, char **argv) {
             shadowFbo.AttachTexture(lightDepths[i]->GetTextureID(),
                                     GL_DEPTH_ATTACHMENT);
             shadowFbo.Bind();
-            Renderer::Clear();
             programShadow.Bind();
+            Renderer::Clear();
 
             // not render light ball
             for (unsigned int j = 0; j < scene.size() - 1; j++) {
@@ -231,8 +239,7 @@ int main(int argc, char **argv) {
                 lightMat.model = scene[j].transform.GetTransform();
                 matrices.SetData(0, sizeof(lightMat), &lightMat);
                 // use first one to render shadow
-                lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER,
-                               &lightInfo + i);
+                lights.SetData(0, sizeof(LightData), lightInfo + i);
                 programShadow.Validate();
                 Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
             }
@@ -288,7 +295,10 @@ int main(int argc, char **argv) {
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
         renderSurface.Bind(0);
-        lightDepths[1]->Bind(1);
+        lightDepths[0]->Bind(1);
+        lightDepths[1]->Bind(2);
+        lightDepths[0]->Bind(3);
+        lightDepths[1]->Bind(4);
         // depthTexture.Bind(1);
 
         planeVAO.Bind();
@@ -310,13 +320,13 @@ int main(int argc, char **argv) {
         ImGui::End();
 
         ImGui::Begin("Model 1");
-        ImGui::SliderFloat3("Position", &uiData[0][0][0], -200, 200);
+        ImGui::SliderFloat3("Position", &uiData[0][0][0], -300, 300);
         ImGui::SliderFloat3("Rotation", &uiData[0][1][0], 0, 360);
         ImGui::SliderFloat3("Scale", &uiData[0][2][0], 0.1f, 5.0f);
         ImGui::End();
 
         ImGui::Begin("Model 2");
-        ImGui::SliderFloat3("Position", &uiData[1][0][0], -200, 200);
+        ImGui::SliderFloat3("Position", &uiData[1][0][0], -300, 300);
         ImGui::SliderFloat3("Rotation", &uiData[1][1][0], 0, 360);
         ImGui::SliderFloat3("Scale", &uiData[1][2][0], 0.1f, 5.0f);
         ImGui::End();

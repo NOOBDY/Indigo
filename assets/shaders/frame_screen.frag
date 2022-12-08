@@ -5,6 +5,8 @@ out vec4 FragColor;
 uniform sampler2D screenTexture;
 uniform sampler2D uvCheck;
 uniform samplerCube depthTexture;
+uniform samplerCube depthTexture1;
+uniform samplerCube shadowMap[2];
 #define PI 3.1415926
 vec3 cnn(vec3 color) {
     const float offset = 1.0 / 300.0;
@@ -50,7 +52,12 @@ vec3 cube_uv(vec2 uv) {
     // nuv.y = uv.y * 2 - 1;
     // return nuv;
     // return texture(uvcheck, uv).xyz;
-    return texture(depthTexture, normalize(nuv)).rgb;
+    if(TexCoords.y < 0.5)
+        // return texture(depthTexture, normalize(nuv)).rgb;
+        return texture(shadowMap[0], normalize(nuv)).rgb;
+    else
+        // return texture(depthTexture1, normalize(nuv)).rgb;
+        return texture(shadowMap[1], normalize(nuv)).rgb;
 
 }
 vec3 test(vec3 nuv) {
@@ -68,8 +75,7 @@ void main() {
     vec3 col = screen;
     // col = depth;
 
-    // if(TexCoords.x < 0.5)
-    col = cube_uv(TexCoords);
+    // col = cube_uv(TexCoords);
     // col = test(col);
     FragColor = vec4(col, 1.0);
 }
