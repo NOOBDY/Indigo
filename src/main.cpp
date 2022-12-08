@@ -178,10 +178,16 @@ int main(int argc, char **argv) {
 
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
-    Texture lightDepthTexture(SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH,
-                              Texture::CUBE);
-    shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
+    std::vector<std::shared_ptr<Texture>> lightDepths;
+    lightDepths.push_back(std::make_shared<Texture>(
+        SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH, Texture::CUBE));
+    // Texture lightDepthTexture(SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH,
+    //                           Texture::CUBE);
+
+    shadowFbo.AttachTexture(lightDepths[0]->GetTextureID(),
                             GL_DEPTH_ATTACHMENT);
+    // shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
+    //                         GL_DEPTH_ATTACHMENT);
 
     uiData[2][0] = glm::vec3(0, 0, 0);
     uiData[2][1] = glm::vec3(0, 0, 0);
@@ -244,7 +250,8 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
-        lightDepthTexture.Bind(SHADOW);
+        lightDepths[0]->Bind(SHADOW);
+        // lightDepthTexture.Bind(SHADOW);
 
         for (unsigned int i = 0; i < scene.size(); i++) {
             scene[i].VAO->Bind();
