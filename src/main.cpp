@@ -179,13 +179,12 @@ int main(int argc, char **argv) {
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
     std::vector<std::shared_ptr<Texture>> lightDepths;
-    lightDepths.push_back(std::make_shared<Texture>(
-        SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH, Texture::CUBE));
+    for (int i = 0; i < LIGHT_NUMBER; i++) {
+        lightDepths.push_back(std::make_shared<Texture>(
+            SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH, Texture::CUBE));
+    }
     // Texture lightDepthTexture(SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH,
     //                           Texture::CUBE);
-
-    shadowFbo.AttachTexture(lightDepths[0]->GetTextureID(),
-                            GL_DEPTH_ATTACHMENT);
     // shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
     //                         GL_DEPTH_ATTACHMENT);
 
@@ -210,23 +209,29 @@ int main(int argc, char **argv) {
 
         // make sure render size is same as texture
         glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
-        shadowFbo.Bind();
-        programShadow.Bind();
-        Renderer::Clear();
         Renderer::EnableDepthTest();
         Renderer::DisableCullFace();
 
-        // not render light ball
-        for (unsigned int i = 0; i < scene.size() - 1; i++) {
-            scene[i].VAO->Bind();
-            scene[i].transform.SetPosition(uiData[i][0]);
-            scene[i].transform.SetRotation(uiData[i][1]);
-            scene[i].transform.SetScale(uiData[i][2]);
-            lightMat.model = scene[i].transform.GetTransform();
-            matrices.SetData(0, sizeof(lightMat), &lightMat);
-            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-            programShadow.Validate();
-            Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
+        for (int i = 0; i < lightDepths.size(); i++) {
+            shadowFbo.AttachTexture(lightDepths[i]->GetTextureID(),
+                                    GL_DEPTH_ATTACHMENT);
+            shadowFbo.Bind();
+            Renderer::Clear();
+            programShadow.Bind();
+
+            // not render light ball
+            for (unsigned int j = 0; j < scene.size() - 1; j++) {
+                scene[j].VAO->Bind();
+                scene[j].transform.SetPosition(uiData[j][0]);
+                scene[j].transform.SetRotation(uiData[j][1]);
+                scene[j].transform.SetScale(uiData[j][2]);
+                lightMat.model = scene[j].transform.GetTransform();
+                matrices.SetData(0, sizeof(lightMat), &lightMat);
+                lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+                programShadow.Validate();
+                Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
+            }
+            shadowFbo.Unbind();
         }
 
         // color (phong shader)
@@ -250,7 +255,9 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
-        lightDepths[0]->Bind(SHADOW);
+        for (int i = 0; i < lightDepths.size(); i++) {
+            lightDepths[i]->Bind(SHADOW);
+        }
         // lightDepthTexture.Bind(SHADOW);
 
         for (unsigned int i = 0; i < scene.size(); i++) {
