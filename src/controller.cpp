@@ -13,5 +13,5 @@ void Controller::InitGUI(Window &window) {
     ImGui::StyleColorsDark();
 
     ImGui_ImplGlfw_InitForOpenGL(window.GetWindow(), true);
-    ImGui_ImplOpenGL3_Init("#version 460");
+    ImGui_ImplOpenGL3_Init("#version 450");
 }

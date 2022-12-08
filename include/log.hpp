@@ -3,6 +3,8 @@
 
 #include "pch.hpp"
 
+#include <spdlog/spdlog.h>
+
 namespace Log {
 enum Level {
     TRACE = spdlog::level::trace,

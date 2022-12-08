@@ -14,7 +14,8 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
-        cmake_build_type: [Debug, Release]
+        build_type: [Release]
+
     steps:
       - name: Installing Dependencies
         run: |
@@ -31,8 +32,14 @@ jobs:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
         run: |
-          cmake -B build -G "Ninja"
+          cmake -B build -G "Ninja" -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           cmake --build build
+
+      - name: Uploading Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-binary
+          path: build/Indigo
 
   windows:
     runs-on: ${{ matrix.os }}
@@ -41,7 +48,7 @@ jobs:
       matrix:
         os: [windows-latest]
         compiler: [{ cc: clang, cxx: clang++ }]
-        cmake_build_type: [Debug, Release]
+        build_type: [Release]
 
     steps:
       - name: Checkout Repository
@@ -54,5 +61,11 @@ jobs:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
         run: |
-          cmake -B build -G "Ninja"
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           cmake --build build
+
+      - name: Uploading Binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-binary
+          path: build/Indigo.exe

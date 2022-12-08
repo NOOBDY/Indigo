@@ -1,4 +1,4 @@
-#version 460 core
+#version 450 core
 
 //so far only one cube map
 #define LIGHT_NUMBER 2
@@ -47,6 +47,8 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
+    float pad1;
+    float pad2;
 };
 
 struct MaterialData {
@@ -65,20 +67,19 @@ layout(std140, binding = 2) uniform Lights {
 
 uniform vec3 cameraPosition;
 
-uniform sampler2D texture1; // samplers are opaque types and
-uniform sampler2D texture2; // cannot exist in uniform blocks
-uniform sampler2D texture3;
-// uniform sampler2D texture4; // frame buffer texture
-uniform samplerCube texture4; // frame buffer texture
+uniform sampler2D albedoMap; // samplers are opaque types and
+uniform sampler2D normalMap;
+uniform samplerCube shadowMap; // frame buffer texture
+
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
-};
+}
 vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
 float shadow(vec3 position, LightData light) {
     vec3 dir = position - light.transform.position;
-    float lightDepth = texture(texture4, dir).x;
+    float lightDepth = texture(shadowMap, dir).x;
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
@@ -86,7 +87,7 @@ float shadow(vec3 position, LightData light) {
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 25.0;
     for(int i = 0; i < samples; ++i) {
-        float closestDepth = texture(texture4, dir + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(shadowMap, dir + gridSamplingDisk[i] * diskRadius).r;
         closestDepth *= light.farPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
@@ -116,8 +117,8 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     float spot = light.lightType == SPOT ? clamp((angle - light.outerCone) / (light.innerCone - light.outerCone), 0.0, 1.0) : 1.0;
 
     // diffuse lighting
-    float dotLN = max(dot(l, n), 0.0);
-    vec3 diffuse = texture(texture1, UV).xyz * (dotLN + ambient);
+    float dotLN = max(dot(halfwayVec, n), 0.0);
+    vec3 diffuse = texture(albedoMap, UV).xyz * (dotLN + ambient);
 
     //color tranform
     // diffuse = pow(diffuse, vec3(2.2));

@@ -5,8 +5,6 @@
 #include <vector>
 #include <memory>
 
-#include <spdlog/spdlog.h>
-
 #define GLEW_STATIC
 #include <GL/glew.h>
 
