@@ -68,6 +68,9 @@ int main(int argc, char **argv) {
     programColor.SetInt("albedoMap", ALBEDO);
     programColor.SetInt("normalMap", NORMAL);
     programColor.SetInt("shadowMap", SHADOW);
+    for (int i = 0; i < LIGHT_NUMBER; i++) {
+        programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+    }
 
     // Small hack to put camera position into the shader
     // TODO: Find somewhere on the UBO to put this in
@@ -91,7 +94,7 @@ int main(int argc, char **argv) {
     Camera camera(45.0f, window.GetAspectRatio());
 
     Light light1(Light::POINT, glm::vec3(1.0f));
-    Light light2(Light::DIRECTION, glm::vec3(1.0f));
+    Light light2(Light::POINT, glm::vec3(1.0f));
     light2.SetPower(.2);
 
     std::vector<Model> scene;
@@ -227,7 +230,9 @@ int main(int argc, char **argv) {
                 scene[j].transform.SetScale(uiData[j][2]);
                 lightMat.model = scene[j].transform.GetTransform();
                 matrices.SetData(0, sizeof(lightMat), &lightMat);
-                lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+                // use first one to render shadow
+                lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER,
+                               &lightInfo + i);
                 programShadow.Validate();
                 Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
             }
@@ -256,7 +261,7 @@ int main(int argc, char **argv) {
 
         texMainColor.Bind(ALBEDO);
         for (int i = 0; i < lightDepths.size(); i++) {
-            lightDepths[i]->Bind(SHADOW);
+            lightDepths[i]->Bind(SHADOW + i);
         }
         // lightDepthTexture.Bind(SHADOW);
 
@@ -283,7 +288,8 @@ int main(int argc, char **argv) {
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
         renderSurface.Bind(0);
-        depthTexture.Bind(1);
+        lightDepths[1]->Bind(1);
+        // depthTexture.Bind(1);
 
         planeVAO.Bind();
         programScreen.Validate();

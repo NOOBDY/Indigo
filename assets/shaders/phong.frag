@@ -69,7 +69,8 @@ uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
-uniform samplerCube shadowMap; // frame buffer texture
+// uniform samplerCube shadowMap; // frame buffer texture
+uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
@@ -77,9 +78,9 @@ float fade(vec3 center, vec3 position, float radius) {
     // return 1.0 - clamp(length(position - center) / radius, 0, 1);
 }
 vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
-float shadow(vec3 position, LightData light) {
+float shadow(vec3 position, LightData light, int index) {
     vec3 dir = position - light.transform.position;
-    float lightDepth = texture(shadowMap, dir).x;
+    float lightDepth = texture(shadowMap[index], dir).x;
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
@@ -87,7 +88,7 @@ float shadow(vec3 position, LightData light) {
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 25.0;
     for(int i = 0; i < samples; ++i) {
-        float closestDepth = texture(shadowMap, dir + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(shadowMap[index], dir + gridSamplingDisk[i] * diskRadius).r;
         closestDepth *= light.farPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
@@ -96,7 +97,7 @@ float shadow(vec3 position, LightData light) {
     return 0.0;
     return (shadow);
 }
-vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter) {
+vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter, int index) {
     // mesh normal
     vec3 n = normal;
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
@@ -128,7 +129,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // ambient light not specular
     vec3 specular = vec3(1) * (light.lightType == AMBIENT || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
 
-    float shadow = shadow(position, light);
+    float shadow = shadow(position, light, index);
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
 
@@ -140,7 +141,7 @@ vec3 PhongLight(vec3 cameraPosition, vec3 position, LightData lights[LIGHT_NUMBE
         LightData light = lights[i];
         if(light.lightType == 0)
             continue;
-        color3 += AllLight(cameraPosition, position, light, material);
+        color3 += AllLight(cameraPosition, position, light, material, i);
     }
 
     return color3;

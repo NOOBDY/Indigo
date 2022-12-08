@@ -60,7 +60,6 @@ void main() {
     // gl_FragDepth = gl_FragCoord.z;
     float len = length(vec3(worldPosition - lights[0].transform.position));
     len /= lights[0].farPlane;
-    // len /= 10;
     color = vec4(vec3(len), 1.0);
     gl_FragDepth = len;
 
