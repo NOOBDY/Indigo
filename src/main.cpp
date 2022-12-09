@@ -284,7 +284,6 @@ int main(int argc, char **argv) {
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
         }
-        // lightDepthTexture.Bind(SHADOW);
 
         for (unsigned int i = 0; i < scene.size(); i++) {
             scene[i].VAO->Bind();
