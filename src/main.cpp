@@ -69,7 +69,6 @@ int main(int argc, char **argv) {
     programColor.SetInt("normalMap", NORMAL);
     // programColor.SetInt("shadowMap", SHADOW);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
-        // LOG_INFO("shadowMap[" + std::to_string(i) + "]");
         programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
     }
 
@@ -85,11 +84,10 @@ int main(int argc, char **argv) {
     programScreen.SetInt("screenTexture", 0);
     programScreen.SetInt("depthTexture", 1);
     programScreen.SetInt("depthTexture1", 2);
+    // programScreen.SetInt("uvCheck", 2);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
-        // LOG_INFO("shadowMap[" + std::to_string(i) + "]");
         programScreen.SetInt("shadowMap[" + std::to_string(i) + "]", 3 + i);
     }
-    // programScreen.SetInt("uvCheck", 2);
 
     LightData lightInfo[LIGHT_NUMBER];
 
@@ -101,15 +99,13 @@ int main(int argc, char **argv) {
 
     Light light1(Light::POINT, glm::vec3(1.0f));
     Light light2(Light::POINT, glm::vec3(1.0f));
-    light2.SetPower(5);
-    light2.SetRadius(400);
 
     std::vector<Model> scene;
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    float lightPower[2];
-    float lightRadius[2];
+    float lightPower[2] = {3, 3};
+    float lightRadius[2] = {300, 300};
     glm::mat3 uiData[4];
 
     uiData[0][0] = glm::vec3(0, 0, 0);

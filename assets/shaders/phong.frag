@@ -126,7 +126,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     // specular lighting
     float dotRV = max(dot(r, v), 0.0);
     // ambient light not specular
-    vec3 specular = vec3(1) * (light.lightType == AMBIENT || diffuse == vec3(0.0) ? 0.0 : pow(dotRV, material.maxShine));
+    vec3 specular = vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0)) ? 0.0 : pow(dotRV, material.maxShine));
 
     float shadow = shadow(position, light, index);
     diffuse *= 1 - shadow;
