@@ -80,7 +80,7 @@ float fade(vec3 center, vec3 position, float radius) {
 vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
 float shadow(vec3 position, LightData light, int index) {
     vec3 dir = position - light.transform.position;
-    float lightDepth = texture(shadowMap[0], dir).x;
+    float lightDepth = texture(shadowMap[index], dir).x;
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
@@ -88,13 +88,12 @@ float shadow(vec3 position, LightData light, int index) {
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 25.0;
     for(int i = 0; i < samples; ++i) {
-        float closestDepth = texture(shadowMap[0], dir + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(shadowMap[index], dir + gridSamplingDisk[i] * diskRadius).r;
         closestDepth *= light.farPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
     shadow /= float(samples);
-    // return 0.0;
     return (shadow);
 }
 vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData matter, int index) {
@@ -132,7 +131,6 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light, MaterialData 
     float shadow = shadow(position, light, index);
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
-    // return worldPosition - light.transform.position;
 
     return (diffuse + specular) * light.lightColor * light.power * fadeOut * spot;
 }
@@ -142,7 +140,6 @@ vec3 PhongLight(vec3 cameraPosition, vec3 position, LightData lights[LIGHT_NUMBE
         LightData light = lights[i];
         if(light.lightType == 0)
             continue;
-        // color3 += vec3(shadow(worldPosition, light, i));
         color3 += AllLight(cameraPosition, position, light, material, i);
     }
 

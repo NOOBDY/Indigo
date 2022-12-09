@@ -199,18 +199,19 @@ int main(int argc, char **argv) {
     //                         GL_DEPTH_ATTACHMENT);
 
     // light 1
-    uiData[2][0] = glm::vec3(100, 0, 0);
+    uiData[2][0] = glm::vec3(300, 0, 0);
     uiData[2][1] = glm::vec3(0, 0, 0);
     uiData[2][2] = glm::vec3(20);
     lightPower[0] = 3;
     lightRadius[0] = 200;
     // light 1
-    uiData[3][0] = glm::vec3(-100, 0, 0);
+    uiData[3][0] = glm::vec3(-300, 0, 0);
     uiData[3][1] = glm::vec3(0, 0, 0);
     uiData[3][2] = glm::vec3(20);
     lightPower[1] = 3;
     lightRadius[1] = 200;
 
+    scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
     scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
 
     Matrices lightMat;
@@ -244,7 +245,7 @@ int main(int argc, char **argv) {
             Renderer::Clear();
 
             // not render light ball
-            for (unsigned int j = 0; j < scene.size() - 1; j++) {
+            for (unsigned int j = 0; j < scene.size() - 2; j++) {
                 scene[j].VAO->Bind();
                 scene[j].transform.SetPosition(uiData[j][0]);
                 scene[j].transform.SetRotation(uiData[j][1]);
@@ -310,8 +311,6 @@ int main(int argc, char **argv) {
         renderSurface.Bind(0);
         lightDepths[0]->Bind(1);
         lightDepths[1]->Bind(2);
-        lightDepths[0]->Bind(3);
-        lightDepths[1]->Bind(4);
 
         planeVAO.Bind();
         programScreen.Validate();
