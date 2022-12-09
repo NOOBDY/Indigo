@@ -75,7 +75,7 @@ void main() {
     vec3 col = screen;
     // col = depth;
 
-    // col = cube_uv(TexCoords);
+    col = cube_uv(TexCoords);
     // col = test(col);
     FragColor = vec4(col, 1.0);
 }

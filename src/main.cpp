@@ -108,9 +108,9 @@ int main(int argc, char **argv) {
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    float lightPower = 5;
-    float lightRadius = 200;
-    glm::mat3 uiData[3];
+    float lightPower[2];
+    float lightRadius[2];
+    glm::mat3 uiData[4];
 
     uiData[0][0] = glm::vec3(0, 0, 0);
     uiData[0][1] = glm::vec3(180, 180, 180);
@@ -198,9 +198,18 @@ int main(int argc, char **argv) {
     // shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
     //                         GL_DEPTH_ATTACHMENT);
 
-    uiData[2][0] = glm::vec3(0, 0, 0);
+    // light 1
+    uiData[2][0] = glm::vec3(100, 0, 0);
     uiData[2][1] = glm::vec3(0, 0, 0);
     uiData[2][2] = glm::vec3(20);
+    lightPower[0] = 3;
+    lightRadius[0] = 200;
+    // light 1
+    uiData[3][0] = glm::vec3(-100, 0, 0);
+    uiData[3][1] = glm::vec3(0, 0, 0);
+    uiData[3][2] = glm::vec3(20);
+    lightPower[1] = 3;
+    lightRadius[1] = 200;
 
     scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
 
@@ -208,9 +217,12 @@ int main(int argc, char **argv) {
 
     do {
         light1.GetTransform().SetPosition(uiData[2][0]);
-        light2.GetTransform().SetPosition(uiData[1][0]);
-        light1.SetPower(lightPower);
-        light1.SetRadius(lightRadius);
+        light1.SetPower(lightPower[0]);
+        light1.SetRadius(lightRadius[0]);
+
+        light2.GetTransform().SetPosition(uiData[3][0]);
+        light2.SetPower(lightPower[1]);
+        light2.SetRadius(lightRadius[1]);
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
         glm::vec2 delta = window.GetCursorDelta();
@@ -223,6 +235,7 @@ int main(int argc, char **argv) {
         Renderer::EnableDepthTest();
         Renderer::DisableCullFace();
 
+        // every light
         for (int i = 0; i < lightDepths.size(); i++) {
             shadowFbo.AttachTexture(lightDepths[i]->GetTextureID(),
                                     GL_DEPTH_ATTACHMENT);
@@ -299,7 +312,6 @@ int main(int argc, char **argv) {
         lightDepths[1]->Bind(2);
         lightDepths[0]->Bind(3);
         lightDepths[1]->Bind(4);
-        // depthTexture.Bind(1);
 
         planeVAO.Bind();
         programScreen.Validate();
@@ -331,12 +343,20 @@ int main(int argc, char **argv) {
         ImGui::SliderFloat3("Scale", &uiData[1][2][0], 0.1f, 5.0f);
         ImGui::End();
 
-        ImGui::Begin("Light");
+        ImGui::Begin("Light 1");
         ImGui::SliderFloat3("Position", &uiData[2][0][0], -300, 300);
         ImGui::SliderFloat3("Rotation", &uiData[2][1][0], 0, 360);
         ImGui::SliderFloat3("Scale", &uiData[2][2][0], 0.1f, 100.0f);
-        ImGui::SliderFloat("Power", &lightPower, 0.1f, 10.0f);
-        ImGui::SliderFloat("Radius", &lightRadius, 1.0f, 1000.0f);
+        ImGui::SliderFloat("Power", &lightPower[0], 0.1f, 10.0f);
+        ImGui::SliderFloat("Radius", &lightRadius[0], 1.0f, 1000.0f);
+        ImGui::End();
+
+        ImGui::Begin("Light 2");
+        ImGui::SliderFloat3("Position", &uiData[3][0][0], -300, 300);
+        ImGui::SliderFloat3("Rotation", &uiData[3][1][0], 0, 360);
+        ImGui::SliderFloat3("Scale", &uiData[3][2][0], 0.1f, 100.0f);
+        ImGui::SliderFloat("Power", &lightPower[1], 0.1f, 10.0f);
+        ImGui::SliderFloat("Radius", &lightRadius[1], 1.0f, 1000.0f);
         ImGui::End();
 
         ImGui::Render();

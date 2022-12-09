@@ -70,7 +70,6 @@ uniform vec3 cameraPosition;
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
 // uniform samplerCube shadowMap; // frame buffer texture
-// uniform samplerCube shadowMap[1]; // frame buffer texture
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
 float fade(vec3 center, vec3 position, float radius) {
