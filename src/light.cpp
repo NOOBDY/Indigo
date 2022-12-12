@@ -66,6 +66,8 @@ LightData Light::GetLightData() {
 
     data.nearPlane = m_NearPlane;
     data.farPlane = m_FarPlane;
+    data.pad1 = 0.0;
+    data.pad2 = 0.0;
 
     return data;
 }

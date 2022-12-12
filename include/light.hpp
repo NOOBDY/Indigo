@@ -77,6 +77,8 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
+    float pad1;
+    float pad2;
 };
 
 #endif

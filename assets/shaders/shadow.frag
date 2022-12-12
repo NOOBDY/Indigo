@@ -27,13 +27,18 @@ struct LightData {
 
     vec3 lightColor;
     float radius;
+
     float power;
     int lightType;
     float innerCone;
     float outerCone;
+
     mat4 lightProjections[6];
-    float m_NearPlane;
-    float m_FarPlane;
+
+    float nearPlane;
+    float farPlane;
+    float pad1;
+    float pad2;
 };
 
 struct MaterialData {
@@ -54,8 +59,7 @@ void main() {
     vec3 color3 = vec3(0.);
     // gl_FragDepth = gl_FragCoord.z;
     float len = length(vec3(worldPosition - lights[0].transform.position));
-    len /= lights[0].m_FarPlane;
-    // len /= 10;
+    len /= lights[0].farPlane;
     color = vec4(vec3(len), 1.0);
     gl_FragDepth = len;
 
