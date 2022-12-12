@@ -6,7 +6,6 @@ uniform sampler2D screenTexture;
 uniform sampler2D uvCheck;
 uniform samplerCube depthTexture;
 uniform samplerCube depthTexture1;
-uniform samplerCube shadowMap[2];
 #define PI 3.1415926
 vec3 cnn(vec3 color) {
     const float offset = 1.0 / 300.0;
@@ -43,12 +42,7 @@ vec3 cube_uv(vec2 uv) {
     nuv.x = sin(uv.x);
     nuv.z = cos(uv.x);
     nuv.y = cos(uv.y);
-    if(TexCoords.y < 0.5)
-        return texture(depthTexture, normalize(nuv)).rgb;
-        // return texture(shadowMap[0], normalize(nuv)).rgb;
-    else
-        return texture(depthTexture1, normalize(nuv)).rgb;
-        // return texture(shadowMap[1], normalize(nuv)).rgb;
+    return texture(depthTexture, normalize(nuv)).rgb;
 
 }
 vec3 test(vec3 nuv) {

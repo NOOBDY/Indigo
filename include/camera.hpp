@@ -12,7 +12,7 @@
 class Camera {
 public:
     Camera(float fov, float aspectRatio, float nearClip = 10.0f,
-           float farClip = 1000.0f);
+           float farClip = 1500.0f);
 
     void UpdateProjection();
     void UpdateView();

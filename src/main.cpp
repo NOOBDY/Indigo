@@ -83,11 +83,7 @@ int main(int argc, char **argv) {
     programScreen.Bind();
     programScreen.SetInt("screenTexture", 0);
     programScreen.SetInt("depthTexture", 1);
-    programScreen.SetInt("depthTexture1", 2);
     // programScreen.SetInt("uvCheck", 2);
-    for (int i = 0; i < LIGHT_NUMBER; i++) {
-        programScreen.SetInt("shadowMap[" + std::to_string(i) + "]", 3 + i);
-    }
 
     LightData lightInfo[LIGHT_NUMBER];
 
@@ -104,8 +100,8 @@ int main(int argc, char **argv) {
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
-    float lightPower[2] = {3, 3};
-    float lightRadius[2] = {300, 300};
+    float lightPower[2];
+    float lightRadius[2];
     glm::mat3 uiData[4];
 
     uiData[0][0] = glm::vec3(0, 0, 0);
@@ -189,23 +185,19 @@ int main(int argc, char **argv) {
         lightDepths.push_back(std::make_shared<Texture>(
             SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH, Texture::CUBE));
     }
-    // Texture lightDepthTexture(SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH,
-    //                           Texture::CUBE);
-    // shadowFbo.AttachTexture(lightDepthTexture.GetTextureID(),
-    //                         GL_DEPTH_ATTACHMENT);
 
     // light 1
-    uiData[2][0] = glm::vec3(300, 0, 0);
+    uiData[2][0] = glm::vec3(50, 100, 200);
     uiData[2][1] = glm::vec3(0, 0, 0);
     uiData[2][2] = glm::vec3(20);
-    lightPower[0] = 3;
-    lightRadius[0] = 200;
+    lightPower[0] = 1;
+    lightRadius[0] = 500;
     // light 1
-    uiData[3][0] = glm::vec3(-300, 0, 0);
+    uiData[3][0] = glm::vec3(-300, 300, 0);
     uiData[3][1] = glm::vec3(0, 0, 0);
     uiData[3][2] = glm::vec3(20);
-    lightPower[1] = 3;
-    lightRadius[1] = 200;
+    lightPower[1] = 2;
+    lightRadius[1] = 500;
 
     scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
     scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
@@ -305,7 +297,6 @@ int main(int argc, char **argv) {
         programScreen.Bind();
         renderSurface.Bind(0);
         lightDepths[0]->Bind(1);
-        lightDepths[1]->Bind(2);
 
         planeVAO.Bind();
         programScreen.Validate();
