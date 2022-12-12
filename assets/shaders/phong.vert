@@ -11,18 +11,6 @@ out vec3 worldPosition;
 out vec3 normal;
 out vec2 UV;
 out mat3 TBN;
-// out mat4 modelR;
-
-out pointData {
-    vec3 normal;
-    vec3 worldPosition;
-    vec3 geoPosition;
-    vec2 UV;
-    mat4 modelRotation;
-    mat4 viewProjection;
-    mat3 TBN;
-
-} dataOut;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
