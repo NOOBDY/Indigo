@@ -25,6 +25,15 @@ Program::Program(const std::string &vertexShaderFilepath,
     m_ProgramID = glCreateProgram();
     LOG_TRACE("Creating Program {}", m_ProgramID);
 
+    LOG_DEBUG("Varying Info");
+    GLint info;
+    glGetIntegerv(GL_MAX_VARYING_FLOATS, &info);
+    LOG_DEBUG("  GL_MAX_VARYING_FLOATS: {}", info);
+    glGetIntegerv(GL_MAX_VARYING_COMPONENTS, &info);
+    LOG_DEBUG("  GL_MAX_VARYING_COMPONENTS: {}", info);
+    glGetIntegerv(GL_MAX_VARYING_VECTORS, &info);
+    LOG_DEBUG("  GL_MAX_VARYING_VECTORS: {}", info);
+
     m_VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
     m_GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
     m_FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
@@ -150,6 +159,12 @@ void Program::LinkProgram() {
     } else {
         LOG_TRACE("Linking Successful");
     }
+
+    GLint info;
+    glGetProgramiv(m_ProgramID, GL_ACTIVE_UNIFORMS, &info);
+    LOG_DEBUG("[{}] Active Uniforms: {}", m_ProgramID, info);
+    glGetProgramiv(m_ProgramID, GL_ACTIVE_UNIFORM_BLOCKS, &info);
+    LOG_DEBUG("[{}] Active Uniform Blocks: {}", m_ProgramID, info);
 
     glDetachShader(m_ProgramID, m_VertexShaderID);
     if (m_GeometryShaderID != 0)
