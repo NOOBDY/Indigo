@@ -19,7 +19,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-#define SHADOW_SIZE 1024 / 2
+#define SHADOW_SIZE 1024 * 2 / 2
 
 #define LIGHT_NUMBER 2
 

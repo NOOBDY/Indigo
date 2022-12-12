@@ -86,7 +86,7 @@ float shadow(vec3 position, LightData light, int index) {
     float shadow = 0.0;
     float bias = 0.15;
     int samples = 20;
-    float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 25.0;
+    float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
     for(int i = 0; i < samples; ++i) {
         float closestDepth = texture(shadowMap[index], dir + gridSamplingDisk[i] * diskRadius).r;
         closestDepth *= light.farPlane;   // undo mapping [0;1]
