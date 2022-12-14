@@ -3,8 +3,6 @@
 layout(location = 0) in vec3 vertPosition;
 layout(location = 1) in vec2 vertUV;
 layout(location = 2) in vec3 vertNormal;
-layout(location = 3) in vec3 vertTangent;
-layout(location = 4) in vec3 vertBitangent;
 
 out vec3 normal;
 out vec3 worldPosition;
@@ -48,16 +46,11 @@ struct LightData {
     float pad2;
 };
 
-struct MaterialData {
-    vec3 baseColor;
-    float maxShine;
-};
 out pointData {
     vec3 normal;
     vec3 worldPosition;
     vec3 geoPosition;
     vec2 UV;
-    mat4 modelRotation;
     mat4 lightProjections[6];
 
 } dataOut;
@@ -91,7 +84,6 @@ void main() {
     dataOut.worldPosition = worldPosition;
     dataOut.geoPosition = geoPosition;
     dataOut.UV = vertUV;
-    dataOut.modelRotation = modelRotation;
     // dataOut.lightProjections = lights[0].lightProjections;
     for(int i = 0; i < 6; i++) dataOut.lightProjections[i] = lights[0].lightProjections[i];
 }
