@@ -13,7 +13,6 @@ in pointData {
     vec3 worldPosition;
     vec3 geoPosition;
     vec2 UV;
-    mat4 modelRotation;
     mat4 lightProjections[6];
 } dataIn[];
 
