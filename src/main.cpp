@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
     colorFbo.Bind();
 
     // color buffer
-    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     colorFbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
     Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     colorFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);

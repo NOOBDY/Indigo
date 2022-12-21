@@ -3,11 +3,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "log.hpp"
-
 Texture::Texture(const int width, const int height, Format format,
                  Target target)
-    : m_Target(target) {
+    : m_Target(target), m_Width(width), m_Height(height) {
     glCreateTextures(target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
@@ -18,26 +16,26 @@ Texture::Texture(const int width, const int height, Format format,
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
                 0,                                  // level
-                format,                             // internal format
+                Format2Bit(format),                 // internal format
                 width,                              //
                 height,                             //
                 0,                                  // border
                 format,                             // format
-                GL_FLOAT,                           // type
+                GL_UNSIGNED_BYTE,                   // type
                 NULL                                //
             );
 
     else
-        glTexImage2D( //
-            target,   // target
-            0,        // level
-            format,   // internal format
-            width,    //
-            height,   //
-            0,        // border
-            format,   // format
-            GL_FLOAT, // type
-            NULL      //
+        glTexImage2D(           //
+            target,             // target
+            0,                  // level
+            Format2Bit(format), // internal format
+            width,              //
+            height,             //
+            0,                  // border
+            format,             // format
+            GL_UNSIGNED_BYTE,   // type
+            NULL                //
         );
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -80,11 +78,7 @@ void Texture::LoadImage(const std::string &textureFilepath) {
         LOG_ERROR("Failed Opening File: '{}'", textureFilepath);
         throw;
     }
-
-    if (channels != 3 && channels != 4) {
-        LOG_ERROR("Only 3 and 4 Channel Images are Supported");
-        throw;
-    }
+    m_Format = Channels2Format(channels);
 
     /**
      * TODO: Add support for 1 channel png files
@@ -95,17 +89,19 @@ void Texture::LoadImage(const std::string &textureFilepath) {
      * for format table
      * https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
      */
-    glTexImage2D(                           //
-        m_Target,                           // target
-        0,                                  // level
-        channels == 4 ? GL_RGBA8 : GL_RGB8, // internal format
-        width,                              //
-        height,                             //
-        0,                                  // border
-        channels == 4 ? GL_RGBA : GL_RGB,   // format
-        GL_UNSIGNED_BYTE,                   // type
-        data                                //
+    glTexImage2D(             //
+        m_Target,             // target
+        0,                    // level
+        Format2Bit(m_Format), // internal format
+        width,                //
+        height,               //
+        0,                    // border
+        m_Format,             // format
+        GL_UNSIGNED_BYTE,     // type
+        data                  //
     );
+    m_Width = width;
+    m_Height = height;
 
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_T, GL_REPEAT);
