@@ -66,7 +66,7 @@ private:
         case 4:
             return Format::RGBA;
         }
-        LOG_ERROR("image channel {}");
+        LOG_ERROR("image channel {} unsupport", channel);
         throw;
     }
 

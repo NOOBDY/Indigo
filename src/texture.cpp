@@ -44,6 +44,8 @@ Texture::Texture(const int width, const int height, Format format,
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+    glGenerateMipmap(m_Target);
 }
 
 Texture::Texture(const std::string &textureFilepath) : m_Target(IMAGE_2D) {
@@ -79,6 +81,8 @@ void Texture::LoadImage(const std::string &textureFilepath) {
         throw;
     }
     m_Format = Channels2Format(channels);
+    m_Width = width;
+    m_Height = height;
 
     /**
      * TODO: Add support for 1 channel png files
@@ -100,8 +104,6 @@ void Texture::LoadImage(const std::string &textureFilepath) {
         GL_UNSIGNED_BYTE,     // type
         data                  //
     );
-    m_Width = width;
-    m_Height = height;
 
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_T, GL_REPEAT);
