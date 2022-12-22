@@ -1,5 +1,6 @@
 #version 450 core
 
+#define MATH_PI 3.1415926
 //so far only one cube map
 #define LIGHT_NUMBER 2
 #define NONE 0
@@ -69,9 +70,14 @@ uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
+uniform sampler2D reflectMap;
 // uniform samplerCube shadowMap; // frame buffer texture
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
+vec2 panoramaUV(vec3 dir) {
+    dir = normalize(dir);
+    return vec2(0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI, 1.f - acos(dir.y) / MATH_PI);
+}
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
@@ -153,7 +159,12 @@ vec3 ColorTransform(vec3 color) {
 
 void main() {
     vec3 color3 = vec3(0.);
-    color3 = PhongLight(cameraPosition, worldPosition, lights, material);
+    // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
+    vec3 dir = normalize(worldPosition - cameraPosition);
+    vec3 r = reflect(-dir, normal);
+    vec2 cuv = panoramaUV(r);
+    color3 = texture(reflectMap, cuv).xyz;
+
     // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
     color = vec4(color3, 1.);

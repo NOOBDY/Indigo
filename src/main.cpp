@@ -19,7 +19,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-#define SHADOW_SIZE 1024 * 2 / 2
+#define SHADOW_SIZE 1024 * 2
 
 #define LIGHT_NUMBER 2
 
@@ -60,13 +60,14 @@ int main(int argc, char **argv) {
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
 
-    enum { ALBEDO, NORMAL, SHADOW };
+    enum { ALBEDO, NORMAL, REFLECT, SHADOW };
     Program programColor("../assets/shaders/phong.vert",
                          "../assets/shaders/phong.frag");
 
     programColor.Bind();
     programColor.SetInt("albedoMap", ALBEDO);
     programColor.SetInt("normalMap", NORMAL);
+    programColor.SetInt("reflectMap", REFLECT);
     // programColor.SetInt("shadowMap", SHADOW);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
         programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
@@ -153,6 +154,7 @@ int main(int argc, char **argv) {
 
     Texture texMainColor("../assets/textures/little_city/main_color.jpg");
     Texture texInterior("../assets/textures/little_city/interior.jpg");
+    Texture reflectMap("../assets/textures/vestibule_2k.hdr");
 
     FrameBuffer colorFbo;
     colorFbo.Bind();
@@ -269,6 +271,7 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
+        reflectMap.Bind(REFLECT);
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
         }

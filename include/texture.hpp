@@ -45,13 +45,13 @@ private:
         case Format::DEPTH:
             return GL_DEPTH_COMPONENT16;
         case Format::R:
-            return GL_R8;
+            return GL_R16F;
         case Format::RG:
-            return GL_RG8;
+            return GL_RG16F;
         case Format::RGB:
-            return GL_RGB8;
+            return GL_RGB16F;
         case Format::RGBA:
-            return GL_RGBA8;
+            return GL_RGBA16F;
         }
         return GL_RGB8;
     }
