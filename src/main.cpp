@@ -19,7 +19,7 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-#define SHADOW_SIZE 1024 * 2 / 2
+#define SHADOW_SIZE 1024 * 2
 
 #define LIGHT_NUMBER 2
 
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
 
-    enum { ALBEDO, NORMAL, SHADOW,ARM};
+    enum { ALBEDO, NORMAL, REFLECT, SHADOW };
     Program programDeferred("../assets/shaders/phong.vert",
                          "../assets/shaders/deferredPass.frag");
     Program programColor("../assets/shaders/phong.vert",
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     programColor.Bind();
     programColor.SetInt("albedoMap", ALBEDO);
     programColor.SetInt("normalMap", NORMAL);
-
+    programColor.SetInt("reflectMap", REFLECT);
     // programColor.SetInt("shadowMap", SHADOW);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
         programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
@@ -161,18 +161,19 @@ int main(int argc, char **argv) {
 
     Texture texMainColor("../assets/textures/little_city/main_color.jpg");
     Texture texInterior("../assets/textures/little_city/interior.jpg");
+    Texture reflectMap("../assets/textures/vestibule_2k.hdr");
 
     FrameBuffer deferredFbo;
     deferredFbo.Bind();
 
     // color buffer
-    Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), GL_COLOR_ATTACHMENT0);
-    Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     deferredFbo.AttachTexture(screenNormal.GetTextureID(), GL_COLOR_ATTACHMENT1);
-    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     deferredFbo.AttachTexture(screenPosition.GetTextureID(), GL_COLOR_ATTACHMENT2);
-    Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     deferredFbo.AttachTexture(screenARM.GetTextureID(), GL_COLOR_ATTACHMENT3);
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
@@ -181,7 +182,7 @@ int main(int argc, char **argv) {
     colorFbo.Bind();
 
     // color buffer
-    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::COLOR);
+    Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     colorFbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
     Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     colorFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
@@ -306,6 +307,7 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
+        reflectMap.Bind(REFLECT);
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
         }
