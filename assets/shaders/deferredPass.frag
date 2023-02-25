@@ -64,9 +64,9 @@ layout(location = 2)in vec3 normal;
 layout(location = 3)in vec2 UV;
 layout(location = 4)in mat3 TBN;
 
-layout(location = 0) out vec4 screenAlbedo;
-layout(location = 1) out vec4 screenNormal;
-layout(location = 2) out vec4 screenPosition;
+layout(location = 0) out vec3 screenAlbedo;
+layout(location = 1) out vec3 screenNormal;
+layout(location = 2) out vec3 screenPosition;
 // ARM(ao roughtless metallic)
 layout(location = 3) out vec4 screenARM;
 // out vec4 color;
@@ -77,12 +77,15 @@ uniform sampler2D normalMap;
 uniform sampler2D ARM;
 void main() {
     vec3 color3 = vec3(0.);
-    color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    screenPosition=worldPosition;
-    screenNormal= normal;
+    // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
+    screenAlbedo.xyz=texture(albedoMap,UV).xyz;
+    // screenAlbedo.xyz=worldPosition;
+    // screenPosition.xyz=worldPosition;
+    screenPosition.xyz=vec3(1.0);
+    screenNormal.xyz= normal;
     // screenNormal=  TBN * (texture(texture3, UV).xyz * 2 - 1);
-    screenARM=vec3(1.0,0.5,0.5);
+    screenARM.xyz=vec3(1.0,0.5,0.5);
     // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
-    color = vec4(color3, 1.);
+    // color = vec4(color3, 1.);
 }
