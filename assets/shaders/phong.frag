@@ -8,19 +8,6 @@
 #define DIRECTION 3
 #define AMBIENT  4
 
-layout(location = 0) in vec3 geoPosition;
-layout(location = 1)in vec3 worldPosition;
-layout(location = 2)in vec3 normal;
-layout(location = 3)in vec2 UV;
-layout(location = 4)in mat3 TBN;
-// in vec3 normal;
-// in vec3 worldPosition;
-// in vec3 geoPosition;
-// in vec2 UV;
-// in mat3 TBN;
-
-layout(location = 0) out vec4 color;
-// out vec4 color;
 
 struct TransformData {
     mat4 transform;
@@ -70,6 +57,14 @@ layout(std140, binding = 1) uniform Materials {
 layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
+layout(location = 0) in vec3 geoPosition;
+layout(location = 1)in vec3 worldPosition;
+layout(location = 2)in vec3 normal;
+layout(location = 3)in vec2 UV;
+layout(location = 4)in mat3 TBN;
+
+layout(location = 0) out vec4 color;
+// out vec4 color;
 
 uniform vec3 cameraPosition;
 
