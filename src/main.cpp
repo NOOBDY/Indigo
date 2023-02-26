@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
 
-    enum { ALBEDO, NORMAL, REFLECT, SHADOW };
+    enum { ALBEDO, NORMAL, REFLECT,ARM, SHADOW };
     Program programDeferred("../assets/shaders/phong.vert",
                          "../assets/shaders/deferredPass.frag");
     Program programColor("../assets/shaders/phong.vert",
@@ -69,7 +69,10 @@ int main(int argc, char **argv) {
     programDeferred.Bind();
     programDeferred.SetInt("albedoMap", ALBEDO);
     programDeferred.SetInt("normalMap", NORMAL);
-    programColor.Unbind();
+    programDeferred.SetInt("reflectMap", REFLECT);
+    programDeferred.SetInt("ARM", ARM);
+    programDeferred.SetInt("shadowMap", SHADOW);
+    programDeferred.Unbind();
 
     programColor.Bind();
     programColor.SetInt("albedoMap", ALBEDO);
@@ -91,7 +94,7 @@ int main(int argc, char **argv) {
     programScreen.Bind();
     programScreen.SetInt("screenTexture", 0);
     programScreen.SetInt("depthTexture", 1);
-    // programScreen.SetInt("uvCheck", 2);
+    programScreen.SetInt("uvCheck", 2);
 
     LightData lightInfo[LIGHT_NUMBER];
 
@@ -167,13 +170,13 @@ int main(int argc, char **argv) {
     deferredFbo.Bind();
 
     // color buffer
-    Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), GL_COLOR_ATTACHMENT0);
-    Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenNormal.GetTextureID(), GL_COLOR_ATTACHMENT1);
-    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenPosition.GetTextureID(), GL_COLOR_ATTACHMENT2);
-    Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenARM.GetTextureID(), GL_COLOR_ATTACHMENT3);
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
@@ -359,9 +362,9 @@ int main(int argc, char **argv) {
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
         // renderSurface.Bind(0);
-        // screenAlbedo.Bind(0);
-        // screenNormal.Bind(0);
-        screenPosition.Bind(0);
+        screenAlbedo.Bind(0);
+        screenNormal.Bind(2);
+        // screenPosition.Bind(0);
         lightDepths[0]->Bind(1);
 
         planeVAO.Bind();

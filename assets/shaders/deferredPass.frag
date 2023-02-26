@@ -64,9 +64,9 @@ layout(location = 2)in vec3 normal;
 layout(location = 3)in vec2 UV;
 layout(location = 4)in mat3 TBN;
 
-layout(location = 0) out vec3 screenAlbedo;
-layout(location = 1) out vec3 screenNormal;
-layout(location = 2) out vec3 screenPosition;
+layout(location = 0) out vec4 screenAlbedo;
+layout(location = 1) out vec4 screenNormal;
+layout(location = 2) out vec4 screenPosition;
 // ARM(ao roughtless metallic)
 layout(location = 3) out vec4 screenARM;
 // out vec4 color;
@@ -74,12 +74,15 @@ uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
+uniform sampler2D reflectMap;
 uniform sampler2D ARM;
+uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 void main() {
     vec3 color3 = vec3(0.);
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     screenAlbedo.xyz=texture(albedoMap,UV).xyz;
     // screenAlbedo.xyz=worldPosition;
+    // screenAlbedo.xyz=normal;
     // screenPosition.xyz=worldPosition;
     screenPosition.xyz=vec3(1.0);
     screenNormal.xyz= normal;

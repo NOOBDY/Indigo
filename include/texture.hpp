@@ -40,6 +40,7 @@ public:
 
 private:
     void LoadImage(const std::string &textureFilepath);
+    /// @brief change format to internal format
     constexpr const int Format2Bit(Format inFormat) {
         switch (inFormat) {
         case Format::DEPTH:
