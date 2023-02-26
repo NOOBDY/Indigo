@@ -185,6 +185,10 @@ int main(int argc, char **argv) {
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
 
+    unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 ,GL_COLOR_ATTACHMENT3 };
+    glDrawBuffers(4, attachments);
+    
+    Renderer::Clear();
     FrameBuffer colorFbo;
     colorFbo.Bind();
 
@@ -342,7 +346,6 @@ int main(int argc, char **argv) {
         //deferred
         deferredFbo.Bind();
         programDeferred.Bind();
-        Renderer::Clear();
         for (unsigned int i = 0; i < scene.size(); i++) {
             scene[i].VAO->Bind();
 
@@ -365,11 +368,11 @@ int main(int argc, char **argv) {
         //
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
-        renderSurface.Bind(0);
+        // renderSurface.Bind(0);
         // screenAlbedo.Bind(0);
-        screenAlbedo.Bind(2);
-        // screenNormal.Bind(2);
-        // screenDepth.Bind(2);
+        // screenAlbedo.Bind(2);
+        screenNormal.Bind(2);
+        screenDepth.Bind(0);
         // screenPosition.Bind(0);
         // depthTexture.Bind(2);
         lightDepths[0]->Bind(1);
