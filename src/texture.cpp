@@ -4,11 +4,12 @@
 #include <stb_image.h>
 
 Texture::Texture(const int width, const int height, Format format,
-                 Target target)
+                 Target target,int bit)
     : m_Target(target), m_Width(width), m_Height(height) {
     glCreateTextures(target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
+    
     glBindTexture(target, m_TextureID);
 
     if (target == CUBE)
@@ -16,7 +17,7 @@ Texture::Texture(const int width, const int height, Format format,
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
                 0,                                  // level
-                Format2Bit(format),                 // internal format
+                Format2Bit(format,bit),                 // internal format
                 width,                              //
                 height,                             //
                 0,                                  // border
@@ -29,7 +30,7 @@ Texture::Texture(const int width, const int height, Format format,
         glTexImage2D(           //
             target,             // target
             0,                  // level
-            Format2Bit(format), // internal format
+            Format2Bit(format,bit), // internal format
             width,              //
             height,             //
             0,                  // border
@@ -48,11 +49,11 @@ Texture::Texture(const int width, const int height, Format format,
     glGenerateMipmap(m_Target);
 }
 
-Texture::Texture(const std::string &textureFilepath) : m_Target(IMAGE_2D) {
+Texture::Texture(const std::string &textureFilepath,int bit) : m_Target(IMAGE_2D) {
     glCreateTextures(m_Target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
-    LoadImage(textureFilepath);
+    LoadImage(textureFilepath,bit);
 }
 
 Texture::~Texture() {
@@ -68,7 +69,7 @@ void Texture::Unbind() {
     glBindTexture(m_Target, 0);
 }
 
-void Texture::LoadImage(const std::string &textureFilepath) {
+void Texture::LoadImage(const std::string &textureFilepath,int bit) {
     m_Target = IMAGE_2D;
     glBindTexture(m_Target, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
@@ -96,7 +97,7 @@ void Texture::LoadImage(const std::string &textureFilepath) {
     glTexImage2D(             //
         m_Target,             // target
         0,                    // level
-        Format2Bit(m_Format), // internal format
+        Format2Bit(m_Format,bit), // internal format
         width,                //
         height,               //
         0,                    // border

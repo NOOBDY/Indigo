@@ -160,11 +160,11 @@ vec3 ColorTransform(vec3 color) {
 
 void main() {
     vec3 color3 = vec3(0.);
-    // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    vec3 dir = normalize(worldPosition - cameraPosition);
-    vec3 r = reflect(-dir, normal);
-    vec2 cuv = panoramaUV(r);
-    color3 = texture(reflectMap, cuv).xyz;
+    color3 = PhongLight(cameraPosition, worldPosition, lights, material);
+    // vec3 dir = normalize(worldPosition - cameraPosition);
+    // vec3 r = reflect(-dir, normal);
+    // vec2 cuv = panoramaUV(r);
+    // color3 = texture(reflectMap, cuv).xyz;
 
     // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);

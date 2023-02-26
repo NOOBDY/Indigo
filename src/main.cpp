@@ -166,6 +166,10 @@ int main(int argc, char **argv) {
     Texture texInterior("../assets/textures/little_city/interior.jpg");
     Texture reflectMap("../assets/textures/vestibule_2k.hdr");
 
+    GLint maxAtt = 0;
+    glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAtt);
+    LOG_INFO(maxAtt);
+
     FrameBuffer deferredFbo;
     deferredFbo.Bind();
 
@@ -192,28 +196,28 @@ int main(int argc, char **argv) {
 
     // render buffer
     // TODO: Hide gl calls to somewhere else
-    GLuint rbo;
+    // GLuint rbo;
 
-    glCreateRenderbuffers(1, &rbo);
-    glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
-                               SCREEN_HEIGHT);
+    // glCreateRenderbuffers(1, &rbo);
+    // glNamedRenderbufferStorage(rbo, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
+    //                            SCREEN_HEIGHT);
 
-    glNamedFramebufferRenderbuffer(colorFbo.GetBufferID(),
-                                   GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-                                   rbo);
+    // glNamedFramebufferRenderbuffer(colorFbo.GetBufferID(),
+    //                                GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+    //                                rbo);
 
     colorFbo.Unbind();
     //deferred
-    GLuint rbo1;
-    deferredFbo.Bind();
+    // GLuint rbo1;
+    // deferredFbo.Bind();
 
-    glCreateRenderbuffers(1, &rbo1);
-    glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
-                               SCREEN_HEIGHT);
+    // glCreateRenderbuffers(1, &rbo1);
+    // glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
+    //                            SCREEN_HEIGHT);
 
-    glNamedFramebufferRenderbuffer(deferredFbo.GetBufferID(),
-                                   GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-                                   rbo1);
+    // glNamedFramebufferRenderbuffer(deferredFbo.GetBufferID(),
+    //                                GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+    //                                rbo1);
 
     deferredFbo.Unbind();
     // when colorFbo is bind all render will storage and not display
@@ -361,10 +365,13 @@ int main(int argc, char **argv) {
         //
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
-        // renderSurface.Bind(0);
-        screenAlbedo.Bind(0);
-        screenNormal.Bind(2);
+        renderSurface.Bind(0);
+        // screenAlbedo.Bind(0);
+        screenAlbedo.Bind(2);
+        // screenNormal.Bind(2);
+        // screenDepth.Bind(2);
         // screenPosition.Bind(0);
+        // depthTexture.Bind(2);
         lightDepths[0]->Bind(1);
 
         planeVAO.Bind();

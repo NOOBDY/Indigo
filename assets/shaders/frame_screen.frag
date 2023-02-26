@@ -57,6 +57,8 @@ void main() {
     vec3 screen = texture(screenTexture, TexCoords).rgb;
     if(TexCoords.x >0.5){
         screen = texture(uvCheck, TexCoords).rgb;
+        // screen=pow(screen, vec3(1.0/2.2));
+        // screen=log(screen);
     }
     vec3 col = screen;
 
