@@ -1,10 +1,12 @@
 #version 450 core
-in vec2 TexCoords;
+in vec2 UV;
 out vec4 FragColor;
 
 uniform sampler2D screenTexture;
 uniform sampler2D uvCheck;
 uniform samplerCube depthTexture;
+
+// uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
 vec3 cnn(vec3 color) {
     const float offset = 1.0 / 300.0;
@@ -28,7 +30,7 @@ vec3 cnn(vec3 color) {
 
     vec3 sampleTex[9];
     for(int i = 0; i < 9; i++) {
-        sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
+        sampleTex[i] = vec3(texture(screenTexture, UV.st + offsets[i]));
     }
     for(int i = 0; i < 9; i++) color += sampleTex[i] * kernel[i];
     return color;
@@ -54,14 +56,16 @@ vec3 test(vec3 nuv) {
 }
 
 void main() {
-    vec3 screen = texture(screenTexture, TexCoords).rgb;
-    if(TexCoords.x >0.5){
-        screen = texture(uvCheck, TexCoords).rgb;
+    vec3 screen = texture(screenTexture, UV).rgb;
+    if(UV.x >0.5){
+        screen = texture(uvCheck, UV).rgb;
         // screen=pow(screen, vec3(1.0/2.2));
         // screen=log(screen);
     }
     vec3 col = screen;
+    // vec3 col;
+    // col = texture(albedoMap, UV).rgb;
 
-    // col = cube_uv(TexCoords);
+    // col = cube_uv(UV);
     FragColor = vec4(col, 1.0);
 }
