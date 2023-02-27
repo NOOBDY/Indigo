@@ -86,7 +86,13 @@ int main(int argc, char **argv) {
     // TODO: Find somewhere on the UBO to put this in
     GLint cameraUniform =
         glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
+    GLint cameraUniformDeferredPass =
+        glGetUniformLocation(programDeferredPass.GetProgramID(), "cameraPosition");
+    // GLint cameraUniformDeferredLight=
+    //     glGetUniformLocation(programDe.GetProgramID(), "cameraPosition");
 
+    GLint cameraUniformDeferred =
+        glGetUniformLocation(programDeferredPass.GetProgramID(), "cameraPosition");
     Program programDeferredLight("../assets/shaders/frame_screen.vert",
                           "../assets/shaders/deferredLight.frag");
     Program programScreen("../assets/shaders/frame_screen.vert",
@@ -313,9 +319,6 @@ int main(int argc, char **argv) {
 
         // color (phong shader)
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-        colorFbo.Bind();
-        programColor.Bind();
-        Renderer::Clear();
 
         camera.GetTransform().SetPosition(
             camera.GetTransform().GetPosition() +
@@ -328,12 +331,40 @@ int main(int argc, char **argv) {
         }
 
         glm::vec3 cameraPos = camera.GetTransform().GetPosition();
-        glUniform3fv(cameraUniform, 1, &cameraPos.x);
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
         reflectMap.Bind(REFLECT);
         wallNormalMap.Bind(NORMAL);
+
+        //deferred
+        deferredFbo.Bind();
+        programDeferredPass.Bind();
+        Renderer::Clear();
+        glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
+        for (unsigned int i = 0; i < scene.size(); i++) {
+            scene[i].VAO->Bind();
+
+            scene[i].transform.SetPosition(uiData[i][0]);
+            scene[i].transform.SetRotation(uiData[i][1]);
+            scene[i].transform.SetScale(uiData[i][2]);
+
+            Matrices mat1;
+            mat1.model = scene[i].transform.GetTransform();
+            mat1.viewProjection = camera.GetViewProjection();
+            matrices.SetData(0, sizeof(mat1), &mat1);
+            materials.SetData(0, sizeof(Material), &matColor1);
+            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            programDeferredPass.Validate();
+            Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
+        }
+        deferredFbo.Unbind();
+        programDeferredPass.Unbind();
+
+        colorFbo.Bind();
+        programColor.Bind();
+        Renderer::Clear();
+        glUniform3fv(cameraUniform, 1, &cameraPos.x);
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
         }
@@ -356,50 +387,8 @@ int main(int argc, char **argv) {
         }
 
         // frame buffer part
+        programColor.Unbind();
         colorFbo.Unbind();
-
-        //deferred
-        deferredFbo.Bind();
-        programDeferredPass.Bind();
-        Renderer::Clear();
-        for (unsigned int i = 0; i < scene.size(); i++) {
-            scene[i].VAO->Bind();
-
-            scene[i].transform.SetPosition(uiData[i][0]);
-            scene[i].transform.SetRotation(uiData[i][1]);
-            scene[i].transform.SetScale(uiData[i][2]);
-
-            Matrices mat1;
-            mat1.model = scene[i].transform.GetTransform();
-            mat1.viewProjection = camera.GetViewProjection();
-            matrices.SetData(0, sizeof(mat1), &mat1);
-            materials.SetData(0, sizeof(Material), &matColor1);
-            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-            programDeferredPass.Validate();
-            Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
-        }
-        deferredFbo.Unbind();
-        programDeferredPass.Unbind();
-
-        // deferredLightFbo.Bind();
-        // programDeferredLight.Bind();
-        // Renderer::DisableDepthTest(); // direct render texture no need depth
-        // screenAlbedo.Bind(0);
-        // screenNormal.Bind(0);
-        // screenPosition.Bind(0);
-        // screenARM.Bind(0);
-        // for (int i = 0; i < lightDepths.size(); i++) {
-        //     lightDepths[i]->Bind(SHADOW + i);
-        // }
-
-        // planeVAO.Bind();
-        // programDeferredLight.Validate();
-        // Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
-        
-
-
-
-        // deferredLightFbo.Unbind();
 
 
         //screen space
