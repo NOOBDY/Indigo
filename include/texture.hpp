@@ -8,6 +8,8 @@
 
 class Texture {
 public:
+
+    /// @brief image format channel of image RGB or RGBA .... 
     enum Format {
         DEPTH = GL_DEPTH_COMPONENT,
         R = GL_RED,
@@ -17,6 +19,7 @@ public:
 
     };
 
+    /// @brief image target like GL_TEXTURE_2D or CUBE map
     enum Target {
         CUBE = GL_TEXTURE_CUBE_MAP,
         IMAGE_2D = GL_TEXTURE_2D,
