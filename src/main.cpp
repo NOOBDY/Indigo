@@ -56,43 +56,15 @@ int main(int argc, char **argv) {
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     Controller::InitGUI(window);
 
+    enum { ALBEDO, NORMAL, REFLECT,ARM, SHADOW };
     Program programShadow("../assets/shaders/shadow.vert",
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
 
-    enum { ALBEDO, NORMAL, REFLECT,ARM, SHADOW };
-    Program programDeferredPass("../assets/shaders/phong.vert",
-                         "../assets/shaders/deferredPass.frag");
     Program programColor("../assets/shaders/phong.vert",
                          "../assets/shaders/phong.frag");
-
-    programDeferredPass.Bind();
-    programDeferredPass.SetInt("albedoMap", ALBEDO);
-    programDeferredPass.SetInt("normalMap", NORMAL);
-    programDeferredPass.SetInt("reflectMap", REFLECT);
-    programDeferredPass.SetInt("ARM", ARM);
-    programDeferredPass.Unbind();
-
-    programColor.Bind();
-    programColor.SetInt("albedoMap", ALBEDO);
-    programColor.SetInt("normalMap", NORMAL);
-    programColor.SetInt("reflectMap", REFLECT);
-    // programColor.SetInt("shadowMap", SHADOW);
-    for (int i = 0; i < LIGHT_NUMBER; i++) {
-        programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
-    }
-
-    // Small hack to put camera position into the shader
-    // TODO: Find somewhere on the UBO to put this in
-    GLint cameraUniform =
-        glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
-    GLint cameraUniformDeferredPass =
-        glGetUniformLocation(programDeferredPass.GetProgramID(), "cameraPosition");
-    // GLint cameraUniformDeferredLight=
-    //     glGetUniformLocation(programDe.GetProgramID(), "cameraPosition");
-
-    GLint cameraUniformDeferred =
-        glGetUniformLocation(programDeferredPass.GetProgramID(), "cameraPosition");
+    Program programDeferredPass("../assets/shaders/phong.vert",
+                         "../assets/shaders/deferredPass.frag");
     Program programDeferredLight("../assets/shaders/frame_screen.vert",
                           "../assets/shaders/deferredLight.frag");
     Program programScreen("../assets/shaders/frame_screen.vert",
@@ -108,6 +80,34 @@ int main(int argc, char **argv) {
     programDeferredLight.SetInt("reflectMap", REFLECT);
     programDeferredLight.SetInt("ARM", ARM);
     programDeferredLight.SetInt("shadowMap", SHADOW);
+
+    programDeferredPass.Bind();
+    programDeferredPass.SetInt("albedoMap", ALBEDO);
+    programDeferredPass.SetInt("normalMap", NORMAL);
+    programDeferredPass.SetInt("reflectMap", REFLECT);
+    programDeferredPass.SetInt("ARM", ARM);
+    programDeferredPass.Unbind();
+
+    programColor.Bind();
+    programColor.SetInt("albedoMap", ALBEDO);
+    programColor.SetInt("normalMap", NORMAL);
+    programColor.SetInt("reflectMap", REFLECT);
+    // programColor.SetInt("shadowMap", SHADOW);
+    for (int i = 0; i < LIGHT_NUMBER; i++) {
+        programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        programDeferredLight.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+    }
+
+    // Small hack to put camera position into the shader
+    // TODO: Find somewhere on the UBO to put this in
+    GLint cameraUniform =
+        glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
+    GLint cameraUniformDeferredPass =
+        glGetUniformLocation(programDeferredPass.GetProgramID(), "cameraPosition");
+    GLint cameraUniformDeferredLight=
+        glGetUniformLocation(programDeferredLight.GetProgramID(), "cameraPosition");
+
 
     LightData lightInfo[LIGHT_NUMBER];
 
@@ -225,11 +225,11 @@ int main(int argc, char **argv) {
 
     // FrameBuffer deferredLightFbo;
     // deferredLightFbo.Bind();
-    // Texture screenLight(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenLight(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
     // deferredFbo.AttachTexture(screenLight.GetTextureID(), attachments[0]);
-    // // Texture screenVolume(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
-    // // deferredFbo.AttachTexture(screenVolume.GetTextureID(), attachments[1]);
-    // // glDrawBuffers(2, attachments);
+    Texture screenVolume(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    // deferredFbo.AttachTexture(screenVolume.GetTextureID(), attachments[1]);
+    // glDrawBuffers(2, attachments);
     // deferredLightFbo.Unbind();
     //deferred
     // GLuint rbo1;
@@ -340,6 +340,8 @@ int main(int argc, char **argv) {
         //deferred
         deferredFbo.Bind();
         programDeferredPass.Bind();
+        deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), attachments[0]);
+        deferredFbo.AttachTexture(screenNormal.GetTextureID(),  attachments[1]);
         Renderer::Clear();
         glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
         for (unsigned int i = 0; i < scene.size(); i++) {
@@ -358,12 +360,31 @@ int main(int argc, char **argv) {
             programDeferredPass.Validate();
             Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
         }
-        deferredFbo.Unbind();
         programDeferredPass.Unbind();
+        screenAlbedo.Bind(ALBEDO);
+        screenNormal.Bind(NORMAL);
+        screenPosition.Bind(NORMAL);
 
+        //deferred lighting 
+        programDeferredLight.Bind();
+        deferredFbo.AttachTexture(screenLight.GetTextureID(), attachments[0]);
+        deferredFbo.AttachTexture(screenVolume.GetTextureID(),  attachments[1]);
+        Renderer::DisableDepthTest(); // direct render texture no need depth
+
+        planeVAO.Bind();
+        programDeferredLight.Validate();
+        Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
+        programDeferredLight.Unbind();
+
+        deferredFbo.Unbind();
+
+        // old lighting
         colorFbo.Bind();
         programColor.Bind();
         Renderer::Clear();
+        Renderer::EnableDepthTest();
+        Renderer::DisableCullFace();
+
         glUniform3fv(cameraUniform, 1, &cameraPos.x);
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
@@ -395,12 +416,15 @@ int main(int argc, char **argv) {
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
         // renderSurface.Bind(0);
-        screenAlbedo.Bind(0);
+        screenLight.Bind(0);
+        screenLight.Bind(2);
+        // screenAlbedo.Bind(0);
         // screenNormal.Bind(0);
         // screenAlbedo.Bind(2);
         // screenNormal.Bind(2);
-        // screenDepth.Bind(0);
-        screenPosition.Bind(2);
+        // screenVolume.Bind(2);
+        // screenDepth.Bind(2);
+        // screenPosition.Bind(2);
         // depthTexture.Bind(2);
         lightDepths[0]->Bind(1);
 

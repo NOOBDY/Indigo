@@ -55,10 +55,13 @@ layout(std140, binding = 1) uniform Materials {
 layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
-layout(location = 0) in vec2 UV;
+// layout(location = 0) in vec2 UV;
+in vec2 UV;
 
 layout(location = 0) out vec3 screenLight;
 layout(location = 1) out vec3 screenVolume;
+
+uniform vec3 cameraPosition;
 
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
@@ -68,9 +71,10 @@ uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
 out vec4 FragColor;
 void main() {
-    vec3 col=vec3(1.0);;
+    vec3 col=vec3(1.0);
 
-    // col = texture(albedoMap, UV).rgb;
+    // vec2 uv=UV;
+    col = texture(screenAlbedo, UV).rgb;
 
     // col = cube_uv(UV);
     screenLight =col;
