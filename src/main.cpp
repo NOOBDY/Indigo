@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     Controller::InitGUI(window);
 
-    enum { ALBEDO, NORMAL, REFLECT,ARM, SHADOW };
+    enum { ALBEDO, NORMAL,ARM, REFLECT,POSITION,DEPTH, SHADOW };
     Program programShadow("../assets/shaders/shadow.vert",
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
@@ -75,11 +75,12 @@ int main(int argc, char **argv) {
     programScreen.SetInt("depthTexture", 1);
     programScreen.SetInt("uvCheck", 2);
 
-    programDeferredLight.SetInt("albedoMap", ALBEDO);
-    programDeferredLight.SetInt("normalMap", NORMAL);
-    programDeferredLight.SetInt("reflectMap", REFLECT);
-    programDeferredLight.SetInt("ARM", ARM);
-    programDeferredLight.SetInt("shadowMap", SHADOW);
+    programDeferredLight.SetInt("screenAlbedo", ALBEDO);
+    programDeferredLight.SetInt("screenNormal", NORMAL);
+    programDeferredLight.SetInt("screenPosition", POSITION);
+    // programDeferredLight.SetInt("reflectMap", REFLECT);
+    programDeferredLight.SetInt("screenARM", ARM);
+    programDeferredLight.SetInt("screenDepth", DEPTH);
 
     programDeferredPass.Bind();
     programDeferredPass.SetInt("albedoMap", ALBEDO);
@@ -360,13 +361,18 @@ int main(int argc, char **argv) {
             programDeferredPass.Validate();
             Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
         }
+        deferredFbo.Unbind();
         programDeferredPass.Unbind();
-        screenAlbedo.Bind(ALBEDO);
-        screenNormal.Bind(NORMAL);
-        screenPosition.Bind(NORMAL);
 
         //deferred lighting 
+        deferredFbo.Bind();
         programDeferredLight.Bind();
+        screenAlbedo.Bind(ALBEDO);
+        screenNormal.Bind(NORMAL);
+        screenPosition.Bind(POSITION);
+        screenDepth.Bind(DEPTH);
+
+        glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
         deferredFbo.AttachTexture(screenLight.GetTextureID(), attachments[0]);
         deferredFbo.AttachTexture(screenVolume.GetTextureID(),  attachments[1]);
         Renderer::DisableDepthTest(); // direct render texture no need depth
@@ -417,7 +423,7 @@ int main(int argc, char **argv) {
         programScreen.Bind();
         // renderSurface.Bind(0);
         screenLight.Bind(0);
-        screenLight.Bind(2);
+        screenVolume.Bind(2);
         // screenAlbedo.Bind(0);
         // screenNormal.Bind(0);
         // screenAlbedo.Bind(2);
@@ -426,7 +432,7 @@ int main(int argc, char **argv) {
         // screenDepth.Bind(2);
         // screenPosition.Bind(2);
         // depthTexture.Bind(2);
-        lightDepths[0]->Bind(1);
+        // lightDepths[0]->Bind(1);
 
         planeVAO.Bind();
         programScreen.Validate();
