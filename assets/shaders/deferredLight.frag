@@ -48,6 +48,10 @@ struct MaterialData {
     // vec3 normal;
 };
 
+// layout(std140, binding = 0) uniform Matrices {
+//     mat4 model;
+//     mat4 viewProjection;
+// };
 // layout(std140, binding = 1) uniform Materials {
 //     MaterialData material;
 // };
@@ -68,6 +72,7 @@ uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
 uniform sampler2D screenARM;
+uniform sampler2D screenDepth;
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
 out vec4 FragColor;
@@ -78,9 +83,11 @@ void main() {
     vec3 albedo = texture(screenAlbedo, UV).rgb;
     vec3 normal= texture(screenNormal, UV).rgb;
     vec3 position= texture(screenPosition, UV).rgb;
+    vec3 depth= texture(screenDepth, UV).rgb;
 
     // col = cube_uv(UV);
     screenLight =normal;
+    // screenLight =depth;
     screenVolume=position;
     // screenLight =vec3(1.0);
     // screenVolume=vec3(1,0,0);

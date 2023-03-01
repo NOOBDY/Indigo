@@ -361,28 +361,38 @@ int main(int argc, char **argv) {
             programDeferredPass.Validate();
             Renderer::Draw(scene[i].VAO->GetIndexBuffer()->GetCount());
         }
-        deferredFbo.Unbind();
+        // deferredFbo.Unbind();
         programDeferredPass.Unbind();
 
         //deferred lighting 
-        deferredFbo.Bind();
+        // deferredFbo.Bind();
         programDeferredLight.Bind();
         screenAlbedo.Bind(ALBEDO);
         screenNormal.Bind(NORMAL);
         screenPosition.Bind(POSITION);
         screenDepth.Bind(DEPTH);
+        // Matrices mat2;
+        // mat2.model = scene[0].transform.GetTransform();
+        // mat2.viewProjection = camera.GetViewProjection();
+        LOG_INFO("mats {}",matrices.GetId());
+        LOG_INFO("material {}",materials.GetId());
+        LOG_INFO("light {}",lights.GetId());
+        // matrices.SetData(0, sizeof(mat2), &mat2);
+        // materials.SetData(0, sizeof(Material), &matColor1);
+        // lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
 
-        glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
+
         deferredFbo.AttachTexture(screenLight.GetTextureID(), attachments[0]);
         deferredFbo.AttachTexture(screenVolume.GetTextureID(),  attachments[1]);
         Renderer::DisableDepthTest(); // direct render texture no need depth
 
         planeVAO.Bind();
+        glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
+        // LOG_DEBUG("camera {}",cameraUniformDeferredPass);
         programDeferredLight.Validate();
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
         programDeferredLight.Unbind();
-
-        deferredFbo.Unbind();
+        // deferredFbo.Unbind();
 
         // old lighting
         colorFbo.Bind();
