@@ -48,10 +48,10 @@ struct MaterialData {
     // vec3 normal;
 };
 
-// layout(std140, binding = 0) uniform Matrices {
-//     mat4 model;
-//     mat4 viewProjection;
-// };
+layout(std140, binding = 0) uniform Matrices {
+    mat4 model;
+    mat4 viewProjection;
+};
 // layout(std140, binding = 1) uniform Materials {
 //     MaterialData material;
 // };
@@ -73,7 +73,7 @@ uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
 uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
-// uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
 out vec4 FragColor;
 void main() {
