@@ -64,11 +64,11 @@ layout(location = 2)in vec3 normal;
 layout(location = 3)in vec2 UV;
 layout(location = 4)in mat3 TBN;
 
-layout(location = 0) out vec3 screenAlbedo;
-layout(location = 1) out vec3 screenNormal;
-layout(location = 2) out vec3 screenPosition;
+layout(location = 0) out vec4 screenAlbedo;
+layout(location = 1) out vec4 screenNormal;
+layout(location = 2) out vec4 screenPosition;
 // ARM(ao roughtless metallic)
-layout(location = 3) out vec3 screenARM;
+layout(location = 3) out vec4 screenARM;
 // out vec4 color;
 uniform vec3 cameraPosition;
 
@@ -77,13 +77,19 @@ uniform sampler2D normalMap;
 uniform sampler2D reflectMap;
 uniform sampler2D ARM;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+layout(std140, binding = 0) uniform Matrices {
+    mat4 model;
+    mat4 viewProjection;
+};
 void main() {
     vec3 color3 = vec3(0.);
     float maxDepth=1000;
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     screenAlbedo.xyz=texture(albedoMap,UV).xyz;
-    screenPosition.xyz=log(worldPosition)/log(maxDepth);
-    // screenPosition.xyz=worldPosition/1000.0;
+    // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;
+    // screenPosition=(viewProjection*model*vec4(geoPosition,1.0))*0.01;
+    // screenPosition.w=1.0;
+    screenPosition.xyz=(worldPosition/maxDepth+1.0)*0.5;
     // screenPosition.xyz=vec3(1.0);
     screenNormal.xyz= normalize(normal);
     //make sure the normalmap is in right format
@@ -91,6 +97,7 @@ void main() {
         screenNormal.xyz=  TBN * (texture(normalMap, UV).xyz * 2 - 1);
     }
     screenARM.xyz=vec3(1.0,0.5,0.5);
+    
     // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
     // color = vec4(color3, 1.);

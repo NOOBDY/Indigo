@@ -75,6 +75,7 @@ int main(int argc, char **argv) {
     programScreen.SetInt("depthTexture", 1);
     programScreen.SetInt("uvCheck", 2);
 
+    programDeferredLight.Bind();
     programDeferredLight.SetInt("screenAlbedo", ALBEDO);
     programDeferredLight.SetInt("screenNormal", NORMAL);
     programDeferredLight.SetInt("screenPosition", POSITION);
@@ -87,15 +88,17 @@ int main(int argc, char **argv) {
     programDeferredPass.SetInt("normalMap", NORMAL);
     programDeferredPass.SetInt("reflectMap", REFLECT);
     programDeferredPass.SetInt("ARM", ARM);
-    programDeferredPass.Unbind();
+    // programDeferredPass.Unbind();
 
-    programColor.Bind();
+    // programColor.Bind();
     // programColor.SetInt("albedoMap", ALBEDO);
     // programColor.SetInt("normalMap", NORMAL);
     // programColor.SetInt("reflectMap", REFLECT);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
         // programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        programDeferredPass.Bind();
         programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        programDeferredLight.Bind();
         programDeferredLight.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
     }
 
@@ -186,13 +189,13 @@ int main(int argc, char **argv) {
     unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 ,GL_COLOR_ATTACHMENT3 };
 
     // color buffer
-    Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), attachments[0]);
-    Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenNormal.GetTextureID(),  attachments[1]);
-    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenPosition.GetTextureID(), attachments[2]);
-    Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenARM.GetTextureID(), attachments[3]);
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
@@ -225,9 +228,9 @@ int main(int argc, char **argv) {
 
     FrameBuffer deferredLightFbo;
     deferredLightFbo.Bind();
-    Texture screenLight(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenLight(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredLightFbo.AttachTexture(screenLight.GetTextureID(), attachments[0]);
-    Texture screenVolume(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
+    Texture screenVolume(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredLightFbo.AttachTexture(screenVolume.GetTextureID(), attachments[1]);
     glDrawBuffers(2, attachments);
     deferredLightFbo.Unbind();
@@ -371,6 +374,9 @@ int main(int argc, char **argv) {
         screenNormal.Bind(NORMAL);
         screenPosition.Bind(POSITION);
         screenDepth.Bind(DEPTH);
+        for (int i = 0; i < lightDepths.size(); i++) {
+            lightDepths[i]->Bind(SHADOW + i);
+        }
         //geo
         planeVAO.Bind();
         Matrices mat2;
@@ -379,7 +385,7 @@ int main(int argc, char **argv) {
         // LOG_INFO("mats {}",matrices.GetId());
         // LOG_INFO("material {}",materials.GetId());
         // LOG_INFO("light {}",lights.GetId());
-        matrices.SetData(0, sizeof(mat2), &mat2);
+        // matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
         glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
@@ -445,7 +451,7 @@ int main(int argc, char **argv) {
         // screenDepth.Bind(2);
         // screenPosition.Bind(2);
         // depthTexture.Bind(2);
-        // lightDepths[0]->Bind(1);
+        lightDepths[0]->Bind(1);
 
         planeVAO.Bind();
         programScreen.Validate();

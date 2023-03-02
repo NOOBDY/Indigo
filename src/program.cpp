@@ -35,6 +35,8 @@ Program::Program(const std::string &vertexShaderFilepath,
     LOG_DEBUG("  GL_MAX_VARYING_VECTORS: {}", info);
     glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &info);
     LOG_DEBUG("  GL_MAX_COLOR_ATTACHMENTS: {}", info);
+    glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS,&info);
+    LOG_DEBUG("  GL_MAX_TEXTURE_IMAGE_UNITS: {}", info);
     
 
     m_VertexShaderID = glCreateShader(GL_VERTEX_SHADER);

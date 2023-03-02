@@ -47,24 +47,30 @@ struct MaterialData {
     float maxShine;
     // vec3 normal;
 };
+struct DeferredData {
+    vec3 albedo ;
+    vec3 normal;
+    vec3 position;
+    vec3 depth;
+};
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
 };
-// layout(std140, binding = 1) uniform Materials {
-//     MaterialData material;
-// };
+layout(std140, binding = 1) uniform Materials {
+    MaterialData material;
+};
 
-// layout(std140, binding = 2) uniform Lights {
-//     LightData lights[LIGHT_NUMBER];
-// };
+layout(std140, binding = 2) uniform Lights {
+    LightData lights[LIGHT_NUMBER];
+};
 
 // layout(location = 0) in vec2 UV;
 in vec2 UV;
 
-layout(location = 0) out vec3 screenLight;
-layout(location = 1) out vec3 screenVolume;
+layout(location = 0) out vec4 screenLight;
+layout(location = 1) out vec4 screenVolume;
 
 uniform vec3 cameraPosition;
 
@@ -75,20 +81,115 @@ uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
-out vec4 FragColor;
+float fade(vec3 center, vec3 position, float radius) {
+    return (1 - clamp(length(position - center) / radius, 0, 1));
+    // return 1.0 / (length(position - center) / radius + 0.1);
+    // return 1.0 - clamp(length(position - center) / radius, 0, 1);
+}
+vec3 gridSamplingDisk[20] = vec3[](vec3(1, 1, 1), vec3(1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1), vec3(1, 1, -1), vec3(1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1), vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0), vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1), vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
+float shadow(vec3 position, LightData light, int index) {
+    vec3 dir = position - light.transform.position;
+    float lightDepth = texture(shadowMap[index], dir).x;
+    lightDepth *= light.farPlane;
+    float currentDepth = length(dir);
+    float shadow = 0.0;
+    float bias = 0.15;
+    int samples = 20;
+    float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
+    // return shadow;
+    // return 1.0-shadow;
+    for(int i = 0; i < samples; ++i) {
+        float closestDepth = texture(shadowMap[index], dir + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= light.farPlane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+    return (shadow);
+}
+vec3 AllLight(vec3 cameraPosition,DeferredData deferredInfo, LightData light, int index) {
+    vec3 position=deferredInfo.position*2.0-1.0;
+    position=position*1000;
+
+    // mesh normal
+    // vec3 n = normal;
+    vec3 n=deferredInfo.normal;
+    // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
+    vec3 direction = light.transform.direction;
+    // direction :light to mesh
+    vec3 l = light.lightType == DIRECTION ? direction : normalize(light.transform.position - position);
+    // direction :cam to mesh
+    vec3 v = normalize(cameraPosition - position);
+    // direction :reflection
+    vec3 r = normalize(reflect(-l, n));
+    // for Blinn-Phong lighting
+    vec3 halfwayVec = normalize(v + l);
+
+    float ambient = light.lightType == AMBIENT ? 1.0 : 0.1;
+    float fadeOut = light.lightType == POINT ? fade(light.transform.position, position, light.radius) : 1.0;
+    // spotlight
+    float angle = clamp(dot(direction, l), 0.0, 1.0);
+    float spot = light.lightType == SPOT ? clamp((angle - light.outerCone) / (light.innerCone - light.outerCone), 0.0, 1.0) : 1.0;
+
+    // diffuse lighting
+    float dotLN = max(dot(halfwayVec, n), 0.0);
+    vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
+
+    //color tranform
+    // diffuse = pow(diffuse, vec3(2.2));
+
+    // specular lighting
+    float dotRV = max(dot(r, v), 0.0);
+    // ambient light not specular
+    vec3 specular = vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0)) ? 0.0 : pow(dotRV, material.maxShine));
+
+    float shadow = shadow(position, light, index);
+
+    // return vec3(shadow);
+    diffuse *= 1 - shadow;
+    specular *= 1 - shadow;
+
+    return (diffuse + specular) * light.lightColor * light.power * fadeOut * spot;
+}
+vec3 PhongLight(vec3 cameraPosition, DeferredData deferredInfo,LightData lights[LIGHT_NUMBER]) {
+    vec3 color3 = vec3(0);
+    for(int i = 0; i < LIGHT_NUMBER; i++) {
+        LightData light = lights[i];
+        if(light.lightType == 0)
+            continue;
+        // color3 = light.lightColor;
+        color3 += AllLight(cameraPosition,deferredInfo, light, i);
+    }
+
+    return color3;
+}
+
 void main() {
     vec3 col=vec3(1.0);
 
     // vec2 uv=UV;
-    vec3 albedo = texture(screenAlbedo, UV).rgb;
-    vec3 normal= texture(screenNormal, UV).rgb;
-    vec3 position= texture(screenPosition, UV).rgb;
-    vec3 depth= texture(screenDepth, UV).rgb;
+    DeferredData info;
+    info.albedo = texture(screenAlbedo, UV).rgb;
+    info.normal= texture(screenNormal, UV).rgb;
+    // info.position= texture(screenPosition, UV);
+    info.depth= texture(screenDepth, UV).rgb;
+    vec4 temPosition =vec4(texture(screenPosition, UV).xyz,1.0); 
+    // temPostion= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0);
 
+
+    info.position= temPosition.xyz;
+    // info.position = (inverse(viewProjection)* (temPosition)).xyz;
+    screenVolume.xyz=info.position;
+    // position=(position)*(1000);
+    // position=exp(position)*exp(1000);
     // col = cube_uv(UV);
-    screenLight =normal;
+    // screenLight =info.normal;
+    screenLight.xyz=PhongLight(cameraPosition, info, lights);
+    // screenLight=screenVolume;
     // screenLight =depth;
-    screenVolume=position;
+    // screenVolume.xyz=info.position;
+    // screenVolume.xyz=info.depth;
+
     // screenLight =vec3(1.0);
     // screenVolume=vec3(1,0,0);
 }
