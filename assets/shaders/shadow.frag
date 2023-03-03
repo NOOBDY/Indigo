@@ -64,7 +64,7 @@ void main() {
     gl_FragDepth = len;
 
     // color = vec4(worldPosition - lights[0].transform.position, 1.0);
-    // color = vec4(normalize(worldPosition - lights[0].transform.position), 1.0);
+    // colorn = vec4(normalize(worldPosition - lights[0].transform.position), 1.0);
 
     // color = vec4(vec3(1), 1.0);
 }

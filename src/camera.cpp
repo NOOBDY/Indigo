@@ -72,3 +72,16 @@ void Camera::RotateByDelta(const float deltaX, const float deltaY) {
 
     m_Transform.SetPosition(glm::vec3(cameraMat[3]));
 }
+CameraData Camera::GetCameraData() {
+    UpdateProjection();
+    UpdateView();
+    CameraData  data;
+    // data.transform = m_Transform.GetTransformData();
+    data.projection=m_Projection;
+    data.view= m_View;
+    data.nearPlane=m_NearClip;
+    data.farPlane=m_FarClip;
+    data.aspectRatio=m_AspectRatio;
+    data.FOV=m_FOV;
+    return data;
+};

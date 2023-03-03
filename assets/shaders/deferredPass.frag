@@ -83,7 +83,7 @@ layout(std140, binding = 0) uniform Matrices {
 };
 void main() {
     vec3 color3 = vec3(0.);
-    float maxDepth=1000;
+    float maxDepth=300;
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     screenAlbedo.xyz=texture(albedoMap,UV).xyz;
     // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;

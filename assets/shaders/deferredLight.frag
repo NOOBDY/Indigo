@@ -47,6 +47,15 @@ struct MaterialData {
     float maxShine;
     // vec3 normal;
 };
+struct CameraData {
+    // TransformData transform;
+    mat4 projection;
+    mat4 view;
+    float nearPlane;
+    float farPlane;
+    float aspectRatio;
+    float FOV;
+};
 struct DeferredData {
     vec3 albedo ;
     vec3 normal;
@@ -65,6 +74,9 @@ layout(std140, binding = 1) uniform Materials {
 layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
+layout(std140, binding = 3) uniform Camera{
+    CameraData cameraInfo;
+};
 
 // layout(location = 0) in vec2 UV;
 in vec2 UV;
@@ -80,7 +92,25 @@ uniform sampler2D screenPosition;
 uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+vec3 depth2position(float depth,CameraData info) {
+    float ViewZ = info.nearPlane / (info.farPlane- depth * (info.farPlane- info.nearPlane)) * info.farPlane;
+    ViewZ =(ViewZ * 2.0) - 1.0;
+    vec4 clipSpacePosition = vec4(UV* 2.0 - 1.0, ViewZ, 1);
 
+    // Clip space -> View space
+    mat4 viewMatrixInv=inverse(info.view);
+    mat4 projectionMatrixInv=inverse(info.projection);
+    vec4 viewSpacePosition = projectionMatrixInv * clipSpacePosition;
+
+    // Perspective division
+    viewSpacePosition /= viewSpacePosition.w;
+
+    // View space -> World space
+    vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
+
+    return worldSpacePosition.xyz;
+
+}
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
     // return 1.0 / (length(position - center) / radius + 0.1);
@@ -108,8 +138,9 @@ float shadow(vec3 position, LightData light, int index) {
     return (shadow);
 }
 vec3 AllLight(vec3 cameraPosition,DeferredData deferredInfo, LightData light, int index) {
-    vec3 position=deferredInfo.position*2.0-1.0;
-    position=position*1000;
+    vec3 position = deferredInfo.position;
+    // vec3 position=deferredInfo.position*2.0-1.0;
+    // position=position*1000;
 
     // mesh normal
     // vec3 n = normal;
@@ -174,7 +205,10 @@ void main() {
     // info.position= texture(screenPosition, UV);
     info.depth= texture(screenDepth, UV).rgb;
     vec4 temPosition =vec4(texture(screenPosition, UV).xyz,1.0); 
+    // temPosition.xyz=depth2position(info.depth.x,cameraInfo);
     // temPostion= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0);
+    temPosition=temPosition*2.0-1.0;
+    temPosition*=300.0;
 
 
     info.position= temPosition.xyz;

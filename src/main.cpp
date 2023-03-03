@@ -117,6 +117,7 @@ int main(int argc, char **argv) {
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
     UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
+    UniformBuffer cameraUbo(sizeof(Camera) , 3);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
@@ -388,6 +389,8 @@ int main(int argc, char **argv) {
         // matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        CameraData camData=camera.GetCameraData();
+        cameraUbo.SetData(0, sizeof(CameraData), &camData);
         glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
 
 
