@@ -14,6 +14,7 @@
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
+#include "model.hpp"
 #include "light.hpp"
 
 #define SCREEN_WIDTH 1280
@@ -32,11 +33,6 @@ struct Matrices {
 struct Material {
     glm::vec3 baseColor;
     float maxShine;
-};
-
-struct Model {
-    std::shared_ptr<VertexArray> VAO;
-    Transform transform;
 };
 
 int main(int argc, char **argv) {
@@ -108,7 +104,7 @@ int main(int argc, char **argv) {
     uiData[0][1] = glm::vec3(180, 180, 180);
     uiData[0][2] = glm::vec3(1, 1, 1);
     scene.push_back(
-        Model{Importer::LoadFile("../assets/models/little_city/main.glb")});
+        Model(Importer::LoadFile("../assets/models/little_city/main.glb")));
     // end model 1
 
     // begin model 2
@@ -118,7 +114,7 @@ int main(int argc, char **argv) {
     uiData[1][1] = glm::vec3(180, 180, 180);
     uiData[1][2] = glm::vec3(1, 1, 1);
     scene.push_back(
-        Model{Importer::LoadFile("../assets/models/little_city/interior.glb")});
+        Model(Importer::LoadFile("../assets/models/little_city/interior.glb")));
     // end model 2
 
     // 2D plane for framebuffer
@@ -150,6 +146,8 @@ int main(int argc, char **argv) {
             0, 1, 2, //
             0, 2, 3, //
         }));
+
+    Model plane(std::make_shared<VertexArray>(planeVAO));
 
     Texture texMainColor("../assets/textures/little_city/main_color.jpg");
     Texture texInterior("../assets/textures/little_city/interior.jpg");
@@ -199,8 +197,8 @@ int main(int argc, char **argv) {
     lightPower[1] = 2;
     lightRadius[1] = 500;
 
-    scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
-    scene.push_back(Model{Importer::LoadFile("../assets/models/sphere.obj")});
+    scene.push_back(Model(Importer::LoadFile("../assets/models/sphere.obj")));
+    scene.push_back(Model(Importer::LoadFile("../assets/models/sphere.obj")));
 
     Matrices lightMat;
 
@@ -234,17 +232,19 @@ int main(int argc, char **argv) {
 
             // not render light ball
             for (unsigned int j = 0; j < scene.size() - 2; j++) {
-                scene[j].VAO->Bind();
-                scene[j].transform.SetPosition(uiData[j][0]);
-                scene[j].transform.SetRotation(uiData[j][1]);
-                scene[j].transform.SetScale(uiData[j][2]);
-                lightMat.model = scene[j].transform.GetTransform();
+                scene[j].GetTransform().SetPosition(uiData[j][0]);
+                scene[j].GetTransform().SetRotation(uiData[j][1]);
+                scene[j].GetTransform().SetScale(uiData[j][2]);
+
+                lightMat.model = scene[j].GetTransform().GetTransform();
                 matrices.SetData(0, sizeof(lightMat), &lightMat);
                 // use first one to render shadow
                 lights.SetData(0, sizeof(LightData), lightInfo + i);
                 programShadow.Validate();
-                Renderer::Draw(scene[j].VAO->GetIndexBuffer()->GetCount());
+
+                scene[j].Draw();
             }
+
             shadowFbo.Unbind();
         }
 
@@ -274,20 +274,20 @@ int main(int argc, char **argv) {
         }
 
         for (unsigned int i = 0; i < scene.size(); i++) {
-            scene[i].VAO->Bind();
-
-            scene[i].transform.SetPosition(uiData[i][0]);
-            scene[i].transform.SetRotation(uiData[i][1]);
-            scene[i].transform.SetScale(uiData[i][2]);
+            scene[i].GetTransform().SetPosition(uiData[i][0]);
+            scene[i].GetTransform().SetRotation(uiData[i][1]);
+            scene[i].GetTransform().SetScale(uiData[i][2]);
 
             Matrices mat1;
-            mat1.model = scene[i].transform.GetTransform();
+
+            mat1.model = scene[i].GetTransform().GetTransform();
             mat1.viewProjection = camera.GetViewProjection();
             matrices.SetData(0, sizeof(mat1), &mat1);
             materials.SetData(0, sizeof(Material), &matColor1);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
             programColor.Validate();
-            Renderer::Draw(scene[0].VAO->GetIndexBuffer()->GetCount());
+
+            scene[i].Draw();
         }
 
         // frame buffer part
@@ -298,9 +298,8 @@ int main(int argc, char **argv) {
         renderSurface.Bind(0);
         lightDepths[0]->Bind(1);
 
-        planeVAO.Bind();
         programScreen.Validate();
-        Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
+        plane.Draw();
         // done frame buffer
 
         ImGui_ImplOpenGL3_NewFrame();
