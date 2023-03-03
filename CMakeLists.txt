@@ -35,6 +35,7 @@ add_executable(Indigo
     src/frame_buffer.cpp
     src/texture.cpp
     src/transform.cpp
+    src/model.cpp
     src/light.cpp
 
     include/log.hpp
@@ -51,6 +52,7 @@ add_executable(Indigo
     include/frame_buffer.hpp
     include/texture.hpp
     include/transform.hpp
+    include/model.hpp
     include/light.hpp
 
     assets/shaders/base.vert
