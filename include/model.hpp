@@ -16,7 +16,7 @@ public:
         SHADOW, // first non-shadow texture index
     };
 
-    Model(std::shared_ptr<VertexArray> vao);
+    Model(std::shared_ptr<VertexArray> vao, Transform transform);
     ~Model();
 
     void Bind();
@@ -26,6 +26,10 @@ public:
     void SetRoughness(std::shared_ptr<Texture> roughness) {
         m_Roughness = roughness;
     }
+
+    std::shared_ptr<Texture> GetAlbedo() { return m_Albedo; }
+    std::shared_ptr<Texture> GetNormal() { return m_Normal; }
+    std::shared_ptr<Texture> GetRoughness() { return m_Roughness; }
 
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }
@@ -37,8 +41,6 @@ private:
     std::shared_ptr<Texture> m_Albedo;
     std::shared_ptr<Texture> m_Normal;
     std::shared_ptr<Texture> m_Roughness;
-
-    std::vector<std::shared_ptr<Texture>> m_Shadows;
 };
 
 #endif
