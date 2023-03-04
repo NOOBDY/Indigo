@@ -4,6 +4,7 @@
 #include <sstream>
 
 #include "log.hpp"
+#include "exception.hpp"
 
 Program::Program(const std::string &vertexShaderFilepath,
                  const std::string &fragmentShaderFilepath) {
@@ -97,8 +98,7 @@ std::string Program::LoadShaderFile(const std::string &filepath) {
         source = sstr.str();
         stream.close();
     } else {
-        LOG_ERROR("Failed Loading File: '{}'", filepath);
-        throw;
+        throw FileNotFoundException(filepath);
     }
 
     return source;

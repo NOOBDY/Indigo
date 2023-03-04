@@ -3,6 +3,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
+#include "log.hpp"
+#include "exception.hpp"
+
 Texture::Texture(const int width, const int height, Format format,
                  Target target, int bit)
     : m_Target(target), m_Width(width), m_Height(height) {
@@ -78,8 +81,7 @@ void Texture::LoadImage(const std::string &textureFilepath, int bit) {
         stbi_load(textureFilepath.c_str(), &width, &height, &channels, 0);
 
     if (data == NULL) {
-        LOG_ERROR("Failed Opening File: '{}'", textureFilepath);
-        throw;
+        throw FileNotFoundException(textureFilepath);
     }
     m_Format = Channels2Format(channels);
     m_Width = width;
