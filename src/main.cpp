@@ -339,7 +339,7 @@ int main(int argc, char **argv) {
 
         texMainColor.Bind(ALBEDO);
         reflectMap.Bind(REFLECT);
-        wallNormalMap.Bind(NORMAL);
+        // wallNormalMap.Bind(NORMAL);
 
         //deferred
         deferredFbo.Bind();

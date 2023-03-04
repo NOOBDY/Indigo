@@ -50,6 +50,15 @@ struct MaterialData {
     // vec3 normal;
 };
 
+struct CameraData {
+    // TransformData transform;
+    mat4 projection;
+    mat4 view;
+    float nearPlane;
+    float farPlane;
+    float aspectRatio;
+    float FOV;
+};
 layout(std140, binding = 1) uniform Materials {
     MaterialData material;
 };
@@ -58,6 +67,9 @@ layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
 
+layout(std140, binding = 3) uniform Camera{
+    CameraData cameraInfo;
+};
 layout(location = 0) in vec3 geoPosition;
 layout(location = 1)in vec3 worldPosition;
 layout(location = 2)in vec3 normal;
@@ -81,9 +93,10 @@ layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
 };
+
 void main() {
     vec3 color3 = vec3(0.);
-    float maxDepth=300;
+    float maxDepth=600.0;
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     screenAlbedo.xyz=texture(albedoMap,UV).xyz;
     // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;
@@ -101,4 +114,12 @@ void main() {
     // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
     // color = vec4(color3, 1.);
+    float len = length(vec3(worldPosition - cameraPosition));
+    len /= cameraInfo.farPlane-cameraInfo.nearPlane;
+    vec4 tem=viewProjection*vec4(worldPosition,1.0);
+
+    gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
+    // gl_FragDepth = len;
+    // gl_FragDepth+=1.0;
+    // gl_FragDepth*=0.5;
 }

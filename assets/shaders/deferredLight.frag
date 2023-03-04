@@ -93,22 +93,58 @@ uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 vec3 depth2position(float depth,CameraData info) {
-    float ViewZ = info.nearPlane / (info.farPlane- depth * (info.farPlane- info.nearPlane)) * info.farPlane;
-    ViewZ =(ViewZ * 2.0) - 1.0;
-    vec4 clipSpacePosition = vec4(UV* 2.0 - 1.0, ViewZ, 1);
-
-    // Clip space -> View space
+    float ViewZ; 
+    //info.nearPlane / (info.farPlane- depth * (info.farPlane- info.nearPlane)) * info.farPlane;
+    // ViewZ=depth*(info.farPlane-info.nearPlane);
+    ViewZ=depth*2.0-1.0;
+    vec4 clipSpacePosition = vec4((UV* 2.0 - 1.0), ViewZ, 1);
     mat4 viewMatrixInv=inverse(info.view);
     mat4 projectionMatrixInv=inverse(info.projection);
-    vec4 viewSpacePosition = projectionMatrixInv * clipSpacePosition;
+    vec4 viewSpacePosition = projectionMatrixInv* clipSpacePosition;
 
     // Perspective division
     viewSpacePosition /= viewSpacePosition.w;
+    // vec4 offset=
 
-    // View space -> World space
-    vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
+    // vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
+    // vec4 worldSpacePosition = cameraPosition+offset;
+    float z = -(info.nearPlane* info.farPlane) / (depth * (info.farPlane- info.nearPlane) - info.nearPlane);	
+    z=depth*(info.farPlane- info.nearPlane);
 
+// // Compute screenspace coordinate of pixel
+    // vec2 screenspace = (UV) * 2.0f - 1.0f;
+    // vec3 camera_forward =normalize((info.view*vec4(0,0,1,1)).xyz);
+    // vec3 camera_up=normalize((info.view*vec4(0,1,0,1)).xyz);
+    // vec3 camera_right=normalize((info.view*vec4(1,0,0,1)).xyz);
+    // vec2 fov_scale=vec2 (tan(radians(info.FOV*0.5)),tan(radians(info.FOV*info.aspectRatio*0.5)));
+
+    vec3 clipVec = vec3(UV*2.0-1.0, 1) * info.farPlane;
+    vec3 viewVec= (projectionMatrixInv*clipVec.xyzz).xyz;
+    vec3 viewPos = viewVec * ViewZ;
+    vec3 worldSpacePosition =(viewMatrixInv*vec4(viewPos,1)).xyz; 
+    // vec3 viewdepth=
+    // screenspace *=fov_scale;
+    // vec2 fov_scale=vec2(info.FOV/2.0 ,info.FOV*info.aspectRatio);
+
+
+//     // Get direction of ray from camera through pixel	
+    // vec3 ray_direction = normalize(camera_forward + camera_right * screenspace.x +camera_up * screenspace.y);
+//     // Reconstruct world position from depth: depth in z buffer is distance to picture plane, not camera
+    // float distance_to_camera = z / dot(ray_direction, camera_forward);
+    // distance_to_camera=z;
+    // vec3 world_position = cameraPosition + ray_direction * distance_to_camera;
+
+    
+    // return worldSpacePosition.xyz/1000.0;
+    // return vec3(depth);
+    // return clipSpacePosition.xyz;
     return worldSpacePosition.xyz;
+    // return vec3(z);
+    // return (z);
+    // return world_position.xyz;
+    // return ray_direction;
+    // return vec3(screenspace,0.0);
+// return cameraPosition;
 
 }
 float fade(vec3 center, vec3 position, float radius) {
@@ -205,10 +241,10 @@ void main() {
     // info.position= texture(screenPosition, UV);
     info.depth= texture(screenDepth, UV).rgb;
     vec4 temPosition =vec4(texture(screenPosition, UV).xyz,1.0); 
-    // temPosition.xyz=depth2position(info.depth.x,cameraInfo);
+    temPosition.xyz=depth2position(info.depth.x,cameraInfo);
     // temPostion= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0);
-    temPosition=temPosition*2.0-1.0;
-    temPosition*=300.0;
+    // temPosition=temPosition*2.0-1.0;
+    // temPosition*=600.0;
 
 
     info.position= temPosition.xyz;
@@ -219,8 +255,10 @@ void main() {
     // col = cube_uv(UV);
     // screenLight =info.normal;
     screenLight.xyz=PhongLight(cameraPosition, info, lights);
+    temPosition=texture(screenPosition, UV);
+    // screenLight.xyz=(temPosition.xyz*2.0-1.0)*600.0;
     // screenLight=screenVolume;
-    // screenLight =depth;
+    // screenLight.xyz =info.depth;
     // screenVolume.xyz=info.position;
     // screenVolume.xyz=info.depth;
 

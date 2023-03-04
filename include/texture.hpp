@@ -25,8 +25,8 @@ public:
         IMAGE_2D = GL_TEXTURE_2D,
     };
     Texture(const int width, const int height, Format type,
-            Target format = IMAGE_2D,int bit=32);
-    Texture(const std::string &textureFilepath,int bit=32);
+            Target format = IMAGE_2D,int bit=16);
+    Texture(const std::string &textureFilepath,int bit=16);
     ~Texture();
 
     /**
