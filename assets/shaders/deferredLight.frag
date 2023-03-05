@@ -95,11 +95,16 @@ uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 vec3 depth2position(float depth,CameraData info) {
     mat4 viewMatrixInv=inverse(info.view);
     mat4 projectionMatrixInv=inverse(info.projection);
-    // mat4 invert_view_projection=inverse( info.projection*info.view);
+    mat4 invert_view_projection=inverse( info.projection*info.view);
+	
     float ViewZ; 
     ViewZ=depth*2.0-1.0;
 
-    vec4 sPos = vec4(UV * 2.0 - 1.0, 1.0, 1.0);
+    vec4 sPos = vec4(UV * 2.0 - 1.0,ViewZ, 1.0);
+	vec4 worldPosition = invert_view_projection * sPos;
+	worldPosition = vec4((worldPosition.xyz / worldPosition.w ), 1.0f);
+    return worldPosition.xyz;
+
     sPos = projectionMatrixInv * sPos;
     sPos*=ViewZ;
     // sPos /= sPos.w;
@@ -205,7 +210,7 @@ void main() {
     temPosition=temPosition* 600.0;
 
 
-    info.position=temPosition.xyz;
+    // info.position=temPosition.xyz;
     // screenVolume.xyz=info.position;
     // position=(position)*(1000);
     // position=exp(position)*exp(1000);
