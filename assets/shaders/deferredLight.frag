@@ -203,16 +203,16 @@ void main() {
     info.normal= texture(screenNormal, UV).rgb;
     info.depth= texture(screenDepth, UV).rgb;
     info.position=depth2position(info.depth.x,cameraInfo);
-    vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
-    temPosition=temPosition* 600.0;
+    // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
+    // temPosition=temPosition* 600.0;
 
 
-    screenLight.xyz =info.position;
-    screenVolume.xyz=temPosition.xyz;
-    screenLight.xyz/=600;
-    screenVolume.xyz/=600;
-    screenVolume-=screenLight;
-    screenVolume= abs(screenVolume)* 10.0;
+    // screenLight.xyz =info.position;
+    // screenVolume.xyz=temPosition.xyz;
+    // screenLight.xyz/=600;
+    // screenVolume.xyz/=600;
+    // screenVolume-=screenLight;
+    // screenVolume= abs(screenVolume)* 10.0;
     screenLight=PhongLight(cameraPosition, info, lights);
     screenVolume=screenLight;
     
