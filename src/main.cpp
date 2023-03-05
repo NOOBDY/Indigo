@@ -61,10 +61,10 @@ int main(int argc, char **argv) {
                          "../assets/shaders/phong.frag");
     Program programDeferredPass("../assets/shaders/phong.vert",
                          "../assets/shaders/deferredPass.frag");
-    Program programDeferredLight("../assets/shaders/frame_deferred.vert",
+    Program programDeferredLight("../assets/shaders/frameDeferred.vert",
                           "../assets/shaders/deferredLight.frag");
-    Program programScreen("../assets/shaders/frame_screen.vert",
-                          "../assets/shaders/frame_screen.frag");
+    Program programScreen("../assets/shaders/frameScreen.vert",
+                          "../assets/shaders/frameScreen.frag");
 
     programScreen.Bind();
     programScreen.SetInt("screenTexture", 0);
