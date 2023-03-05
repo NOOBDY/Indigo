@@ -104,15 +104,15 @@ vec3 depth2position(float depth,CameraData info) {
     vec4 sPos = vec4(UV * 2.0 - 1.0,ViewZ, 1.0);
 	vec4 worldPosition = invert_view_projection * sPos;
 	worldPosition = vec4((worldPosition.xyz / worldPosition.w ), 1.0f);
-    // return worldPosition.xyz;
+    return worldPosition.xyz;
 
 
     //way2
-    vec4 clipVec = vec4(UV*2.0-1.0, 1,1) * (info.farPlane);
-    vec3 viewVec= (projectionMatrixInv*clipVec).xyz;
-    vec3 viewPos = viewVec * (ViewZ);
-    vec3 worldSpacePosition =(viewMatrixInv*vec4(viewPos,1)).xyz; 
-    return worldSpacePosition.xyz;
+    // vec4 clipVec = vec4(UV*2.0-1.0, 1,1) * (info.farPlane);
+    // vec3 viewVec= (projectionMatrixInv*clipVec).xyz;
+    // vec3 viewPos = viewVec * (ViewZ);
+    // vec3 worldSpacePosition =(viewMatrixInv*vec4(viewPos,1)).xyz; 
+    // return worldSpacePosition.xyz;
 }
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
@@ -126,7 +126,7 @@ float shadow(vec3 position, LightData light, int index) {
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
-    float bias = 0.9;
+    float bias = 1.5;
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
     // return shadow;

@@ -117,8 +117,8 @@ void main() {
     
 
     //way1
-    gl_FragDepth = (tem.z/tem.w)*0.5+0.5;
+    // gl_FragDepth = (tem.z/tem.w)*0.5+0.5;
     //way2
-    gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
+    // gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
     // gl_FragDepth = (len+1.0)*0.5;
 }
