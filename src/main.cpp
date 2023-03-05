@@ -380,7 +380,7 @@ int main(int argc, char **argv) {
         //geo
         planeVAO.Bind();
         Matrices mat2;
-        mat2.model = scene[0].transform.GetTransform();
+        mat2.model = scene[0].GetTransform().GetTransform();
         mat2.viewProjection = camera.GetViewProjection();
         // LOG_INFO("mats {}",matrices.GetId());
         // LOG_INFO("material {}",materials.GetId());
