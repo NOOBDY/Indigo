@@ -112,7 +112,7 @@ void main() {
     
     // color3 = ColorTransform(color3);
     float len = length(vec3(worldPosition - cameraPosition));
-    len /= cameraInfo.farPlane-cameraInfo.nearPlane;;
+    len /= cameraInfo.farPlane;
     vec4 tem=viewProjection*vec4(worldPosition,1.0);
     
 

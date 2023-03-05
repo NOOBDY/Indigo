@@ -3,7 +3,7 @@
 layout(location = 0) in vec2 vertPosition;
 layout(location = 1) in vec2 vertUV;
 
-layout(location = 1) out vec2 UV;
+layout(location = 0) out vec2 UV;
 // out vec2 UV;
 void main() {
     UV.xy = vertUV.xy;
