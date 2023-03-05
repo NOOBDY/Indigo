@@ -103,23 +103,19 @@ void main() {
     // screenPosition=(viewProjection*model*vec4(geoPosition,1.0))*0.01;
     // screenPosition.w=1.0;
     screenPosition.xyz=(worldPosition/maxDepth+1.0)*0.5;
-    // screenPosition.xyz=vec3(1.0);
     screenNormal.xyz= normalize(normal);
     //make sure the normalmap is in right format
-    if(texture(normalMap,UV).z>0.5){
+    if(texture(normalMap,UV).z==1.0){
         screenNormal.xyz=  TBN * (texture(normalMap, UV).xyz * 2 - 1);
     }
     screenARM.xyz=vec3(1.0,0.5,0.5);
     
-    // color3 = texture(texture1, UV).xyz;
     // color3 = ColorTransform(color3);
-    // color = vec4(color3, 1.);
     float len = length(vec3(worldPosition - cameraPosition));
-    len /= cameraInfo.farPlane-cameraInfo.nearPlane;
+    len /= cameraInfo.farPlane-cameraInfo.nearPlane;;
     vec4 tem=viewProjection*vec4(worldPosition,1.0);
+    
 
     gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
-    // gl_FragDepth = len;
-    // gl_FragDepth+=1.0;
-    // gl_FragDepth*=0.5;
+    // gl_FragDepth = (len+1.0)*0.5;
 }

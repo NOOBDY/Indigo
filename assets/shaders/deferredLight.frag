@@ -93,59 +93,24 @@ uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 vec3 depth2position(float depth,CameraData info) {
-    float ViewZ; 
-    //info.nearPlane / (info.farPlane- depth * (info.farPlane- info.nearPlane)) * info.farPlane;
-    // ViewZ=depth*(info.farPlane-info.nearPlane);
-    ViewZ=depth*2.0-1.0;
-    vec4 clipSpacePosition = vec4((UV* 2.0 - 1.0), ViewZ, 1);
     mat4 viewMatrixInv=inverse(info.view);
     mat4 projectionMatrixInv=inverse(info.projection);
-    vec4 viewSpacePosition = projectionMatrixInv* clipSpacePosition;
+    // mat4 invert_view_projection=inverse( info.projection*info.view);
+    float ViewZ; 
+    ViewZ=depth*2.0-1.0;
 
-    // Perspective division
-    viewSpacePosition /= viewSpacePosition.w;
-    // vec4 offset=
+    vec4 sPos = vec4(UV * 2.0 - 1.0, ViewZ, 1.0);
+    sPos = projectionMatrixInv * sPos;
+    sPos /= sPos.w;
+    sPos=viewMatrixInv * sPos;
 
-    // vec4 worldSpacePosition = viewMatrixInv * viewSpacePosition;
-    // vec4 worldSpacePosition = cameraPosition+offset;
-    float z = -(info.nearPlane* info.farPlane) / (depth * (info.farPlane- info.nearPlane) - info.nearPlane);	
-    z=depth*(info.farPlane- info.nearPlane);
-
-// // Compute screenspace coordinate of pixel
-    // vec2 screenspace = (UV) * 2.0f - 1.0f;
-    // vec3 camera_forward =normalize((info.view*vec4(0,0,1,1)).xyz);
-    // vec3 camera_up=normalize((info.view*vec4(0,1,0,1)).xyz);
-    // vec3 camera_right=normalize((info.view*vec4(1,0,0,1)).xyz);
-    // vec2 fov_scale=vec2 (tan(radians(info.FOV*0.5)),tan(radians(info.FOV*info.aspectRatio*0.5)));
-
-    vec3 clipVec = vec3(UV*2.0-1.0, 1) * info.farPlane;
+    vec3 clipVec = vec3(UV*2.0-1.0, 1) * (info.farPlane-info.nearPlane);;
     vec3 viewVec= (projectionMatrixInv*clipVec.xyzz).xyz;
     vec3 viewPos = viewVec * ViewZ;
     vec3 worldSpacePosition =(viewMatrixInv*vec4(viewPos,1)).xyz; 
-    // vec3 viewdepth=
-    // screenspace *=fov_scale;
-    // vec2 fov_scale=vec2(info.FOV/2.0 ,info.FOV*info.aspectRatio);
-
-
-//     // Get direction of ray from camera through pixel	
-    // vec3 ray_direction = normalize(camera_forward + camera_right * screenspace.x +camera_up * screenspace.y);
-//     // Reconstruct world position from depth: depth in z buffer is distance to picture plane, not camera
-    // float distance_to_camera = z / dot(ray_direction, camera_forward);
-    // distance_to_camera=z;
-    // vec3 world_position = cameraPosition + ray_direction * distance_to_camera;
-
-    
-    // return worldSpacePosition.xyz/1000.0;
-    // return vec3(depth);
-    // return clipSpacePosition.xyz;
+    // return viewPos;
+    // return sPos.xyz;
     return worldSpacePosition.xyz;
-    // return vec3(z);
-    // return (z);
-    // return world_position.xyz;
-    // return ray_direction;
-    // return vec3(screenspace,0.0);
-// return cameraPosition;
-
 }
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
@@ -173,13 +138,9 @@ float shadow(vec3 position, LightData light, int index) {
     shadow /= float(samples);
     return (shadow);
 }
-vec3 AllLight(vec3 cameraPosition,DeferredData deferredInfo, LightData light, int index) {
+vec4 AllLight(vec3 cameraPosition,DeferredData deferredInfo, LightData light, int index) {
     vec3 position = deferredInfo.position;
-    // vec3 position=deferredInfo.position*2.0-1.0;
-    // position=position*1000;
-
     // mesh normal
-    // vec3 n = normal;
     vec3 n=deferredInfo.normal;
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
     vec3 direction = light.transform.direction;
@@ -212,23 +173,22 @@ vec3 AllLight(vec3 cameraPosition,DeferredData deferredInfo, LightData light, in
 
     float shadow = shadow(position, light, index);
 
-    // return vec3(shadow);
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
 
-    return (diffuse + specular) * light.lightColor * light.power * fadeOut * spot;
+    return vec4((diffuse + specular) * light.lightColor * light.power * fadeOut * spot,shadow);
 }
-vec3 PhongLight(vec3 cameraPosition, DeferredData deferredInfo,LightData lights[LIGHT_NUMBER]) {
-    vec3 color3 = vec3(0);
+vec4 PhongLight(vec3 cameraPosition, DeferredData deferredInfo,LightData lights[LIGHT_NUMBER]) {
+    vec4 color4 = vec4(0);
     for(int i = 0; i < LIGHT_NUMBER; i++) {
         LightData light = lights[i];
         if(light.lightType == 0)
             continue;
         // color3 = light.lightColor;
-        color3 += AllLight(cameraPosition,deferredInfo, light, i);
+        color4 += AllLight(cameraPosition,deferredInfo, light, i)/LIGHT_NUMBER;
     }
 
-    return color3;
+    return color4;
 }
 
 void main() {
@@ -238,25 +198,26 @@ void main() {
     DeferredData info;
     info.albedo = texture(screenAlbedo, UV).rgb;
     info.normal= texture(screenNormal, UV).rgb;
-    // info.position= texture(screenPosition, UV);
     info.depth= texture(screenDepth, UV).rgb;
-    vec4 temPosition =vec4(texture(screenPosition, UV).xyz,1.0); 
-    temPosition.xyz=depth2position(info.depth.x,cameraInfo);
-    // temPostion= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0);
-    // temPosition=temPosition*2.0-1.0;
-    // temPosition*=600.0;
+    info.position=depth2position(info.depth.x,cameraInfo);
+    vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
+    temPosition=temPosition* 600.0;
 
 
-    info.position= temPosition.xyz;
-    // info.position = (inverse(viewProjection)* (temPosition)).xyz;
-    screenVolume.xyz=info.position;
+    // info.position=temPosition.xyz;
+    // screenVolume.xyz=info.position;
     // position=(position)*(1000);
     // position=exp(position)*exp(1000);
     // col = cube_uv(UV);
-    // screenLight =info.normal;
-    screenLight.xyz=PhongLight(cameraPosition, info, lights);
-    temPosition=texture(screenPosition, UV);
-    // screenLight.xyz=(temPosition.xyz*2.0-1.0)*600.0;
+    // screenLight.xyz =info.position;
+    screenVolume.xyz=temPosition.xyz;
+    screenLight=PhongLight(cameraPosition, info, lights);
+    // temPosition=texture(screenPosition, UV).xyz;
+    // screenLight.xyz/=600;
+    screenVolume.xyz/=600;
+    // screenVolume-=screenLight;
+    // screenVolume= abs(screenVolume)* 10.0;
+    
     // screenLight=screenVolume;
     // screenLight.xyz =info.depth;
     // screenVolume.xyz=info.position;
