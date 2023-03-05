@@ -100,22 +100,18 @@ vec3 depth2position(float depth,CameraData info) {
     float ViewZ; 
     ViewZ=depth*2.0-1.0;
 
+    //way1
     vec4 sPos = vec4(UV * 2.0 - 1.0,ViewZ, 1.0);
 	vec4 worldPosition = invert_view_projection * sPos;
 	worldPosition = vec4((worldPosition.xyz / worldPosition.w ), 1.0f);
-    return worldPosition.xyz;
+    // return worldPosition.xyz;
 
-    sPos = projectionMatrixInv * sPos;
-    sPos*=ViewZ;
-    // sPos /= sPos.w;
-    sPos=viewMatrixInv * sPos;
 
-    vec4 clipVec = vec4(UV*2.0-1.0, 1,1) * (info.farPlane-info.nearPlane);
+    //way2
+    vec4 clipVec = vec4(UV*2.0-1.0, 1,1) * (info.farPlane);
     vec3 viewVec= (projectionMatrixInv*clipVec).xyz;
     vec3 viewPos = viewVec * (ViewZ);
     vec3 worldSpacePosition =(viewMatrixInv*vec4(viewPos,1)).xyz; 
-    // return viewPos;
-    // return sPos.xyz;
     return worldSpacePosition.xyz;
 }
 float fade(vec3 center, vec3 position, float radius) {
@@ -130,7 +126,7 @@ float shadow(vec3 position, LightData light, int index) {
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
-    float bias = 0.50;
+    float bias = 0.9;
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
     // return shadow;
@@ -178,6 +174,7 @@ vec4 AllLight(vec3 cameraPosition,DeferredData deferredInfo, LightData light, in
     vec3 specular = vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0)) ? 0.0 : pow(dotRV, material.maxShine));
 
     float shadow = shadow(position, light, index);
+    // return vec4(shadow)/LIGHT_NUMBER;
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
@@ -210,28 +207,13 @@ void main() {
     temPosition=temPosition* 600.0;
 
 
-    // info.position=temPosition.xyz;
-    // screenVolume.xyz=info.position;
-    // position=(position)*(1000);
-    // position=exp(position)*exp(1000);
-    // col = cube_uv(UV);
     screenLight.xyz =info.position;
-    // screenVolume.xyz =info.position;
     screenVolume.xyz=temPosition.xyz;
-    // screenVolume=screenLight;
-    // temPosition=texture(screenPosition, UV).xyz;
     screenLight.xyz/=600;
     screenVolume.xyz/=600;
     screenVolume-=screenLight;
     screenVolume= abs(screenVolume)* 10.0;
-    // screenLight=screenVolume;
     screenLight=PhongLight(cameraPosition, info, lights);
+    screenVolume=screenLight;
     
-    // screenLight=screenVolume;
-    // screenLight.xyz =info.depth;
-    // screenVolume.xyz=info.position;
-    // screenVolume.xyz=info.depth;
-
-    // screenLight =vec3(1.0);
-    // screenVolume=vec3(1,0,0);
 }

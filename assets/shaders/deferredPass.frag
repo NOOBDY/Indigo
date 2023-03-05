@@ -105,7 +105,7 @@ void main() {
     screenPosition.xyz=(worldPosition/maxDepth+1.0)*0.5;
     screenNormal.xyz= normalize(normal);
     //make sure the normalmap is in right format
-    if(texture(normalMap,UV).z==1.0){
+    if(false){
         screenNormal.xyz=  TBN * (texture(normalMap, UV).xyz * 2 - 1);
     }
     screenARM.xyz=vec3(1.0,0.5,0.5);
@@ -116,7 +116,9 @@ void main() {
     vec4 tem=viewProjection*vec4(worldPosition,1.0);
     
 
+    //way1
     gl_FragDepth = (tem.z/tem.w)*0.5+0.5;
-    // gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
+    //way2
+    gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
     // gl_FragDepth = (len+1.0)*0.5;
 }
