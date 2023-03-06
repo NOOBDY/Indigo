@@ -27,6 +27,10 @@ jobs:
         with:
           submodules: recursive
 
+      - name: Checking Formatting
+        run: |
+          clang-format --dry-run --Werror --ferror-limit=15 src/* include/* assets/shaders/*
+
       - name: Building Project
         env:
           CC: ${{ matrix.compiler.cc }}
