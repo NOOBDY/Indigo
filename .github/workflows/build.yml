@@ -7,7 +7,7 @@ on:
       - master
 
 jobs:
-  linux:
+  build:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: true
@@ -17,12 +17,11 @@ jobs:
         build_type: [Release]
         binary: [linux-binary]
         output: [build/Indigo]
-
         include:
           - os: windows-latest
-          - build_type: Release
-          - binary: windows-binary
-          - output: build/Indigo.exe
+            build_type: Release
+            binary: windows-binary
+            output: build/Indigo.exe
 
     steps:
       - if: ${{ matrix.os }} == 'ubuntu-latest'
