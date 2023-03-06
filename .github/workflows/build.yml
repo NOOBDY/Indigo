@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
         compiler: [{ cc: gcc, cxx: g++ }, { cc: clang, cxx: clang++ }]
@@ -24,7 +24,7 @@ jobs:
             output: build/Indigo.exe
 
     steps:
-      - if: ${{ matrix.os }} == 'ubuntu-latest'
+      - if: matrix.os == 'ubuntu-latest'
         name: Installing Dependencies
         run: |
           sudo apt-get update
@@ -40,7 +40,7 @@ jobs:
       #     clang-format --dry-run --Werror --ferror-limit=15 src/* include/* assets/shaders/*
 
       - name: Building Project
-        if: ${{ matrix.os }} == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest'
         env:
           CC: ${{ matrix.compiler.cc }}
           CXX: ${{ matrix.compiler.cxx }}
@@ -49,7 +49,7 @@ jobs:
           cmake --build build
 
       - name: Building Project
-        if: ${{ matrix.os }} == 'windows-latest'
+        if: matrix.os == 'windows-latest'
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           cmake --build build
