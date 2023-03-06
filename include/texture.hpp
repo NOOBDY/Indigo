@@ -42,76 +42,8 @@ public:
 
 private:
     void LoadImage(const std::string &textureFilepath, int bit);
-    /// @brief change format to internal format
-    constexpr const int Format2Bit(Format inFormat, int bit) {
-        // GL_RGBA16 will be 16bit for each channel totally 64 bit
-        switch (bit) {
-        case 8: {
-            switch (inFormat) {
-            case Format::DEPTH:
-                return GL_DEPTH_COMPONENT16;
-            case Format::R:
-                return GL_R8;
-            case Format::RG:
-                return GL_RG8;
-            case Format::RGB:
-                return GL_RGB8;
-            case Format::RGBA:
-                return GL_RGBA8;
-            default:
-                throw std::runtime_error("invalid format");
-            }
-        }
-        case 16: {
-            switch (inFormat) {
-            case Format::DEPTH:
-                return GL_DEPTH_COMPONENT16;
-            case Format::R:
-                return GL_R16F;
-            case Format::RG:
-                return GL_RG16F;
-            case Format::RGB:
-                return GL_RGB16F;
-            case Format::RGBA:
-                return GL_RGBA16F;
-            default:
-                throw std::runtime_error("invalid format");
-            }
-        }
-        case 32: {
-            switch (inFormat) {
-            case Format::DEPTH:
-                return GL_DEPTH_COMPONENT24;
-            case Format::R:
-                return GL_R32F;
-            case Format::RG:
-                return GL_RG32F;
-            case Format::RGB:
-                return GL_RGB32F;
-            case Format::RGBA:
-                return GL_RGBA32F;
-            default:
-                throw std::runtime_error("invalid format");
-            }
-        }
-        }
-        throw std::runtime_error("invalid bit number");
-        // return GL_RGB8;
-    }
-    constexpr const Format Channels2Format(int channel) {
-        switch (channel) {
-        case 1:
-            return Format::R;
-        case 2:
-            return Format::RG;
-        case 3:
-            return Format::RGB;
-        case 4:
-            return Format::RGBA;
-        }
-        LOG_ERROR("image channel {} unsupport", channel);
-        throw;
-    }
+    int Format2Bit(Format format, int bit);
+    Format Channels2Format(int channel);
 
 private:
     GLuint m_TextureID;

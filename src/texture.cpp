@@ -120,3 +120,73 @@ GLuint Texture::GetTextureLocation(const GLuint &programID,
                                    const std::string &uniformName) {
     return glGetUniformLocation(programID, uniformName.c_str());
 }
+/// @brief change format to internal format
+int Texture::Format2Bit(Texture::Format inFormat, int bit) {
+    // GL_RGBA16 will be 16bit for each channel totally 64 bit
+    switch (bit) {
+    case 8: {
+        switch (inFormat) {
+        case Texture::Format::DEPTH:
+            return GL_DEPTH_COMPONENT16;
+        case Texture::Format::R:
+            return GL_R8;
+        case Texture::Format::RG:
+            return GL_RG8;
+        case Texture::Format::RGB:
+            return GL_RGB8;
+        case Texture::Format::RGBA:
+            return GL_RGBA8;
+        default:
+            throw std::runtime_error("invalid format");
+        }
+    }
+    case 16: {
+        switch (inFormat) {
+        case Texture::Format::DEPTH:
+            return GL_DEPTH_COMPONENT16;
+        case Texture::Format::R:
+            return GL_R16F;
+        case Texture::Format::RG:
+            return GL_RG16F;
+        case Texture::Format::RGB:
+            return GL_RGB16F;
+        case Texture::Format::RGBA:
+            return GL_RGBA16F;
+        default:
+            throw std::runtime_error("invalid format");
+        }
+    }
+    case 32: {
+        switch (inFormat) {
+        case Texture::Format::DEPTH:
+            return GL_DEPTH_COMPONENT24;
+        case Texture::Format::R:
+            return GL_R32F;
+        case Texture::Format::RG:
+            return GL_RG32F;
+        case Texture::Format::RGB:
+            return GL_RGB32F;
+        case Texture::Format::RGBA:
+            return GL_RGBA32F;
+        default:
+            throw std::runtime_error("invalid format");
+        }
+    }
+    }
+    throw std::runtime_error("invalid bit number");
+    // return GL_RGB8;
+}
+Texture::Format Texture::Channels2Format(int channel) {
+    switch (channel) {
+    case 1:
+        return Texture::Format::R;
+    case 2:
+        return Texture::Format::RG;
+    case 3:
+        return Texture::Format::RGB;
+    case 4:
+        return Texture::Format::RGBA;
+    }
+    LOG_ERROR("image channel {} unsupport", channel);
+    throw;
+}
