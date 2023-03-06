@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     Controller::InitGUI(window);
 
-    enum { ALBEDO, NORMAL,ARM, REFLECT,POSITION,DEPTH, SHADOW };
+    enum { ALBEDO, NORMAL, ARM, REFLECT, POSITION, DEPTH, SHADOW };
     Program programShadow("../assets/shaders/shadow.vert",
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
@@ -60,9 +60,9 @@ int main(int argc, char **argv) {
     Program programColor("../assets/shaders/phong.vert",
                          "../assets/shaders/phong.frag");
     Program programDeferredPass("../assets/shaders/phong.vert",
-                         "../assets/shaders/deferred_pass.frag");
+                                "../assets/shaders/deferred_pass.frag");
     Program programDeferredLight("../assets/shaders/frame_deferred.vert",
-                          "../assets/shaders/deferred_light.frag");
+                                 "../assets/shaders/deferred_light.frag");
     Program programScreen("../assets/shaders/frame_screen.vert",
                           "../assets/shaders/frame_screen.frag");
 
@@ -91,29 +91,31 @@ int main(int argc, char **argv) {
     // programColor.SetInt("normalMap", NORMAL);
     // programColor.SetInt("reflectMap", REFLECT);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
-        // programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        // programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW +
+        // i);
         programDeferredPass.Bind();
-        programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]",
+                                   SHADOW + i);
         programDeferredLight.Bind();
-        programDeferredLight.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        programDeferredLight.SetInt("shadowMap[" + std::to_string(i) + "]",
+                                    SHADOW + i);
     }
 
     // Small hack to put camera position into the shader
     // TODO: Find somewhere on the UBO to put this in
     // GLint cameraUniform =
     //     glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
-    GLint cameraUniformDeferredPass =
-        glGetUniformLocation(programDeferredPass.GetProgramID(), "cameraPosition");
-    GLint cameraUniformDeferredLight=
-        glGetUniformLocation(programDeferredLight.GetProgramID(), "cameraPosition");
-
+    GLint cameraUniformDeferredPass = glGetUniformLocation(
+        programDeferredPass.GetProgramID(), "cameraPosition");
+    GLint cameraUniformDeferredLight = glGetUniformLocation(
+        programDeferredLight.GetProgramID(), "cameraPosition");
 
     LightData lightInfo[LIGHT_NUMBER];
 
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
     UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
-    UniformBuffer cameraUbo(sizeof(Camera) , 3);
+    UniformBuffer cameraUbo(sizeof(Camera), 3);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
@@ -182,16 +184,16 @@ int main(int argc, char **argv) {
     Texture reflectMap("../assets/textures/vestibule_2k.hdr");
     Texture wallNormalMap("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
 
-
     FrameBuffer deferredFbo;
     deferredFbo.Bind();
-    unsigned int attachments[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 ,GL_COLOR_ATTACHMENT3 };
+    unsigned int attachments[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                                  GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
 
     // color buffer
     Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), attachments[0]);
     Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
-    deferredFbo.AttachTexture(screenNormal.GetTextureID(),  attachments[1]);
+    deferredFbo.AttachTexture(screenNormal.GetTextureID(), attachments[1]);
     Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenPosition.GetTextureID(), attachments[2]);
     Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
@@ -201,15 +203,15 @@ int main(int argc, char **argv) {
     glDrawBuffers(4, attachments);
     deferredFbo.Unbind();
 
-
     // FrameBuffer colorFbo;
     // colorFbo.Bind();
 
     // // color buffer
     // Texture renderSurface(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGB);
-    // colorFbo.AttachTexture(renderSurface.GetTextureID(), GL_COLOR_ATTACHMENT0);
-    // Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
-    // colorFbo.AttachTexture(depthTexture.GetTextureID(), GL_DEPTH_ATTACHMENT);
+    // colorFbo.AttachTexture(renderSurface.GetTextureID(),
+    // GL_COLOR_ATTACHMENT0); Texture depthTexture(SCREEN_WIDTH, SCREEN_HEIGHT,
+    // Texture::DEPTH); colorFbo.AttachTexture(depthTexture.GetTextureID(),
+    // GL_DEPTH_ATTACHMENT);
 
     // // render buffer
     // // TODO: Hide gl calls to somewhere else
@@ -220,8 +222,8 @@ int main(int argc, char **argv) {
     //                            SCREEN_HEIGHT);
 
     // glNamedFramebufferRenderbuffer(colorFbo.GetBufferID(),
-    //                                GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
-    //                                rbo);
+    //                                GL_DEPTH_STENCIL_ATTACHMENT,
+    //                                GL_RENDERBUFFER, rbo);
 
     // colorFbo.Unbind();
 
@@ -233,7 +235,7 @@ int main(int argc, char **argv) {
     deferredLightFbo.AttachTexture(screenVolume.GetTextureID(), attachments[1]);
     glDrawBuffers(2, attachments);
     deferredLightFbo.Unbind();
-    //deferred
+    // deferred
     GLuint rbo1;
     deferredLightFbo.Bind();
 
@@ -341,11 +343,13 @@ int main(int argc, char **argv) {
         reflectMap.Bind(REFLECT);
         // wallNormalMap.Bind(NORMAL);
 
-        //deferred
+        // deferred
         deferredFbo.Bind();
         programDeferredPass.Bind();
-        // deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), attachments[0]);
-        // deferredFbo.AttachTexture(screenNormal.GetTextureID(),  attachments[1]);
+        // deferredFbo.AttachTexture(screenAlbedo.GetTextureID(),
+        // attachments[0]);
+        // deferredFbo.AttachTexture(screenNormal.GetTextureID(),
+        // attachments[1]);
         Renderer::Clear();
         glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
         for (unsigned int i = 0; i < scene.size(); i++) {
@@ -366,8 +370,8 @@ int main(int argc, char **argv) {
         // deferredFbo.Unbind();
         programDeferredPass.Unbind();
 
-        //deferred lighting 
-        // deferredFbo.Bind();
+        // deferred lighting
+        //  deferredFbo.Bind();
         deferredLightFbo.Bind();
         programDeferredLight.Bind();
         screenAlbedo.Bind(ALBEDO);
@@ -377,7 +381,7 @@ int main(int argc, char **argv) {
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
         }
-        //geo
+        // geo
         planeVAO.Bind();
         Matrices mat2;
         mat2.model = scene[0].GetTransform().GetTransform();
@@ -388,13 +392,14 @@ int main(int argc, char **argv) {
         // matrices.SetData(0, sizeof(mat2), &mat2);
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-        CameraData camData=camera.GetCameraData();
+        CameraData camData = camera.GetCameraData();
         cameraUbo.SetData(0, sizeof(CameraData), &camData);
         glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
 
-
-        // deferredFbo.AttachTexture(screenLight.GetTextureID(), attachments[0]);
-        // deferredFbo.AttachTexture(screenVolume.GetTextureID(),  attachments[1]);
+        // deferredFbo.AttachTexture(screenLight.GetTextureID(),
+        // attachments[0]);
+        // deferredFbo.AttachTexture(screenVolume.GetTextureID(),
+        // attachments[1]);
         Renderer::DisableDepthTest(); // direct render texture no need depth
 
         // LOG_DEBUG("camera {}",cameraUniformDeferredPass);
@@ -438,8 +443,7 @@ int main(int argc, char **argv) {
         // programColor.Unbind();
         // colorFbo.Unbind();
 
-
-        //screen space
+        // screen space
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
         // renderSurface.Bind(0);

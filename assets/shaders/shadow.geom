@@ -14,15 +14,17 @@ in pointData {
     vec3 geoPosition;
     vec2 UV;
     mat4 lightProjections[6];
-} dataIn[];
+}
+dataIn[];
 
 // Default main function
 void main() {
-    for(int face = 0; face < 6; face++) {
+    for (int face = 0; face < 6; face++) {
         gl_Layer = face;
-        for(int i = 0; i < 3; i++) {
+        for (int i = 0; i < 3; i++) {
 
-            gl_Position = dataIn[i].lightProjections[face] * vec4(dataIn[i].worldPosition, 1.0);
+            gl_Position = dataIn[i].lightProjections[face] *
+                          vec4(dataIn[i].worldPosition, 1.0);
             // gl_Position = vec4(dataIn[i].worldPosition, 1);
             normal = dataIn[i].normal;
             worldPosition = dataIn[i].worldPosition;

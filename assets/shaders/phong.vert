@@ -7,10 +7,10 @@ layout(location = 3) in vec3 vertTangent;
 layout(location = 4) in vec3 vertBitangent;
 
 layout(location = 0) out vec3 geoPosition;
-layout(location = 1)out vec3 worldPosition;
-layout(location = 2)out vec3 normal;
-layout(location = 3)out vec2 UV;
-layout(location = 4)out mat3 TBN;
+layout(location = 1) out vec3 worldPosition;
+layout(location = 2) out vec3 normal;
+layout(location = 3) out vec2 UV;
+layout(location = 4) out mat3 TBN;
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;

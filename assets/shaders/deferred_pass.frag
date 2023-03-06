@@ -1,13 +1,13 @@
 
 #version 450 core
 
-//so far only one cube map
+// so far only one cube map
 #define LIGHT_NUMBER 2
 #define NONE 0
 #define POINT 1
-#define SPOT  2
+#define SPOT 2
 #define DIRECTION 3
-#define AMBIENT  4
+#define AMBIENT 4
 
 struct TransformData {
     mat4 transform;
@@ -67,14 +67,14 @@ layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
 
-layout(std140, binding = 3) uniform Camera{
+layout(std140, binding = 3) uniform Camera {
     CameraData cameraInfo;
 };
 layout(location = 0) in vec3 geoPosition;
-layout(location = 1)in vec3 worldPosition;
-layout(location = 2)in vec3 normal;
-layout(location = 3)in vec2 UV;
-layout(location = 4)in mat3 TBN;
+layout(location = 1) in vec3 worldPosition;
+layout(location = 2) in vec3 normal;
+layout(location = 3) in vec2 UV;
+layout(location = 4) in mat3 TBN;
 
 layout(location = 0) out vec4 screenAlbedo;
 layout(location = 1) out vec4 screenNormal;
@@ -96,29 +96,28 @@ layout(std140, binding = 0) uniform Matrices {
 
 void main() {
     vec3 color3 = vec3(0.);
-    float maxDepth=600.0;
+    float maxDepth = 600.0;
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    screenAlbedo.xyz=texture(albedoMap,UV).xyz;
+    screenAlbedo.xyz = texture(albedoMap, UV).xyz;
     // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;
     // screenPosition=(viewProjection*model*vec4(geoPosition,1.0))*0.01;
     // screenPosition.w=1.0;
-    screenPosition.xyz=(worldPosition/maxDepth+1.0)*0.5;
-    screenNormal.xyz= normalize(normal);
-    //make sure the normalmap is in right format
-    if(false){
-        screenNormal.xyz=  TBN * (texture(normalMap, UV).xyz * 2 - 1);
+    screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
+    screenNormal.xyz = normalize(normal);
+    // make sure the normalmap is in right format
+    if (false) {
+        screenNormal.xyz = TBN * (texture(normalMap, UV).xyz * 2 - 1);
     }
-    screenARM.xyz=vec3(1.0,0.5,0.5);
-    
+    screenARM.xyz = vec3(1.0, 0.5, 0.5);
+
     // color3 = ColorTransform(color3);
     float len = length(vec3(worldPosition - cameraPosition));
     len /= cameraInfo.farPlane;
-    vec4 tem=viewProjection*vec4(worldPosition,1.0);
-    
+    vec4 tem = viewProjection * vec4(worldPosition, 1.0);
 
-    //way1
-    // gl_FragDepth = (tem.z/tem.w)*0.5+0.5;
-    //way2
-    // gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
-    // gl_FragDepth = (len+1.0)*0.5;
+    // way1
+    //  gl_FragDepth = (tem.z/tem.w)*0.5+0.5;
+    // way2
+    //  gl_FragDepth = (tem.z/cameraInfo.farPlane+1.0)*0.5;
+    //  gl_FragDepth = (len+1.0)*0.5;
 }

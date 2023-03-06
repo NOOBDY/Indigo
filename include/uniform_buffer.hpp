@@ -9,9 +9,7 @@ public:
     ~UniformBuffer();
 
     void SetData(const int offset, const int size, const void *data);
-    int GetId() {
-        return m_BufferID;
-    };
+    int GetId() { return m_BufferID; };
 
 private:
     GLuint m_BufferID;

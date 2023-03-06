@@ -4,12 +4,11 @@
 #include <stb_image.h>
 
 Texture::Texture(const int width, const int height, Format format,
-                 Target target,int bit)
+                 Target target, int bit)
     : m_Target(target), m_Width(width), m_Height(height) {
     glCreateTextures(target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
-    
     glBindTexture(target, m_TextureID);
 
     if (target == CUBE)
@@ -17,7 +16,7 @@ Texture::Texture(const int width, const int height, Format format,
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
                 0,                                  // level
-                Format2Bit(format,bit),                 // internal format
+                Format2Bit(format, bit),            // internal format
                 width,                              //
                 height,                             //
                 0,                                  // border
@@ -27,16 +26,16 @@ Texture::Texture(const int width, const int height, Format format,
             );
 
     else
-        glTexImage2D(           //
-            target,             // target
-            0,                  // level
-            Format2Bit(format,bit), // internal format
-            width,              //
-            height,             //
-            0,                  // border
-            format,             // format
-            GL_UNSIGNED_BYTE,   // type
-            NULL                //
+        glTexImage2D(                //
+            target,                  // target
+            0,                       // level
+            Format2Bit(format, bit), // internal format
+            width,                   //
+            height,                  //
+            0,                       // border
+            format,                  // format
+            GL_UNSIGNED_BYTE,        // type
+            NULL                     //
         );
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -49,11 +48,12 @@ Texture::Texture(const int width, const int height, Format format,
     glGenerateMipmap(m_Target);
 }
 
-Texture::Texture(const std::string &textureFilepath,int bit) : m_Target(IMAGE_2D) {
+Texture::Texture(const std::string &textureFilepath, int bit)
+    : m_Target(IMAGE_2D) {
     glCreateTextures(m_Target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
-    LoadImage(textureFilepath,bit);
+    LoadImage(textureFilepath, bit);
 }
 
 Texture::~Texture() {
@@ -69,7 +69,7 @@ void Texture::Unbind() {
     glBindTexture(m_Target, 0);
 }
 
-void Texture::LoadImage(const std::string &textureFilepath,int bit) {
+void Texture::LoadImage(const std::string &textureFilepath, int bit) {
     m_Target = IMAGE_2D;
     glBindTexture(m_Target, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
@@ -94,16 +94,16 @@ void Texture::LoadImage(const std::string &textureFilepath,int bit) {
      * for format table
      * https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
      */
-    glTexImage2D(             //
-        m_Target,             // target
-        0,                    // level
-        Format2Bit(m_Format,bit), // internal format
-        width,                //
-        height,               //
-        0,                    // border
-        m_Format,             // format
-        GL_UNSIGNED_BYTE,     // type
-        data                  //
+    glTexImage2D(                  //
+        m_Target,                  // target
+        0,                         // level
+        Format2Bit(m_Format, bit), // internal format
+        width,                     //
+        height,                    //
+        0,                         // border
+        m_Format,                  // format
+        GL_UNSIGNED_BYTE,          // type
+        data                       //
     );
 
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_S, GL_REPEAT);
