@@ -35,9 +35,9 @@ jobs:
         with:
           submodules: recursive
 
-      # - name: Checking Formatting
-      #   run: |
-      #     clang-format --dry-run --Werror --ferror-limit=15 src/* include/* assets/shaders/*
+      - name: Checking Formatting
+        run: |
+          clang-format --dry-run --Werror --ferror-limit=15 src/* include/* assets/shaders/*
 
       - name: Building Project
         if: matrix.os == 'ubuntu-latest'
