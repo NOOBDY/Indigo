@@ -1,6 +1,7 @@
 #include "pch.hpp"
 
 #include "log.hpp"
+#include "exception.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
 #include "controller.hpp"
@@ -144,8 +145,12 @@ int main(int argc, char **argv) {
     uiData[0][0] = glm::vec3(0, 0, 0);
     uiData[0][1] = glm::vec3(180, 180, 180);
     uiData[0][2] = glm::vec3(1, 1, 1);
-    scene.push_back(
-        Model(Importer::LoadFile("../assets/models/little_city/main.glb")));
+    try {
+        scene.push_back(
+            Model(Importer::LoadFile("../assets/models/little_city/main.glb")));
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
     // end model 1
 
     // begin model 2
@@ -154,8 +159,12 @@ int main(int argc, char **argv) {
     uiData[1][0] = glm::vec3(0, 0, 0);
     uiData[1][1] = glm::vec3(180, 180, 180);
     uiData[1][2] = glm::vec3(1, 1, 1);
-    scene.push_back(
-        Model(Importer::LoadFile("../assets/models/little_city/interior.glb")));
+    try {
+        scene.push_back(Model(
+            Importer::LoadFile("../assets/models/little_city/interior.glb")));
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
     // end model 2
 
     // 2D plane for framebuffer

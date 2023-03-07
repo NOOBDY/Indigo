@@ -3,7 +3,7 @@
 
 #include "pch.hpp"
 
-#include <exception>
+#include <stdexcept>
 
 class FileNotFoundException : public std::exception {
 public:

@@ -125,10 +125,8 @@ void Program::CompileShader(const GLuint shaderID,
 
         LOG_ERROR("Failed to Compile Shader: '{}'\n{}", shaderFilepath,
                   &errMessage[0]);
-        throw;
-    } else {
-        LOG_TRACE("Compiling Successful");
     }
+    LOG_TRACE("Compiling Successful");
 }
 
 void Program::LinkProgram() {
@@ -159,10 +157,8 @@ void Program::LinkProgram() {
         glGetProgramInfoLog(m_ProgramID, infoLogLength, NULL, &errMessage[0]);
 
         LOG_ERROR("Failed to Link Program:\n{}", &errMessage[0]);
-        throw;
-    } else {
-        LOG_TRACE("Linking Successful");
     }
+    LOG_TRACE("Linking Successful");
 
     GLint info;
     glGetProgramiv(m_ProgramID, GL_ACTIVE_UNIFORMS, &info);
