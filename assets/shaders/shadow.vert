@@ -52,8 +52,8 @@ out pointData {
     vec3 geoPosition;
     vec2 UV;
     mat4 lightProjections[6];
-
-} dataOut;
+}
+dataOut;
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
@@ -85,5 +85,6 @@ void main() {
     dataOut.geoPosition = geoPosition;
     dataOut.UV = vertUV;
     // dataOut.lightProjections = lights[0].lightProjections;
-    for(int i = 0; i < 6; i++) dataOut.lightProjections[i] = lights[0].lightProjections[i];
+    for (int i = 0; i < 6; i++)
+        dataOut.lightProjections[i] = lights[0].lightProjections[i];
 }

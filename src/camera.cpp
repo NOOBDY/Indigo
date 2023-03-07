@@ -17,6 +17,7 @@ void Camera::UpdateProjection() {
                                     m_NearClip, m_FarClip);
 }
 
+/// @brief update look direction
 void Camera::UpdateView() {
     m_View = glm::lookAt(m_Transform.GetPosition(),
                          -1.0f * m_Transform.GetPosition(), glm::vec3(0, 1, 0));
@@ -71,3 +72,15 @@ void Camera::RotateByDelta(const float deltaX, const float deltaY) {
 
     m_Transform.SetPosition(glm::vec3(cameraMat[3]));
 }
+CameraData Camera::GetCameraData() {
+    UpdateProjection();
+    UpdateView();
+    return CameraData{
+        m_Projection,  //
+        m_View,        //
+        m_NearClip,    //
+        m_FarClip,     //
+        m_AspectRatio, //
+        m_FOV,         //
+    };
+};

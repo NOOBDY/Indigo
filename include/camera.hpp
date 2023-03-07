@@ -9,6 +9,15 @@
 // Right:   (1, 0, 0)
 // Front:   (0, 0, -1)
 
+struct CameraData {
+    // TransformData transform;
+    glm::mat4 projection;
+    glm::mat4 view;
+    float nearPlane;
+    float farPlane;
+    float aspectRatio;
+    float FOV;
+};
 class Camera {
 public:
     Camera(float fov, float aspectRatio, float nearClip = 10.0f,
@@ -26,6 +35,7 @@ public:
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
 
+    CameraData GetCameraData();
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }
 

@@ -1,7 +1,5 @@
 #version 450 core
 
-#define MATH_PI 3.1415926
-// so far only one cube map
 #define LIGHT_NUMBER 2
 #define NONE 0
 #define POINT 1
@@ -49,7 +47,26 @@ struct MaterialData {
     float maxShine;
     // vec3 normal;
 };
+struct CameraData {
+    // TransformData transform;
+    mat4 projection;
+    mat4 view;
+    float nearPlane;
+    float farPlane;
+    float aspectRatio;
+    float FOV;
+};
+struct DeferredData {
+    vec3 albedo;
+    vec3 normal;
+    vec3 position;
+    vec3 depth;
+};
 
+layout(std140, binding = 0) uniform Matrices {
+    mat4 model;
+    mat4 viewProjection;
+};
 layout(std140, binding = 1) uniform Materials {
     MaterialData material;
 };
@@ -57,27 +74,44 @@ layout(std140, binding = 1) uniform Materials {
 layout(std140, binding = 2) uniform Lights {
     LightData lights[LIGHT_NUMBER];
 };
-layout(location = 0) in vec3 geoPosition;
-layout(location = 1) in vec3 worldPosition;
-layout(location = 2) in vec3 normal;
-layout(location = 3) in vec2 UV;
-layout(location = 4) in mat3 TBN;
+layout(std140, binding = 3) uniform Camera {
+    CameraData cameraInfo;
+};
 
-layout(location = 0) out vec4 color;
-// out vec4 color;
+layout(location = 0) in vec2 UV;
+// in vec2 UV;
+
+layout(location = 0) out vec4 screenLight;
+layout(location = 1) out vec4 screenVolume;
 
 uniform vec3 cameraPosition;
 
-uniform sampler2D albedoMap; // samplers are opaque types and
-uniform sampler2D normalMap;
-uniform sampler2D reflectMap;
-// uniform samplerCube shadowMap; // frame buffer texture
+uniform sampler2D screenAlbedo;
+uniform sampler2D screenNormal;
+uniform sampler2D screenPosition;
+uniform sampler2D screenARM;
+uniform sampler2D screenDepth;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+vec3 depth2position(float depth, CameraData info) {
+    mat4 viewMatrixInv = inverse(info.view);
+    mat4 projectionMatrixInv = inverse(info.projection);
+    mat4 invert_view_projection = inverse(info.projection * info.view);
 
-vec2 panoramaUV(vec3 dir) {
-    dir = normalize(dir);
-    return vec2(0.5f + 0.5f * atan(dir.z, dir.x) / MATH_PI,
-                1.f - acos(dir.y) / MATH_PI);
+    float ViewZ;
+    ViewZ = depth * 2.0 - 1.0;
+
+    // way1
+    vec4 sPos = vec4(UV * 2.0 - 1.0, ViewZ, 1.0);
+    vec4 worldPosition = invert_view_projection * sPos;
+    worldPosition = vec4((worldPosition.xyz / worldPosition.w), 1.0f);
+    return worldPosition.xyz;
+
+    // way2
+    //  vec4 clipVec = vec4(UV*2.0-1.0, 1,1) * (info.farPlane);
+    //  vec3 viewVec= (projectionMatrixInv*clipVec).xyz;
+    //  vec3 viewPos = viewVec * (ViewZ);
+    //  vec3 worldSpacePosition =(viewMatrixInv*vec4(viewPos,1)).xyz;
+    //  return worldSpacePosition.xyz;
 }
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
@@ -96,9 +130,11 @@ float shadow(vec3 position, LightData light, int index) {
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
-    float bias = 0.15;
+    float bias = 1.5;
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
+    // return shadow;
+    // return 1.0-shadow;
     for (int i = 0; i < samples; ++i) {
         float closestDepth =
             texture(shadowMap[index], dir + gridSamplingDisk[i] * diskRadius).r;
@@ -109,10 +145,11 @@ float shadow(vec3 position, LightData light, int index) {
     shadow /= float(samples);
     return (shadow);
 }
-vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light,
-              MaterialData matter, int index) {
+vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
+              int index) {
+    vec3 position = deferredInfo.position;
     // mesh normal
-    vec3 n = normal;
+    vec3 n = deferredInfo.normal;
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
     vec3 direction = light.transform.direction;
     // direction :light to mesh
@@ -140,7 +177,7 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light,
 
     // diffuse lighting
     float dotLN = max(dot(halfwayVec, n), 0.0);
-    vec3 diffuse = texture(albedoMap, UV).xyz * (dotLN + ambient);
+    vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
@@ -154,39 +191,48 @@ vec3 AllLight(vec3 cameraPosition, vec3 position, LightData light,
                        : pow(dotRV, material.maxShine));
 
     float shadow = shadow(position, light, index);
+    // return vec4(shadow)/LIGHT_NUMBER;
+
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
 
-    return (diffuse + specular) * light.lightColor * light.power * fadeOut *
-           spot;
+    return vec4((diffuse + specular) * light.lightColor * light.power *
+                    fadeOut * spot,
+                shadow);
 }
-vec3 PhongLight(vec3 cameraPosition, vec3 position,
-                LightData lights[LIGHT_NUMBER], MaterialData material) {
-    vec3 color3 = vec3(0);
+vec4 PhongLight(vec3 cameraPosition, DeferredData deferredInfo,
+                LightData lights[LIGHT_NUMBER]) {
+    vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
         LightData light = lights[i];
         if (light.lightType == 0)
             continue;
-        color3 += AllLight(cameraPosition, position, light, material, i);
+        // color3 = light.lightColor;
+        color4 +=
+            AllLight(cameraPosition, deferredInfo, light, i) / LIGHT_NUMBER;
     }
 
-    return color3;
-}
-
-vec3 ColorTransform(vec3 color) {
-    color = pow(color, vec3(1.0 / 2.2));
-    return color;
+    return color4;
 }
 
 void main() {
-    vec3 color3 = vec3(0.);
-    color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    // vec3 dir = normalize(worldPosition - cameraPosition);
-    // vec3 r = reflect(-dir, normal);
-    // vec2 cuv = panoramaUV(r);
-    // color3 = texture(reflectMap, cuv).xyz;
+    vec3 col = vec3(1.0);
 
-    // color3 = texture(texture1, UV).xyz;
-    // color3 = ColorTransform(color3);
-    color = vec4(color3, 1.);
+    // vec2 uv=UV;
+    DeferredData info;
+    info.albedo = texture(screenAlbedo, UV).rgb;
+    info.normal = texture(screenNormal, UV).rgb;
+    info.depth = texture(screenDepth, UV).rgb;
+    info.position = depth2position(info.depth.x, cameraInfo);
+    // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
+    // temPosition=temPosition* 600.0;
+
+    // screenLight.xyz =info.position;
+    // screenVolume.xyz=temPosition.xyz;
+    // screenLight.xyz/=600;
+    // screenVolume.xyz/=600;
+    // screenVolume-=screenLight;
+    // screenVolume= abs(screenVolume)* 10.0;
+    screenLight = PhongLight(cameraPosition, info, lights);
+    screenVolume = screenLight;
 }
