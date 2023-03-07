@@ -35,7 +35,9 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checking Formatting
+      # Only run checks on Linux because Windows command line is trash
+      - if: matrix.os == 'ubuntu-latest'
+        name: Checking Formatting
         run: |
           clang-format --dry-run --Werror --ferror-limit=15 src/* include/* assets/shaders/*
 
