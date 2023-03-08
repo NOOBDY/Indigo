@@ -198,7 +198,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
-    screenVolume=vec4(specular,1.0);
+    screenVolume = vec4(specular, 1.0);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -226,7 +226,7 @@ void main() {
     DeferredData info;
     info.albedo = texture(screenAlbedo, UV).rgb;
     info.normal = texture(screenNormal, UV).rgb;
-    info.emisstion=texture(screenEmisstion, UV).rgb;
+    info.emisstion = texture(screenEmisstion, UV).rgb;
     info.depth = texture(screenDepth, UV).rgb;
     info.position = depth2position(info.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
