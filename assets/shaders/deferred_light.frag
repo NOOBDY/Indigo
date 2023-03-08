@@ -198,6 +198,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
+    screenVolume=vec4(specular,1.0);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -237,6 +238,6 @@ void main() {
     // screenVolume.xyz/=600;
     // screenVolume-=screenLight;
     // screenVolume= abs(screenVolume)* 10.0;
+    screenVolume = vec4(1);
     screenLight = PhongLight(cameraPosition, info, lights);
-    screenVolume = screenLight;
 }

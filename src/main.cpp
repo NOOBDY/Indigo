@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
     std::vector<Model> scene;
 
     // begin model 1
-    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 15.0f};
     float lightPower[2];
     float lightRadius[2];
     glm::mat3 uiData[4];
