@@ -102,6 +102,7 @@ void main() {
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     screenAlbedo.xyz = texture(albedoMap, UV).xyz;
     screenEmsstion.xyz=texture(emisstionMap,UV).xyz;
+    // screenEmsstion.xyz=vec3(1,0,0);
     // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;
     // screenPosition=(viewProjection*model*vec4(geoPosition,1.0))*0.01;
     // screenPosition.w=1.0;

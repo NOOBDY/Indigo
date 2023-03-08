@@ -104,8 +104,6 @@ int main(int argc, char **argv) {
     programScreen.SetInt("screenVolume", VOLUME);
     programScreen.SetInt("screenDepth", DEPTH);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
-        // programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW +
-        // i);
         programDeferredPass.Bind();
         programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]",
                                    SHADOW + i);
@@ -196,6 +194,7 @@ int main(int argc, char **argv) {
     Texture texInterior("../assets/textures/little_city/interior.jpg");
     Texture reflectMap("../assets/textures/vestibule_2k.hdr");
     Texture wallNormalMap("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    Texture wallAOMap("../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     FrameBuffer deferredFbo;
     deferredFbo.Bind();
@@ -330,9 +329,9 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
-        texMainColor.Bind(EMISSTION);
+        // texMainColor.Bind(EMISSTION);
         reflectMap.Bind(REFLECT);
-        // wallNormalMap.Bind(EMISSTION);
+        wallAOMap.Bind(EMISSTION);
         // wallNormalMap.Bind(NORMAL);
 
         // deferred

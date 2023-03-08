@@ -21,21 +21,24 @@ uniform sampler2D screenVolume;
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
 vec3 gaussianBlur(sampler2D sampleTexture,float blurStrength, vec2 texCoord) {
-    #define MAX_BLUR_WIDHT 5
-    float blurWidth = blurStrength * float(MAX_BLUR_WIDHT);
+    #define MAX_LENGTH 6
+    #define MAX_ROUND 6
+    float blurWidth = blurStrength ;
     vec4 blurColor=vec4(texture(sampleTexture,texCoord).xyz,1.0);
-    vec2 blurOffset = vec2( 0.0005);
-    for (int i = 1; i <= MAX_BLUR_WIDHT; ++ i)
+    for (int i = 1; i <= MAX_LENGTH; ++ i)
     {
-        if ( float(i) >= blurWidth )
-            break;
+        float weight = 1.0 - float(i) / float(MAX_LENGTH);;
+        // weight =1.0-smoothstep(1.,float(MAX_LENGTH),float(i)); // smoothstep way1
+        weight = weight * weight * (3.0 - 2.0 * weight); // smoothstep way2
 
-        float weight = 1.0 - float(i) / blurWidth;
-        weight = weight * weight * (3.0 - 2.0 * weight); // smoothstep
-
-        vec4 sampleColor1 = texture(sampleTexture, texCoord + blurOffset * float(i));
-        vec4 sampleColor2 = texture(sampleTexture, texCoord - blurOffset * float(i));
-        blurColor += vec4(sampleColor1.rgb + sampleColor2.rgb, 2.0) * weight; 
+        for(int j = 0; j < MAX_ROUND; ++j){
+            float angle=float(j)/float(MAX_ROUND)*2.0*PI;
+            vec2 blurOffset = vec2(cos(angle),sin(angle))*blurWidth*0.05;
+            //screen aspect ratio
+            blurOffset *=vec2(1.0/16.,1.0/9.0);
+            vec4 sampleColor = texture(sampleTexture,  texCoord+ blurOffset * float(i));
+            blurColor += vec4(sampleColor.rgb  ,1.0) * weight; 
+        }
     }
     return blurColor.xyz/blurColor.w;
 
@@ -51,16 +54,10 @@ vec3 cube_uv(samplerCube sampleTexture,vec2 uv) {
 }
 
 void main() {
-    vec3 screen = texture(screenEmisstion, UV).rgb;
-    if (UV.x > 0.5) {
-        // screen = texture(uvCheck, UV).rgb;
-        // screen=pow(screen, vec3(1.0/2.2));
-        // screen=log(screen);
-    }
-    vec3 col = screen;
-    // col=gaussianBlur(screenLight,UV.x, UV);
-    // vec3 col;
-    // col = texture(albedoMap, UV).rgb;
+    vec3 col = texture(screenLight, UV).rgb;
+    col+=gaussianBlur(screenEmisstion,1.0, UV);
+    // col-=texture(screenEmisstion,UV).xyz;
+    // col=clamp(vec3(0.0),vec3(1.0),col);
 
     // col = cube_uv(UV);
     FragColor = vec4(col, 1.0);
