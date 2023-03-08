@@ -58,6 +58,7 @@ struct CameraData {
 };
 struct DeferredData {
     vec3 albedo;
+    vec3 emisstion;
     vec3 normal;
     vec3 position;
     vec3 depth;
@@ -89,8 +90,10 @@ uniform vec3 cameraPosition;
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
+uniform sampler2D screenEmisstion;
 uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
+
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 vec3 depth2position(float depth, CameraData info) {
     mat4 viewMatrixInv = inverse(info.view);
@@ -222,6 +225,7 @@ void main() {
     DeferredData info;
     info.albedo = texture(screenAlbedo, UV).rgb;
     info.normal = texture(screenNormal, UV).rgb;
+    info.emisstion=texture(screenEmisstion, UV).rgb;
     info.depth = texture(screenDepth, UV).rgb;
     info.position = depth2position(info.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
