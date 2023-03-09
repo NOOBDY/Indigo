@@ -198,7 +198,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
-    screenVolume += vec4(specular*light.power, 1.0);
+    screenVolume += vec4(specular * light.power, 1.0);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
