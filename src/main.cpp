@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
         ALBEDO,
         NORMAL,
         ARM,
-        EMISSTION,
+        EMISSION,
         REFLECT,
         POSITION,
         DEPTH,
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
     programDeferredPass.Bind();
     programDeferredPass.SetInt("albedoMap", ALBEDO);
     programDeferredPass.SetInt("normalMap", NORMAL);
-    programDeferredPass.SetInt("emisstionMap", EMISSTION);
+    programDeferredPass.SetInt("emissionMap", EMISSION);
     programDeferredPass.SetInt("reflectMap", REFLECT);
     programDeferredPass.SetInt("ARM", ARM);
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
     programDeferredLight.SetInt("screenAlbedo", ALBEDO);
     programDeferredLight.SetInt("screenNormal", NORMAL);
     programDeferredLight.SetInt("screenPosition", POSITION);
-    programDeferredLight.SetInt("screenEmisstion", EMISSTION);
+    programDeferredLight.SetInt("screenEmission", EMISSION);
     programDeferredLight.SetInt("reflectMap", REFLECT);
     programDeferredLight.SetInt("screenARM", ARM);
     programDeferredLight.SetInt("screenDepth", DEPTH);
@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
     programScreen.SetInt("screenAlbedo", ALBEDO);
     programScreen.SetInt("screenNormal", NORMAL);
     programScreen.SetInt("screenPosition", POSITION);
-    programScreen.SetInt("screenEmisstion", EMISSTION);
+    programScreen.SetInt("screenEmission", EMISSION);
     programScreen.SetInt("reflectMap", REFLECT);
     programScreen.SetInt("screenARM", ARM);
     programScreen.SetInt("screenLight", LIGHTING);
@@ -211,8 +211,8 @@ int main(int argc, char **argv) {
     deferredFbo.AttachTexture(screenPosition.GetTextureID(), attachments[2]);
     Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenARM.GetTextureID(), attachments[3]);
-    Texture screenEmisstion(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
-    deferredFbo.AttachTexture(screenEmisstion.GetTextureID(), attachments[4]);
+    Texture screenEmission(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
+    deferredFbo.AttachTexture(screenEmission.GetTextureID(), attachments[4]);
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
     glDrawBuffers(5, attachments);
@@ -329,9 +329,9 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
-        // texMainColor.Bind(EMISSTION);
+        // texMainColor.Bind(EMISSION);
         reflectMap.Bind(REFLECT);
-        wallAOMap.Bind(EMISSTION);
+        wallAOMap.Bind(EMISSION);
         // wallNormalMap.Bind(NORMAL);
 
         // deferred
@@ -364,7 +364,7 @@ int main(int argc, char **argv) {
         screenAlbedo.Bind(ALBEDO);
         screenNormal.Bind(NORMAL);
         screenPosition.Bind(POSITION);
-        screenEmisstion.Bind(EMISSTION);
+        screenEmission.Bind(EMISSION);
         screenDepth.Bind(DEPTH);
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
@@ -395,7 +395,7 @@ int main(int argc, char **argv) {
         screenAlbedo.Bind(ALBEDO);
         screenNormal.Bind(NORMAL);
         screenPosition.Bind(POSITION);
-        screenEmisstion.Bind(EMISSTION);
+        screenEmission.Bind(EMISSION);
         screenDepth.Bind(DEPTH);
 
         screenLight.Bind(LIGHTING);

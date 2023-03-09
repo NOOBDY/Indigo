@@ -7,7 +7,7 @@ out vec4 FragColor;
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
-uniform sampler2D screenEmisstion;
+uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
 
@@ -52,10 +52,10 @@ vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
 
 void main() {
     vec3 col = texture(screenLight, UV).rgb;
-    // col+=gaussianBlur(screenEmisstion,0.5, UV);
+    // col+=gaussianBlur(screenEmission,0.5, UV);
 
     col += gaussianBlur(screenVolume, 1.0, UV);
-    // col-=texture(screenEmisstion,UV).xyz;
+    // col-=texture(screenEmission,UV).xyz;
     // col=clamp(vec3(0.0),vec3(1.0),col);
 
     // col = cube_uv(UV);

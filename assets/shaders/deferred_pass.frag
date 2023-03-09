@@ -81,13 +81,13 @@ layout(location = 1) out vec4 screenNormal;
 layout(location = 2) out vec4 screenPosition;
 // ARM(ao roughtless metallic)
 layout(location = 3) out vec4 screenARM;
-layout(location = 4) out vec4 screenEmsstion;
+layout(location = 4) out vec4 screenEmssion;
 // out vec4 color;
 uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
-uniform sampler2D emisstionMap;
+uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
 uniform sampler2D ARM;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
@@ -101,7 +101,7 @@ void main() {
     float maxDepth = 600.0;
     // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
     screenAlbedo.xyz = texture(albedoMap, UV).xyz;
-    screenEmsstion.xyz = texture(emisstionMap, UV).xyz;
+    screenEmssion.xyz = texture(emissionMap, UV).xyz;
     // screenEmsstion.xyz=vec3(1,0,0);
     // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;
     // screenPosition=(viewProjection*model*vec4(geoPosition,1.0))*0.01;
