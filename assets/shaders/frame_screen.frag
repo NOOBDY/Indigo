@@ -17,8 +17,8 @@ uniform sampler2D screenVolume;
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
 vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
-#define MAX_LENGTH 16
-#define MAX_ROUND 4
+#define MAX_LENGTH 8
+#define MAX_ROUND 8
     float blurWidth = blurStrength;
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
@@ -54,8 +54,8 @@ void main() {
     vec3 col = texture(screenLight, UV).rgb;
     // col+=gaussianBlur(screenEmission,0.5, UV);
 
-    col += gaussianBlur(screenVolume, 1.0, UV);
-    // col-=texture(screenEmission,UV).xyz;
+    col += gaussianBlur(screenVolume, 0.5, UV);
+    // col-=texture(screenVolume,UV).xyz;
     // col=clamp(vec3(0.0),vec3(1.0),col);
 
     // col = cube_uv(UV);
