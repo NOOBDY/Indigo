@@ -22,6 +22,7 @@ set(LIB
 add_executable(Indigo
     src/main.cpp
     src/log.cpp
+    src/exception.cpp
     src/window.cpp
     src/renderer.cpp
     src/controller.cpp
@@ -39,6 +40,7 @@ add_executable(Indigo
     src/light.cpp
 
     include/log.hpp
+    include/exception.hpp
     include/window.hpp
     include/renderer.hpp
     include/controller.hpp

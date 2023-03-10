@@ -1,6 +1,7 @@
 #include "window.hpp"
 
 #include "log.hpp"
+#include "exception.hpp"
 
 /**
  * Error handling callback function for GLFW
@@ -26,10 +27,8 @@ Window::Window(int width, int height, const char *title)
     : m_Width(width), m_Height(height), m_ScrollOffset(0) {
     LOG_TRACE("Creating Window");
 
-    if (glfwInit() != GLFW_TRUE) {
-        LOG_ERROR("Failed to Initialize GLFW");
-        throw;
-    }
+    if (glfwInit() != GLFW_TRUE)
+        throw std::runtime_error("Failed to Initialize GLFW");
 
     glfwWindowHint(GLFW_SAMPLES, 4); // uses 4x MSAA
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -41,10 +40,8 @@ Window::Window(int width, int height, const char *title)
 
     m_Window = glfwCreateWindow(m_Width, m_Height, title, NULL, NULL);
 
-    if (!m_Window) {
-        LOG_ERROR("Failed to Create Window");
-        throw;
-    }
+    if (!m_Window)
+        throw std::runtime_error("Failed to Create Window");
 
     // Binds the `this` pointer to the `m_Window` pointer so it can be
     // referenced in the callback function
