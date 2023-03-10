@@ -23,7 +23,6 @@ vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
         float weight = 1.0 - float(i) / float(MAX_LENGTH);
-        ;
         // weight =1.0-smoothstep(1.,float(MAX_LENGTH),float(i)); // smoothstep
         // way1
         weight = weight * weight * (3.0 - 2.0 * weight); // smoothstep way2
