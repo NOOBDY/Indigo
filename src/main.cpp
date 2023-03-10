@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
     UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
-    UniformBuffer cameraUbo(sizeof(Camera), 3);
+    UniformBuffer cameraUbo(sizeof(CameraData), 3);
 
     Camera camera(45.0f, window.GetAspectRatio());
 
@@ -211,7 +211,7 @@ int main(int argc, char **argv) {
                                   GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
                                   GL_COLOR_ATTACHMENT4};
 
-    // color buffer
+#pragma region color buffer
     Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), attachments[0]);
     Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
@@ -226,7 +226,9 @@ int main(int argc, char **argv) {
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
     glDrawBuffers(5, attachments);
     deferredFbo.Unbind();
+#pragma endregion
 
+#pragma region lighting pass texture
     FrameBuffer deferredLightFbo;
     deferredLightFbo.Bind();
     Texture screenLight(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
@@ -234,10 +236,8 @@ int main(int argc, char **argv) {
     Texture screenVolume(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredLightFbo.AttachTexture(screenVolume.GetTextureID(), attachments[1]);
     glDrawBuffers(2, attachments);
-    deferredLightFbo.Unbind();
-    // deferred
+
     GLuint rbo1;
-    deferredLightFbo.Bind();
 
     glCreateRenderbuffers(1, &rbo1);
     glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, SCREEN_WIDTH,
@@ -248,7 +248,9 @@ int main(int argc, char **argv) {
                                    rbo1);
 
     deferredLightFbo.Unbind();
+#pragma endregion
 
+#pragma region shadow
     FrameBuffer shadowFbo;
     shadowFbo.Bind();
     std::vector<std::shared_ptr<Texture>> lightDepths;
@@ -256,6 +258,7 @@ int main(int argc, char **argv) {
         lightDepths.push_back(std::make_shared<Texture>(
             SHADOW_SIZE, SHADOW_SIZE, Texture::DEPTH, Texture::CUBE));
     }
+#pragma endregion
 
     // light 1
     uiData[2][0] = glm::vec3(50, 100, 200);
@@ -276,6 +279,7 @@ int main(int argc, char **argv) {
     Matrices lightMat;
 
     do {
+        // TODO: Make lights into a vector
         light1.GetTransform().SetPosition(uiData[2][0]);
         light1.SetPower(lightPower[0]);
         light1.SetRadius(lightRadius[0]);
@@ -288,7 +292,7 @@ int main(int argc, char **argv) {
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
 
-        // shadow
+#pragma region draw shadow
 
         // make sure render size is same as texture
         glViewport(0, 0, SHADOW_SIZE, SHADOW_SIZE);
@@ -296,11 +300,11 @@ int main(int argc, char **argv) {
         Renderer::DisableCullFace();
 
         // every light
-        for (int i = 0; i < lightDepths.size(); i++) {
+        programShadow.Bind();
+        for (unsigned int i = 0; i < lightDepths.size(); i++) {
             shadowFbo.AttachTexture(lightDepths[i]->GetTextureID(),
                                     GL_DEPTH_ATTACHMENT);
             shadowFbo.Bind();
-            programShadow.Bind();
             Renderer::Clear();
 
             // not render light ball
@@ -309,17 +313,20 @@ int main(int argc, char **argv) {
                 scene[j].GetTransform().SetRotation(uiData[j][1]);
                 scene[j].GetTransform().SetScale(uiData[j][2]);
 
-                lightMat.model = scene[j].GetTransform().GetTransform();
-                matrices.SetData(0, sizeof(lightMat), &lightMat);
+                lightMat.model = scene[j].GetTransform().GetTransformMatrix();
+                matrices.SetData(0, sizeof(Matrices), &lightMat);
                 // use first one to render shadow
-                lights.SetData(0, sizeof(LightData), lightInfo + i);
+                lights.SetData(0, sizeof(LightData), &lightInfo[i]);
                 programShadow.Validate();
 
                 scene[j].Draw();
             }
-
             shadowFbo.Unbind();
         }
+        programShadow.Unbind();
+
+        Renderer::EnableCullFace();
+#pragma endregion
 
         // color (phong shader)
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -341,9 +348,11 @@ int main(int argc, char **argv) {
         // texMainColor.Bind(EMISSION);
         reflectMap.Bind(REFLECT);
         wallAOMap.Bind(EMISSION);
-        // wallNormalMap.Bind(NORMAL);
+// wallNormalMap.Bind(NORMAL);
 
-        // deferred
+// deferred
+#pragma region basic pass
+        Renderer::EnableDepthTest();
         deferredFbo.Bind();
         programDeferredPass.Bind();
         Renderer::Clear();
@@ -355,7 +364,7 @@ int main(int argc, char **argv) {
 
             Matrices mat1;
 
-            mat1.model = scene[i].GetTransform().GetTransform();
+            mat1.model = scene[i].GetTransform().GetTransformMatrix();
             mat1.viewProjection = camera.GetViewProjection();
             matrices.SetData(0, sizeof(mat1), &mat1);
             materials.SetData(0, sizeof(Material), &matColor1);
@@ -363,11 +372,13 @@ int main(int argc, char **argv) {
             programDeferredPass.Validate();
             scene[i].Draw();
         }
-        // deferredFbo.Unbind();
         programDeferredPass.Unbind();
+        deferredFbo.Unbind();
+#pragma endregion
 
-        // deferred lighting
-        //  deferredFbo.Bind();
+// deferred lighting
+#pragma region deferred lighting
+        Renderer::EnableDepthTest();
         deferredLightFbo.Bind();
         programDeferredLight.Bind();
         screenAlbedo.Bind(ALBEDO);
@@ -375,18 +386,19 @@ int main(int argc, char **argv) {
         screenPosition.Bind(POSITION);
         screenEmission.Bind(EMISSION);
         screenDepth.Bind(DEPTH);
-        for (int i = 0; i < lightDepths.size(); i++) {
+        for (unsigned int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
         }
         // geo
         planeVAO.Bind();
         Matrices mat2;
-        mat2.model = scene[0].GetTransform().GetTransform();
+        mat2.model = scene[0].GetTransform().GetTransformMatrix();
         mat2.viewProjection = camera.GetViewProjection();
         materials.SetData(0, sizeof(Material), &matColor1);
         lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
         CameraData camData = camera.GetCameraData();
         cameraUbo.SetData(0, sizeof(CameraData), &camData);
+        // TODO: Move cameraPos to cameraUbo
         glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
@@ -395,10 +407,13 @@ int main(int argc, char **argv) {
         programDeferredLight.Validate();
         Renderer::Clear();
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
+
         programDeferredLight.Unbind();
         deferredLightFbo.Unbind();
+#pragma endregion
 
         // screen space
+#pragma region screen space
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
         screenAlbedo.Bind(ALBEDO);
@@ -412,8 +427,10 @@ int main(int argc, char **argv) {
 
         programScreen.Validate();
         plane.Draw();
-        // done frame buffer
+#pragma endregion
 
+#pragma region GUI
+        Renderer::DisableDepthTest();
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
@@ -457,6 +474,7 @@ int main(int argc, char **argv) {
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#pragma endregion
 
         // TODO: Figure this out and put it in `Window` class
         // glfwSwapInterval(0);

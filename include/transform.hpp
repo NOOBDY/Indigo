@@ -33,7 +33,7 @@ public:
     glm::vec3 GetDirection(glm::vec3 dir) const;
     glm::mat4 GetDirection4() const;
 
-    glm::mat4 GetTransform();
+    glm::mat4 GetTransformMatrix();
     TransformData GetTransformData();
 
 private:
