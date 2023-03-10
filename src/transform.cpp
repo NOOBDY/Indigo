@@ -55,7 +55,7 @@ void Transform::UpdateMat() {
                   glm::scale(eye, m_Scale);
 }
 
-glm::mat4 Transform::GetTransform() {
+glm::mat4 Transform::GetTransformMatrix() {
     UpdateMat();
 
     return m_Transform;
