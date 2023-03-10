@@ -69,15 +69,8 @@ int main(int argc, char **argv) {
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
 
-    Program programColor("../assets/shaders/phong.vert",
-                         "../assets/shaders/phong.frag");
     Program programDeferredPass("../assets/shaders/phong.vert",
                                 "../assets/shaders/deferred_pass.frag");
-    Program programDeferredLight("../assets/shaders/frame_deferred.vert",
-                                 "../assets/shaders/deferred_light.frag");
-    Program programScreen("../assets/shaders/frame_screen.vert",
-                          "../assets/shaders/frame_screen.frag");
-
     programDeferredPass.Bind();
     programDeferredPass.SetInt("albedoMap", ALBEDO);
     programDeferredPass.SetInt("normalMap", NORMAL);
@@ -85,6 +78,8 @@ int main(int argc, char **argv) {
     programDeferredPass.SetInt("reflectMap", REFLECT);
     programDeferredPass.SetInt("ARM", ARM);
 
+    Program programDeferredLight("../assets/shaders/frame_deferred.vert",
+                                 "../assets/shaders/deferred_light.frag");
     programDeferredLight.Bind();
     programDeferredLight.SetInt("screenAlbedo", ALBEDO);
     programDeferredLight.SetInt("screenNormal", NORMAL);
@@ -94,6 +89,17 @@ int main(int argc, char **argv) {
     programDeferredLight.SetInt("screenARM", ARM);
     programDeferredLight.SetInt("screenDepth", DEPTH);
 
+    for (int i = 0; i < LIGHT_NUMBER; i++) {
+        programDeferredPass.Bind();
+        programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]",
+                                   SHADOW + i);
+        programDeferredLight.Bind();
+        programDeferredLight.SetInt("shadowMap[" + std::to_string(i) + "]",
+                                    SHADOW + i);
+    }
+
+    Program programScreen("../assets/shaders/frame_screen.vert",
+                          "../assets/shaders/frame_screen.frag");
     programScreen.Bind();
     programScreen.SetInt("screenAlbedo", ALBEDO);
     programScreen.SetInt("screenNormal", NORMAL);
@@ -104,14 +110,6 @@ int main(int argc, char **argv) {
     programScreen.SetInt("screenLight", LIGHTING);
     programScreen.SetInt("screenVolume", VOLUME);
     programScreen.SetInt("screenDepth", DEPTH);
-    for (int i = 0; i < LIGHT_NUMBER; i++) {
-        programDeferredPass.Bind();
-        programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]",
-                                   SHADOW + i);
-        programDeferredLight.Bind();
-        programDeferredLight.SetInt("shadowMap[" + std::to_string(i) + "]",
-                                    SHADOW + i);
-    }
 
     // Small hack to put camera position into the shader
     // TODO: Find somewhere on the UBO to put this in
