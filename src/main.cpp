@@ -52,7 +52,18 @@ int main(int argc, char **argv) {
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     Controller::InitGUI(window);
 
-    enum { ALBEDO, NORMAL, ARM, REFLECT, POSITION, DEPTH, SHADOW };
+    enum {
+        ALBEDO,
+        NORMAL,
+        ARM,
+        EMISSION,
+        REFLECT,
+        POSITION,
+        DEPTH,
+        LIGHTING,
+        VOLUME,
+        SHADOW
+    };
     Program programShadow("../assets/shaders/shadow.vert",
                           "../assets/shaders/shadow.geom",
                           "../assets/shaders/shadow.frag");
@@ -66,27 +77,33 @@ int main(int argc, char **argv) {
     Program programScreen("../assets/shaders/frame_screen.vert",
                           "../assets/shaders/frame_screen.frag");
 
-    programScreen.Bind();
-    programScreen.SetInt("screenTexture", 0);
-    programScreen.SetInt("depthTexture", 1);
-    programScreen.SetInt("uvCheck", 2);
+    programDeferredPass.Bind();
+    programDeferredPass.SetInt("albedoMap", ALBEDO);
+    programDeferredPass.SetInt("normalMap", NORMAL);
+    programDeferredPass.SetInt("emissionMap", EMISSION);
+    programDeferredPass.SetInt("reflectMap", REFLECT);
+    programDeferredPass.SetInt("ARM", ARM);
 
     programDeferredLight.Bind();
     programDeferredLight.SetInt("screenAlbedo", ALBEDO);
     programDeferredLight.SetInt("screenNormal", NORMAL);
     programDeferredLight.SetInt("screenPosition", POSITION);
+    programDeferredLight.SetInt("screenEmission", EMISSION);
     programDeferredLight.SetInt("reflectMap", REFLECT);
     programDeferredLight.SetInt("screenARM", ARM);
     programDeferredLight.SetInt("screenDepth", DEPTH);
 
-    programDeferredPass.Bind();
-    programDeferredPass.SetInt("albedoMap", ALBEDO);
-    programDeferredPass.SetInt("normalMap", NORMAL);
-    programDeferredPass.SetInt("reflectMap", REFLECT);
-    programDeferredPass.SetInt("ARM", ARM);
+    programScreen.Bind();
+    programScreen.SetInt("screenAlbedo", ALBEDO);
+    programScreen.SetInt("screenNormal", NORMAL);
+    programScreen.SetInt("screenPosition", POSITION);
+    programScreen.SetInt("screenEmission", EMISSION);
+    programScreen.SetInt("reflectMap", REFLECT);
+    programScreen.SetInt("screenARM", ARM);
+    programScreen.SetInt("screenLight", LIGHTING);
+    programScreen.SetInt("screenVolume", VOLUME);
+    programScreen.SetInt("screenDepth", DEPTH);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
-        // programColor.SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW +
-        // i);
         programDeferredPass.Bind();
         programDeferredPass.SetInt("shadowMap[" + std::to_string(i) + "]",
                                    SHADOW + i);
@@ -119,7 +136,7 @@ int main(int argc, char **argv) {
     std::vector<Model> scene;
 
     // begin model 1
-    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 100.0f};
+    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 30.0f};
     float lightPower[2];
     float lightRadius[2];
     glm::mat3 uiData[4];
@@ -177,11 +194,13 @@ int main(int argc, char **argv) {
     Texture texInterior("../assets/textures/little_city/interior.jpg");
     Texture reflectMap("../assets/textures/vestibule_2k.hdr");
     Texture wallNormalMap("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    Texture wallAOMap("../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     FrameBuffer deferredFbo;
     deferredFbo.Bind();
     unsigned int attachments[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
-                                  GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3};
+                                  GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                                  GL_COLOR_ATTACHMENT4};
 
     // color buffer
     Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
@@ -192,9 +211,11 @@ int main(int argc, char **argv) {
     deferredFbo.AttachTexture(screenPosition.GetTextureID(), attachments[2]);
     Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenARM.GetTextureID(), attachments[3]);
+    Texture screenEmission(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
+    deferredFbo.AttachTexture(screenEmission.GetTextureID(), attachments[4]);
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
-    glDrawBuffers(4, attachments);
+    glDrawBuffers(5, attachments);
     deferredFbo.Unbind();
 
     FrameBuffer deferredLightFbo;
@@ -308,7 +329,9 @@ int main(int argc, char **argv) {
         camera.UpdateView();
 
         texMainColor.Bind(ALBEDO);
+        // texMainColor.Bind(EMISSION);
         reflectMap.Bind(REFLECT);
+        wallAOMap.Bind(EMISSION);
         // wallNormalMap.Bind(NORMAL);
 
         // deferred
@@ -341,6 +364,7 @@ int main(int argc, char **argv) {
         screenAlbedo.Bind(ALBEDO);
         screenNormal.Bind(NORMAL);
         screenPosition.Bind(POSITION);
+        screenEmission.Bind(EMISSION);
         screenDepth.Bind(DEPTH);
         for (int i = 0; i < lightDepths.size(); i++) {
             lightDepths[i]->Bind(SHADOW + i);
@@ -368,10 +392,14 @@ int main(int argc, char **argv) {
         // screen space
         Renderer::DisableDepthTest(); // direct render texture no need depth
         programScreen.Bind();
-        // renderSurface.Bind(0);
-        screenLight.Bind(0);
-        screenVolume.Bind(2);
-        lightDepths[0]->Bind(1);
+        screenAlbedo.Bind(ALBEDO);
+        screenNormal.Bind(NORMAL);
+        screenPosition.Bind(POSITION);
+        screenEmission.Bind(EMISSION);
+        screenDepth.Bind(DEPTH);
+
+        screenLight.Bind(LIGHTING);
+        screenVolume.Bind(VOLUME);
 
         programScreen.Validate();
         plane.Draw();

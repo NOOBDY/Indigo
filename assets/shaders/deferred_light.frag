@@ -58,6 +58,7 @@ struct CameraData {
 };
 struct DeferredData {
     vec3 albedo;
+    vec3 emission;
     vec3 normal;
     vec3 position;
     vec3 depth;
@@ -89,8 +90,10 @@ uniform vec3 cameraPosition;
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
+uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
+
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 vec3 depth2position(float depth, CameraData info) {
     mat4 viewMatrixInv = inverse(info.view);
@@ -195,6 +198,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
+    screenVolume += vec4(specular * light.power, 1.0);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -222,6 +226,7 @@ void main() {
     DeferredData info;
     info.albedo = texture(screenAlbedo, UV).rgb;
     info.normal = texture(screenNormal, UV).rgb;
+    info.emission = texture(screenEmission, UV).rgb;
     info.depth = texture(screenDepth, UV).rgb;
     info.position = depth2position(info.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
@@ -233,6 +238,6 @@ void main() {
     // screenVolume.xyz/=600;
     // screenVolume-=screenLight;
     // screenVolume= abs(screenVolume)* 10.0;
+    screenVolume = vec4(0);
     screenLight = PhongLight(cameraPosition, info, lights);
-    screenVolume = screenLight;
 }
