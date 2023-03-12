@@ -37,6 +37,7 @@ add_executable(Indigo
     src/texture.cpp
     src/transform.cpp
     src/pipeline.cpp
+    src/scene.cpp
     src/model.cpp
     src/light.cpp
 
@@ -56,6 +57,7 @@ add_executable(Indigo
     include/texture.hpp
     include/transform.hpp
     include/pipeline.hpp
+    include/scene.hpp
     include/model.hpp
     include/light.hpp
 

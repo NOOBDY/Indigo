@@ -13,7 +13,7 @@ Model::~Model() {
     LOG_TRACE("Deleting Model");
 }
 
-void Model::Draw() {
+void Model::Draw() const {
     m_VAO->Bind();
 
     Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
