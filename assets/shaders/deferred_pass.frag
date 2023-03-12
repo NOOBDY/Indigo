@@ -51,7 +51,7 @@ struct MaterialData {
 };
 
 struct CameraData {
-    // TransformData transform;
+    TransformData transform;
     mat4 projection;
     mat4 view;
     float nearPlane;

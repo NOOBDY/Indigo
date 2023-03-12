@@ -10,7 +10,7 @@
 // Front:   (0, 0, -1)
 
 struct CameraData {
-    // TransformData transform;
+    TransformData transform;
     glm::mat4 projection;
     glm::mat4 view;
     float nearPlane;

@@ -48,7 +48,7 @@ struct MaterialData {
     // vec3 normal;
 };
 struct CameraData {
-    // TransformData transform;
+    TransformData transform;
     mat4 projection;
     mat4 view;
     float nearPlane;
