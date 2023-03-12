@@ -140,6 +140,12 @@ int main(int argc, char **argv) {
     float lightRadius[2];
     glm::mat3 uiData[4];
 
+    std::vector<Controller::TransformSlider> uiElements;
+
+    uiElements.push_back(Controller::TransformSlider("Model 1",       //
+                                                     {0, 0, 0},       //
+                                                     {180, 180, 180}, //
+                                                     {1, 1, 1}));
     uiData[0][0] = glm::vec3(0, 0, 0);
     uiData[0][1] = glm::vec3(180, 180, 180);
     uiData[0][2] = glm::vec3(1, 1, 1);
@@ -154,6 +160,10 @@ int main(int argc, char **argv) {
     // begin model 2
     // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
+    uiElements.push_back(Controller::TransformSlider("Model 2",       //
+                                                     {0, 0, 0},       //
+                                                     {180, 180, 180}, //
+                                                     {1, 1, 1}));
     uiData[1][0] = glm::vec3(0, 0, 0);
     uiData[1][1] = glm::vec3(180, 180, 180);
     uiData[1][2] = glm::vec3(1, 1, 1);
@@ -307,9 +317,7 @@ int main(int argc, char **argv) {
 
             // not render light ball
             for (unsigned int j = 0; j < scene.size() - 2; j++) {
-                scene[j].GetTransform().SetPosition(uiData[j][0]);
-                scene[j].GetTransform().SetRotation(uiData[j][1]);
-                scene[j].GetTransform().SetScale(uiData[j][2]);
+                scene[j].SetTransform(uiElements[j].GetTransform());
 
                 lightMat.model = scene[j].GetTransform().GetTransformMatrix();
                 matrices.SetData(0, sizeof(Matrices), &lightMat);
@@ -356,9 +364,13 @@ int main(int argc, char **argv) {
         Renderer::Clear();
         glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
         for (unsigned int i = 0; i < scene.size(); i++) {
-            scene[i].GetTransform().SetPosition(uiData[i][0]);
-            scene[i].GetTransform().SetRotation(uiData[i][1]);
-            scene[i].GetTransform().SetScale(uiData[i][2]);
+            if (i < 2) {
+                scene[i].SetTransform(uiElements[i].GetTransform());
+            } else {
+                scene[i].GetTransform().SetPosition(uiData[i][0]);
+                scene[i].GetTransform().SetRotation(uiData[i][1]);
+                scene[i].GetTransform().SetScale(uiData[i][2]);
+            }
 
             Matrices mat1;
 
@@ -442,17 +454,8 @@ int main(int argc, char **argv) {
                     (int)window.GetScrollOffset().y);
         ImGui::End();
 
-        ImGui::Begin("Model 1");
-        ImGui::SliderFloat3("Position", &uiData[0][0][0], -300, 300);
-        ImGui::SliderFloat3("Rotation", &uiData[0][1][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uiData[0][2][0], 0.1f, 5.0f);
-        ImGui::End();
-
-        ImGui::Begin("Model 2");
-        ImGui::SliderFloat3("Position", &uiData[1][0][0], -300, 300);
-        ImGui::SliderFloat3("Rotation", &uiData[1][1][0], 0, 360);
-        ImGui::SliderFloat3("Scale", &uiData[1][2][0], 0.1f, 5.0f);
-        ImGui::End();
+        uiElements[0].Update();
+        uiElements[1].Update();
 
         ImGui::Begin("Light 1");
         ImGui::SliderFloat3("Position", &uiData[2][0][0], -300, 300);
