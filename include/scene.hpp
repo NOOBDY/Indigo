@@ -10,28 +10,24 @@
 
 class Scene {
 public:
-    Scene(Camera defaultCamera);
+    Scene(const std::shared_ptr<Camera> defaultCamera);
 
-    unsigned int AddCamera(Camera camera);
-    unsigned int AddModel(Model model);
-    unsigned int AddLight(Light light);
+    void Draw() const;
 
-    void SetCamera(unsigned int id, Camera camera) {
-        m_Cameras.at(id) = camera;
-    }
-    void SetModel(unsigned int id, Model model) { m_Models.at(id) = model; }
-    void SetLight(unsigned int id, Light light) { m_Lights.at(id) = light; }
+    void AddCamera(const std::shared_ptr<Camera> camera);
+    void AddModel(const std::shared_ptr<Model> model);
+    void AddLight(const std::shared_ptr<Light> light);
 
-    void SetEnvironmentMap(std::shared_ptr<Texture> map) {
+    void SetEnvironmentMap(const std::shared_ptr<Texture> map) {
         m_EnvironmentMap = map;
     }
 
 private:
     unsigned int m_ActiveCameraID;
-    std::vector<Camera> m_Cameras;
+    std::vector<std::shared_ptr<Camera>> m_Cameras;
 
-    std::vector<Model> m_Models;
-    std::vector<Light> m_Lights;
+    std::vector<std::shared_ptr<Model>> m_Models;
+    std::vector<std::shared_ptr<Light>> m_Lights;
 
     std::shared_ptr<Texture> m_EnvironmentMap;
 };

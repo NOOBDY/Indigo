@@ -19,7 +19,7 @@ public:
     Model(std::shared_ptr<VertexArray> vao, Transform transform = Transform());
     ~Model();
 
-    void Draw();
+    void Draw() const;
 
     void SetAlbedo(std::shared_ptr<Texture> albedo) { m_Albedo = albedo; }
     void SetNormal(std::shared_ptr<Texture> normal) { m_Normal = normal; }
