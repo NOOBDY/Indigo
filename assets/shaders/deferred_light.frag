@@ -85,7 +85,7 @@ layout(location = 0) in vec2 UV;
 layout(location = 0) out vec4 screenLight;
 layout(location = 1) out vec4 screenVolume;
 
-uniform vec3 cameraPosition;
+// uniform vec3 cameraPosition;
 
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;

@@ -87,7 +87,7 @@ layout(location = 2) out vec4 screenPosition;
 layout(location = 3) out vec4 screenARM;
 layout(location = 4) out vec4 screenEmission;
 // out vec4 color;
-uniform vec3 cameraPosition;
+// uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
