@@ -367,6 +367,8 @@ int main(int argc, char **argv) {
             matrices.SetData(0, sizeof(mat1), &mat1);
             materials.SetData(0, sizeof(Material), &matColor1);
             lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            CameraData camData = camera.GetCameraData();
+            cameraUbo.SetData(0, sizeof(CameraData), &camData);
             programDeferredPass.Validate();
             scene[i].Draw();
         }

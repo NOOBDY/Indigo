@@ -204,7 +204,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                     fadeOut * spot,
                 shadow);
 }
-vec4 PhongLight(vec3 cameraPosition, DeferredData deferredInfo,
+vec4 PhongLight( DeferredData deferredInfo, CameraData cameraInfo ,
                 LightData lights[LIGHT_NUMBER]) {
     vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
@@ -213,7 +213,7 @@ vec4 PhongLight(vec3 cameraPosition, DeferredData deferredInfo,
             continue;
         // color3 = light.lightColor;
         color4 +=
-            AllLight(cameraPosition, deferredInfo, light, i) / LIGHT_NUMBER;
+            AllLight(cameraInfo.transform.position, deferredInfo, light, i) / LIGHT_NUMBER;
     }
 
     return color4;
@@ -223,12 +223,12 @@ void main() {
     vec3 col = vec3(1.0);
 
     // vec2 uv=UV;
-    DeferredData info;
-    info.albedo = texture(screenAlbedo, UV).rgb;
-    info.normal = texture(screenNormal, UV).rgb;
-    info.emission = texture(screenEmission, UV).rgb;
-    info.depth = texture(screenDepth, UV).rgb;
-    info.position = depth2position(info.depth.x, cameraInfo);
+    DeferredData baseInfo;
+    baseInfo.albedo = texture(screenAlbedo, UV).rgb;
+    baseInfo.normal = texture(screenNormal, UV).rgb;
+    baseInfo.emission = texture(screenEmission, UV).rgb;
+    baseInfo.depth = texture(screenDepth, UV).rgb;
+    baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
     // temPosition=temPosition* 600.0;
 
@@ -239,5 +239,5 @@ void main() {
     // screenVolume-=screenLight;
     // screenVolume= abs(screenVolume)* 10.0;
     screenVolume = vec4(0);
-    screenLight = PhongLight(cameraPosition, info, lights);
+    screenLight = PhongLight( baseInfo, cameraInfo,lights);
 }

@@ -59,6 +59,10 @@ struct CameraData {
     float aspectRatio;
     float FOV;
 };
+layout(std140, binding = 0) uniform Matrices {
+    mat4 model;
+    mat4 viewProjection;
+};
 layout(std140, binding = 1) uniform Materials {
     MaterialData material;
 };
@@ -91,10 +95,6 @@ uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
 uniform sampler2D ARM;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
-layout(std140, binding = 0) uniform Matrices {
-    mat4 model;
-    mat4 viewProjection;
-};
 
 void main() {
     vec3 color3 = vec3(0.);
@@ -115,7 +115,7 @@ void main() {
     screenARM.xyz = vec3(1.0, 0.5, 0.5);
 
     // color3 = ColorTransform(color3);
-    float len = length(vec3(worldPosition - cameraPosition));
+    float len = length(vec3(worldPosition - cameraInfo.transform.position));
     len /= cameraInfo.farPlane;
     vec4 tem = viewProjection * vec4(worldPosition, 1.0);
 
