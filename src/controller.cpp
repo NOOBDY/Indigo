@@ -21,7 +21,7 @@ TransformSlider::TransformSlider(const std::string label,
                                  const glm::vec3 position,
                                  const glm::vec3 rotation,
                                  const glm::vec3 scale)
-    : m_Label(label), m_Position(position), m_Rotation(rotation),
+    : m_Label(label + " Transform"), m_Position(position), m_Rotation(rotation),
       m_Scale(scale) {}
 
 void TransformSlider::Update() {

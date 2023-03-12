@@ -44,6 +44,8 @@ public:
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }
 
+    void SetTransform(Transform transform) { m_Transform = transform; }
+
 private:
     Type m_Type;
 
