@@ -51,4 +51,68 @@ void Pipeline::Init(int maxLightCount) {
     m_Compositor->SetInt("screenLight", LIGHTING);
     m_Compositor->SetInt("screenVolume", VOLUME);
     m_Compositor->SetInt("screenDepth", DEPTH);
+
+    // UniformBuffer matrices(sizeof(Matrices), 0);
+    // UniformBuffer materials(sizeof(Model::ModelInfo), 1);
+    // UniformBuffer lights(sizeof(LightData) * m_maxLightCount, 2);
+    // UniformBuffer cameraUbo(sizeof(CameraData), 3);
+    m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
+    m_UBOs.push_back(
+        std::make_shared<UniformBuffer>(sizeof(Model::ModelInfo), 1));
+    m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
+    m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
 }
+void Pipeline::Render(Scene scene) {
+    ShadowPass(scene);
+    BasePass(scene);
+    LightPass(scene);
+    CompositePass();
+}
+void Pipeline::ShadowPass(Scene scene) {
+
+    MVP lightMVP;
+    std::vector<LightData> lightInfos;
+    for (int i = 0; i < scene.GetLights().size(); i++) {
+        std::shared_ptr<Light> light = scene.GetLights()[i];
+        lightInfos.push_back(light->GetLightData());
+        if (i < m_maxLightCount) {
+            m_lightDepths.push_back(std::make_shared<Texture>(
+                light->GetTextureSize(), light->GetTextureSize(),
+                Texture::DEPTH, Texture::CUBE));
+        }
+    }
+    Renderer::EnableDepthTest();
+    Renderer::DisableCullFace();
+
+    // every light
+    m_Shadow->Bind();
+    for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
+        std::shared_ptr<Light> light = scene.GetLights()[i];
+        m_ShadowFBO.AttachTexture(m_lightDepths[i]->GetTextureID(),
+                                  GL_DEPTH_ATTACHMENT);
+        m_ShadowFBO.Bind();
+        glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
+        Renderer::Clear();
+
+        // not render light ball
+        for (unsigned int j = 0; j < scene.GetModel().size() - 2; j++) {
+            std::shared_ptr<Model> model = scene.GetModel()[j];
+            // scene[j].SetTransform(uiElements[j].GetTransform());
+
+            lightMVP.model = model->GetTransform().GetTransformMatrix();
+            m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
+            // use first one to render shadow
+            m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
+            // programShadow.Validate();
+
+            model->Draw();
+        }
+        m_ShadowFBO.Unbind();
+    }
+    m_Shadow->Unbind();
+
+    Renderer::EnableCullFace();
+}
+void Pipeline::BasePass(Scene scene) {}
+void Pipeline::LightPass(Scene scene) {}
+void Pipeline::CompositePass() {}
