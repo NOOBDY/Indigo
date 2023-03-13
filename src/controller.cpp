@@ -31,4 +31,15 @@ void TransformSlider::Update() {
     ImGui::SliderFloat3("Scale", &m_Scale[0], 0.1f, 5.0f);
     ImGui::End();
 }
+
+LightSlider::LightSlider(const std::string label, const float power,
+                         const float radius)
+    : m_Label(label + " Light Attribute"), m_Power(power), m_Radius(radius) {}
+
+void LightSlider::Update() {
+    ImGui::Begin(m_Label.c_str());
+    ImGui::SliderFloat("Power", &m_Power, 0.1f, 10.0f);
+    ImGui::SliderFloat("Radius", &m_Radius, 1.0f, 1000.0f);
+    ImGui::End();
+}
 } // namespace Controller

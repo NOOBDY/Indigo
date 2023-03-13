@@ -136,15 +136,14 @@ int main(int argc, char **argv) {
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 30.0f};
-    float lightPower[2];
-    float lightRadius[2];
 
-    std::vector<Controller::TransformSlider> uiElements;
+    std::vector<Controller::TransformSlider> transformSliders;
+    std::vector<Controller::LightSlider> lightSliders;
 
-    uiElements.push_back(Controller::TransformSlider("Model 1",       //
-                                                     {0, 0, 0},       //
-                                                     {180, 180, 180}, //
-                                                     {1, 1, 1}));
+    transformSliders.push_back(Controller::TransformSlider("Model 1",       //
+                                                           {0, 0, 0},       //
+                                                           {180, 180, 180}, //
+                                                           {1, 1, 1}));
     try {
         scene.push_back(
             Model(Importer::LoadFile("../assets/models/little_city/main.glb")));
@@ -156,10 +155,10 @@ int main(int argc, char **argv) {
     // begin model 2
     // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
 
-    uiElements.push_back(Controller::TransformSlider("Model 2",       //
-                                                     {0, 0, 0},       //
-                                                     {180, 180, 180}, //
-                                                     {1, 1, 1}));
+    transformSliders.push_back(Controller::TransformSlider("Model 2",       //
+                                                           {0, 0, 0},       //
+                                                           {180, 180, 180}, //
+                                                           {1, 1, 1}));
     try {
         scene.push_back(Model(
             Importer::LoadFile("../assets/models/little_city/interior.glb")));
@@ -262,19 +261,20 @@ int main(int argc, char **argv) {
 #pragma endregion
 
     // light 1
-    uiElements.push_back(Controller::TransformSlider("Light 1",      //
-                                                     {50, 100, 200}, //
-                                                     {0, 0, 0},      //
-                                                     {20, 20, 20}));
-    lightPower[0] = 1;
-    lightRadius[0] = 500;
-    // light 1
-    uiElements.push_back(Controller::TransformSlider("Light 2",      //
-                                                     {-300, 300, 0}, //
-                                                     {0, 0, 0},      //
-                                                     {20, 20, 20}));
-    lightPower[1] = 2;
-    lightRadius[1] = 500;
+    transformSliders.push_back(                     //
+        Controller::TransformSlider("Light 1",      //
+                                    {50, 100, 200}, //
+                                    {0, 0, 0},      //
+                                    {20, 20, 20}));
+    lightSliders.push_back(Controller::LightSlider("Light 1", 1, 500));
+
+    // light 2
+    transformSliders.push_back(                     //
+        Controller::TransformSlider("Light 2",      //
+                                    {-300, 300, 0}, //
+                                    {0, 0, 0},      //
+                                    {20, 20, 20}));
+    lightSliders.push_back(Controller::LightSlider("Light 2", 2, 500));
 
     scene.push_back(Model(Importer::LoadFile("../assets/models/sphere.obj")));
     scene.push_back(Model(Importer::LoadFile("../assets/models/sphere.obj")));
@@ -283,13 +283,13 @@ int main(int argc, char **argv) {
 
     do {
         // TODO: Make lights into a vector
-        light1.SetTransform(uiElements[2].GetTransform());
-        light1.SetPower(lightPower[0]);
-        light1.SetRadius(lightRadius[0]);
+        light1.SetTransform(transformSliders[2].GetTransform());
+        light1.SetPower(lightSliders[0].GetPower());
+        light1.SetRadius(lightSliders[0].GetRadius());
 
-        light2.SetTransform(uiElements[3].GetTransform());
-        light2.SetPower(lightPower[1]);
-        light2.SetRadius(lightRadius[1]);
+        light2.SetTransform(transformSliders[3].GetTransform());
+        light2.SetPower(lightSliders[1].GetPower());
+        light2.SetRadius(lightSliders[1].GetRadius());
         lightInfo[0] = light1.GetLightData();
         lightInfo[1] = light2.GetLightData();
         glm::vec2 delta = window.GetCursorDelta();
@@ -312,7 +312,7 @@ int main(int argc, char **argv) {
 
             // not render light ball
             for (unsigned int j = 0; j < scene.size() - 2; j++) {
-                scene[j].SetTransform(uiElements[j].GetTransform());
+                scene[j].SetTransform(transformSliders[j].GetTransform());
 
                 lightMat.model = scene[j].GetTransform().GetTransformMatrix();
                 matrices.SetData(0, sizeof(Matrices), &lightMat);
@@ -359,7 +359,7 @@ int main(int argc, char **argv) {
         Renderer::Clear();
         glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
         for (unsigned int i = 0; i < scene.size(); i++) {
-            scene[i].SetTransform(uiElements[i].GetTransform());
+            scene[i].SetTransform(transformSliders[i].GetTransform());
 
             Matrices mat1;
 
@@ -443,22 +443,16 @@ int main(int argc, char **argv) {
                     (int)window.GetScrollOffset().y);
         ImGui::End();
 
-        uiElements[0].Update();
-        uiElements[1].Update();
+        transformSliders[0].Update();
+        transformSliders[1].Update();
 
-        uiElements[2].Update();
+        transformSliders[2].Update();
 
-        ImGui::Begin("Light 1 Light Attribute");
-        ImGui::SliderFloat("Power", &lightPower[0], 0.1f, 10.0f);
-        ImGui::SliderFloat("Radius", &lightRadius[0], 1.0f, 1000.0f);
-        ImGui::End();
+        lightSliders[0].Update();
 
-        uiElements[3].Update();
+        transformSliders[3].Update();
 
-        ImGui::Begin("Light 2 Light Attribute");
-        ImGui::SliderFloat("Power", &lightPower[1], 0.1f, 10.0f);
-        ImGui::SliderFloat("Radius", &lightRadius[1], 1.0f, 1000.0f);
-        ImGui::End();
+        lightSliders[1].Update();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
