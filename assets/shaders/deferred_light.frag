@@ -95,7 +95,7 @@ uniform sampler2D screenARM;
 uniform sampler2D screenDepth;
 
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
-vec3 depth2position(float depth, CameraData info) {
+vec3 depth2position(highp float depth, CameraData info) {
     mat4 viewMatrixInv = inverse(info.view);
     mat4 projectionMatrixInv = inverse(info.projection);
     mat4 invert_view_projection = inverse(info.projection * info.view);

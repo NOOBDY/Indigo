@@ -15,6 +15,21 @@ public:
         ROUGHNESS,
         SHADOW, // first non-shadow texture index
     };
+    struct ModelInfo {
+        int useAlbedoTexture;
+        glm::vec3 albedoColor;
+
+        int useEmissionTexture;
+        glm::vec3 emissionColor;
+
+        int useARMTexture;
+        glm::vec3 ARM;
+
+        int useNormalTexture;
+        int id;
+        int castShadows;
+        int visible;
+    };
 
     Model(std::shared_ptr<VertexArray> vao, Transform transform = Transform());
     ~Model();

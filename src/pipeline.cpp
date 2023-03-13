@@ -1,8 +1,11 @@
 #include "pipeline.hpp"
 
-#define LIGHT_NUMBER 2
+// #define LIGHT_NUMBER 2
 
-Pipeline::Pipeline() {
+Pipeline::Pipeline(){};
+
+void Pipeline::Init(int maxLightCount) {
+    m_maxLightCount = maxLightCount;
     m_Shadow = std::make_shared<Program>("../assets/shaders/shadow.vert",
                                          "../assets/shaders/shadow.geom",
                                          "../assets/shaders/shadow.frag");
@@ -28,7 +31,7 @@ Pipeline::Pipeline() {
     m_Light->SetInt("screenARM", ARM);
     m_Light->SetInt("screenDepth", DEPTH);
 
-    for (int i = 0; i < LIGHT_NUMBER; i++) {
+    for (int i = 0; i < m_maxLightCount; i++) {
         m_Basic->Bind();
         m_Basic->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
         m_Light->Bind();
