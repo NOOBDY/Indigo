@@ -5,7 +5,7 @@
 #include "renderer.hpp"
 
 Model::Model(std::shared_ptr<VertexArray> vao, Transform transform)
-    : m_VAO(vao), m_Transform(transform) {
+    : m_VAO(vao), m_Transform(transform), m_Id(_id++) {
     LOG_TRACE("Creating Model");
 }
 

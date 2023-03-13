@@ -8,6 +8,9 @@
 #include "vertex_array.hpp"
 
 class Model {
+
+    int _id;
+
 public:
     enum TextureTypes {
         ALBEDO,
@@ -41,10 +44,12 @@ public:
     void SetRoughness(std::shared_ptr<Texture> roughness) {
         m_Roughness = roughness;
     }
+    void SetCastShadows(bool castShadows) { m_CastShadows = castShadows; }
 
     std::shared_ptr<Texture> GetAlbedo() { return m_Albedo; }
     std::shared_ptr<Texture> GetNormal() { return m_Normal; }
     std::shared_ptr<Texture> GetRoughness() { return m_Roughness; }
+    bool GetCastShadows() { return m_CastShadows; }
 
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }
@@ -58,6 +63,9 @@ private:
     std::shared_ptr<Texture> m_Albedo;
     std::shared_ptr<Texture> m_Normal;
     std::shared_ptr<Texture> m_Roughness;
+    int m_Id;
+    bool m_CastShadows = true;
+    bool m_Visible = true;
 };
 
 #endif

@@ -88,6 +88,8 @@ void Pipeline::ShadowPass(Scene scene) {
     m_Shadow->Bind();
     for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
+        if (!light->GetCastShadow())
+            continue;
         m_ShadowFBO.AttachTexture(m_lightDepths[i]->GetTextureID(),
                                   GL_DEPTH_ATTACHMENT);
         m_ShadowFBO.Bind();
@@ -97,6 +99,8 @@ void Pipeline::ShadowPass(Scene scene) {
         // not render light ball
         for (unsigned int j = 0; j < scene.GetModel().size() - 2; j++) {
             std::shared_ptr<Model> model = scene.GetModel()[j];
+            if (!model->GetCastShadows())
+                continue;
             // scene[j].SetTransform(uiElements[j].GetTransform());
 
             lightMVP.model = model->GetTransform().GetTransformMatrix();
