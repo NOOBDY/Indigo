@@ -26,6 +26,8 @@ public:
     void SetLightType(Type lightType) { m_Type = lightType; }
     void SetInner(float inner) { m_InnerCone = inner; }
     void SetOuter(float outer) { m_OuterCone = outer; }
+    void SetShadowSize(int size) { m_TextureSize = size; }
+    void setCastShadow(bool castShadow) { m_CastShadow = castShadow; }
 
     glm::mat4 GetLightProjection() const;
     std::vector<glm::mat4> GetLightProjectionCube() const;
@@ -38,6 +40,9 @@ public:
 
     float GetInnerCone() const { return m_InnerCone; };
     float GetOuterCone() const { return m_OuterCone; };
+
+    float GetTextureSize() const { return m_TextureSize; };
+    bool GetCastShadow() const { return m_CastShadow; };
 
     LightData GetLightData();
 
@@ -61,6 +66,8 @@ private:
     float m_FarPlane = 1000.0f;
 
     Transform m_Transform;
+    int m_TextureSize = 1024;
+    bool m_CastShadow = true;
 };
 
 struct LightData {
@@ -79,8 +86,9 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
+    // lazy to fix padding issues
+    int castShadow;
     float pad1;
-    float pad2;
 };
 
 #endif

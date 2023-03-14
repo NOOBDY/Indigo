@@ -116,10 +116,6 @@ int main(int argc, char **argv) {
     // TODO: Find somewhere on the UBO to put this in
     // GLint cameraUniform =
     //     glGetUniformLocation(programColor.GetProgramID(), "cameraPosition");
-    GLint cameraUniformDeferredPass = glGetUniformLocation(
-        programDeferredPass.GetProgramID(), "cameraPosition");
-    GLint cameraUniformDeferredLight = glGetUniformLocation(
-        programDeferredLight.GetProgramID(), "cameraPosition");
 
     LightData lightInfo[LIGHT_NUMBER];
 
@@ -383,7 +379,6 @@ int main(int argc, char **argv) {
                                         delta.y * -2 / window.GetHeight());
         }
 
-        glm::vec3 cameraPos = activeCamera->GetTransform().GetPosition();
         activeCamera->UpdateView();
 
         texMainColor.Bind(ALBEDO);
@@ -398,7 +393,6 @@ int main(int argc, char **argv) {
         deferredFbo.Bind();
         programDeferredPass.Bind();
         Renderer::Clear();
-        glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
         for (unsigned int i = 0; i < models.size(); i++) {
             models[i]->SetTransform(transformSliders[i].GetTransform());
 
@@ -409,6 +403,8 @@ int main(int argc, char **argv) {
             matrices.SetData(0, sizeof(Matrices), &mat);
             materials.SetData(0, sizeof(Material), &matColor1);
             lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            CameraData camData = activeCamera->GetCameraData();
+            cameraUbo.SetData(0, sizeof(CameraData), &camData);
             programDeferredPass.Validate();
             models[i]->Draw();
         }
@@ -434,12 +430,9 @@ int main(int argc, char **argv) {
         lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
         CameraData camData = activeCamera->GetCameraData();
         cameraUbo.SetData(0, sizeof(CameraData), &camData);
-        // TODO: Move cameraPos to cameraUbo
-        glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);
 
         Renderer::DisableDepthTest(); // direct render texture no need depth
 
-        // LOG_DEBUG("camera {}",cameraUniformDeferredPass);
         programDeferredLight.Validate();
         Renderer::Clear();
         Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());

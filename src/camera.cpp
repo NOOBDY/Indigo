@@ -76,6 +76,7 @@ CameraData Camera::GetCameraData() {
     UpdateProjection();
     UpdateView();
     return CameraData{
+        m_Transform.GetTransformData(),
         m_Projection,  //
         m_View,        //
         m_NearClip,    //

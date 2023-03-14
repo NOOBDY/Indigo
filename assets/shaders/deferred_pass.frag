@@ -51,13 +51,17 @@ struct MaterialData {
 };
 
 struct CameraData {
-    // TransformData transform;
+    TransformData transform;
     mat4 projection;
     mat4 view;
     float nearPlane;
     float farPlane;
     float aspectRatio;
     float FOV;
+};
+layout(std140, binding = 0) uniform Matrices {
+    mat4 model;
+    mat4 viewProjection;
 };
 layout(std140, binding = 1) uniform Materials {
     MaterialData material;
@@ -83,7 +87,7 @@ layout(location = 2) out vec4 screenPosition;
 layout(location = 3) out vec4 screenARM;
 layout(location = 4) out vec4 screenEmission;
 // out vec4 color;
-uniform vec3 cameraPosition;
+// uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
@@ -91,10 +95,6 @@ uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
 uniform sampler2D ARM;
 uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
-layout(std140, binding = 0) uniform Matrices {
-    mat4 model;
-    mat4 viewProjection;
-};
 
 void main() {
     vec3 color3 = vec3(0.);
@@ -115,7 +115,7 @@ void main() {
     screenARM.xyz = vec3(1.0, 0.5, 0.5);
 
     // color3 = ColorTransform(color3);
-    float len = length(vec3(worldPosition - cameraPosition));
+    float len = length(vec3(worldPosition - cameraInfo.transform.position));
     len /= cameraInfo.farPlane;
     vec4 tem = viewProjection * vec4(worldPosition, 1.0);
 
