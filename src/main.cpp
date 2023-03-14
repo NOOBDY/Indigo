@@ -15,6 +15,7 @@
 #include "uniform_buffer.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
+#include "scene.hpp"
 #include "model.hpp"
 #include "light.hpp"
 
@@ -124,15 +125,22 @@ int main(int argc, char **argv) {
 
     UniformBuffer matrices(sizeof(Matrices), 0);
     UniformBuffer materials(sizeof(Material), 1);
-    UniformBuffer lights(sizeof(LightData) * LIGHT_NUMBER, 2);
+    UniformBuffer lightsUbo(sizeof(LightData) * LIGHT_NUMBER, 2);
     UniformBuffer cameraUbo(sizeof(CameraData), 3);
 
-    Camera camera(45.0f, window.GetAspectRatio());
+    std::shared_ptr<Camera> mainCamera =
+        std::make_shared<Camera>(45.0f, window.GetAspectRatio());
 
-    Light light1(Light::POINT, glm::vec3(1.0f));
-    Light light2(Light::POINT, glm::vec3(1.0f));
+    std::shared_ptr<Light> light1Test =
+        std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
+    std::shared_ptr<Light> light2Test =
+        std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
 
-    std::vector<Model> scene;
+    // std::vector<Model> scene;
+    Scene testScene(mainCamera);
+
+    testScene.AddLight(light1Test);
+    testScene.AddLight(light2Test);
 
     // begin model 1
     Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 30.0f};
@@ -144,24 +152,38 @@ int main(int argc, char **argv) {
                                                            {0, 0, 0},       //
                                                            {180, 180, 180}, //
                                                            {1, 1, 1}));
+
+    std::shared_ptr<Model> main;
+
     try {
-        scene.push_back(
-            Model(Importer::LoadFile("../assets/models/little_city/main.glb")));
+        main = std::make_shared<Model>(
+            Importer::LoadFile("../assets/models/little_city/main.glb"),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        testScene.AddModel(main);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
     // end model 1
 
     // begin model 2
-    // Material matColor2 = {{0.0f, 0.8f, 0.8f}, 100.0f};
-
     transformSliders.push_back(Controller::TransformSlider("Model 2",       //
                                                            {0, 0, 0},       //
                                                            {180, 180, 180}, //
                                                            {1, 1, 1}));
+
+    std::shared_ptr<Model> interior;
+
     try {
-        scene.push_back(Model(
-            Importer::LoadFile("../assets/models/little_city/interior.glb")));
+        interior = std::make_shared<Model>(
+            Importer::LoadFile("../assets/models/little_city/interior.glb"),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        testScene.AddModel(interior);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -276,25 +298,44 @@ int main(int argc, char **argv) {
                                     {20, 20, 20}));
     lightSliders.push_back(Controller::LightSlider("Light 2", 2, 500));
 
-    scene.push_back(Model(Importer::LoadFile("../assets/models/sphere.obj")));
-    scene.push_back(Model(Importer::LoadFile("../assets/models/sphere.obj")));
+    std::shared_ptr<Model> light1Sphere;
+    std::shared_ptr<Model> light2Sphere;
+
+    try {
+        light1Sphere = std::make_shared<Model>(
+            Importer::LoadFile("../assets/models/sphere.obj"));
+
+        testScene.AddModel(light1Sphere);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    try {
+        light2Sphere = std::make_shared<Model>(
+            Importer::LoadFile("../assets/models/sphere.obj"));
+
+        testScene.AddModel(light2Sphere);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
 
     Matrices lightMat;
 
     do {
-        // TODO: Make lights into a vector
-        light1.SetTransform(transformSliders[2].GetTransform());
-        light1.SetPower(lightSliders[0].GetPower());
-        light1.SetRadius(lightSliders[0].GetRadius());
-
-        light2.SetTransform(transformSliders[3].GetTransform());
-        light2.SetPower(lightSliders[1].GetPower());
-        light2.SetRadius(lightSliders[1].GetRadius());
-        lightInfo[0] = light1.GetLightData();
-        lightInfo[1] = light2.GetLightData();
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
 
+        const auto activeCamera = testScene.GetActiveCamera();
+        const auto models = testScene.GetModels();
+        const auto lights = testScene.GetLights();
+
+        for (unsigned int i = 0; i < lights.size(); i++) {
+            lights[i]->SetTransform(
+                transformSliders[i + 2].GetTransform()); // two non-light models
+            lights[i]->SetPower(lightSliders[i].GetPower());
+            lights[i]->SetRadius(lightSliders[i].GetRadius());
+            lightInfo[i] = lights[i]->GetLightData();
+        }
 #pragma region draw shadow
 
         // make sure render size is same as texture
@@ -311,16 +352,16 @@ int main(int argc, char **argv) {
             Renderer::Clear();
 
             // not render light ball
-            for (unsigned int j = 0; j < scene.size() - 2; j++) {
-                scene[j].SetTransform(transformSliders[j].GetTransform());
+            for (unsigned int j = 0; j < models.size() - 2; j++) {
+                models[j]->SetTransform(transformSliders[j].GetTransform());
 
-                lightMat.model = scene[j].GetTransform().GetTransformMatrix();
+                lightMat.model = models[j]->GetTransform().GetTransformMatrix();
                 matrices.SetData(0, sizeof(Matrices), &lightMat);
                 // use first one to render shadow
-                lights.SetData(0, sizeof(LightData), &lightInfo[i]);
+                lightsUbo.SetData(0, sizeof(LightData), &lightInfo[i]);
                 programShadow.Validate();
 
-                scene[j].Draw();
+                models[j]->Draw();
             }
             shadowFbo.Unbind();
         }
@@ -332,18 +373,18 @@ int main(int argc, char **argv) {
         // color (phong shader)
         glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-        camera.GetTransform().SetPosition(
-            camera.GetTransform().GetPosition() +
+        activeCamera->GetTransform().SetPosition(
+            activeCamera->GetTransform().GetPosition() +
             10 * window.GetScrollOffset().y *
-                glm::normalize(camera.GetTransform().GetPosition()));
+                glm::normalize(activeCamera->GetTransform().GetPosition()));
 
         if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            camera.RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                 delta.y * -2 / window.GetHeight());
+            activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                        delta.y * -2 / window.GetHeight());
         }
 
-        glm::vec3 cameraPos = camera.GetTransform().GetPosition();
-        camera.UpdateView();
+        glm::vec3 cameraPos = activeCamera->GetTransform().GetPosition();
+        activeCamera->UpdateView();
 
         texMainColor.Bind(ALBEDO);
         // texMainColor.Bind(EMISSION);
@@ -358,18 +399,18 @@ int main(int argc, char **argv) {
         programDeferredPass.Bind();
         Renderer::Clear();
         glUniform3fv(cameraUniformDeferredPass, 1, &cameraPos.x);
-        for (unsigned int i = 0; i < scene.size(); i++) {
-            scene[i].SetTransform(transformSliders[i].GetTransform());
+        for (unsigned int i = 0; i < models.size(); i++) {
+            models[i]->SetTransform(transformSliders[i].GetTransform());
 
-            Matrices mat1;
+            Matrices mat;
+            mat.model = models[i]->GetTransform().GetTransformMatrix();
+            mat.viewProjection = activeCamera->GetViewProjection();
 
-            mat1.model = scene[i].GetTransform().GetTransformMatrix();
-            mat1.viewProjection = camera.GetViewProjection();
-            matrices.SetData(0, sizeof(mat1), &mat1);
+            matrices.SetData(0, sizeof(Matrices), &mat);
             materials.SetData(0, sizeof(Material), &matColor1);
-            lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+            lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
             programDeferredPass.Validate();
-            scene[i].Draw();
+            models[i]->Draw();
         }
         programDeferredPass.Unbind();
         deferredFbo.Unbind();
@@ -390,12 +431,8 @@ int main(int argc, char **argv) {
         }
         // geo
         planeVAO.Bind();
-        Matrices mat2;
-        mat2.model = scene[0].GetTransform().GetTransformMatrix();
-        mat2.viewProjection = camera.GetViewProjection();
-        materials.SetData(0, sizeof(Material), &matColor1);
-        lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-        CameraData camData = camera.GetCameraData();
+        lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        CameraData camData = activeCamera->GetCameraData();
         cameraUbo.SetData(0, sizeof(CameraData), &camData);
         // TODO: Move cameraPos to cameraUbo
         glUniform3fv(cameraUniformDeferredLight, 1, &cameraPos.x);

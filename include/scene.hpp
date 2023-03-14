@@ -18,6 +18,13 @@ public:
     void AddModel(const std::shared_ptr<Model> model);
     void AddLight(const std::shared_ptr<Light> light);
 
+    std::shared_ptr<Camera> GetActiveCamera() const {
+        return m_Cameras[m_ActiveCameraID];
+    }
+
+    std::vector<std::shared_ptr<Model>> GetModels() const { return m_Models; }
+    std::vector<std::shared_ptr<Light>> GetLights() const { return m_Lights; }
+
     void SetEnvironmentMap(const std::shared_ptr<Texture> map) {
         m_EnvironmentMap = map;
     }
