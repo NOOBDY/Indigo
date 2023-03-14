@@ -18,7 +18,9 @@ public:
         ROUGHNESS,
         SHADOW, // first non-shadow texture index
     };
-    struct ModelInfo {
+    struct ModelData {
+        TransformData transform;
+
         int useAlbedoTexture;
         glm::vec3 albedoColor;
 
@@ -55,6 +57,7 @@ public:
     const Transform &GetTransform() const { return m_Transform; }
 
     void SetTransform(Transform transform) { m_Transform = transform; }
+    const ModelData GetModelData();
 
 private:
     std::shared_ptr<VertexArray> m_VAO;
@@ -64,8 +67,17 @@ private:
     std::shared_ptr<Texture> m_Normal;
     std::shared_ptr<Texture> m_Roughness;
     int m_Id;
+
+    bool m_UseAlbedoTexture = true;
+    bool m_UseEmissionTexture = true;
+    bool m_UseARMTexture = true;
+    bool m_UseNormalTexture = true;
     bool m_CastShadows = true;
     bool m_Visible = true;
+
+    glm::vec3 m_AlbedoColor;
+    glm::vec3 m_EmissionColor;
+    glm::vec3 m_ARM;
 };
 
 #endif

@@ -41,7 +41,7 @@ private:
     void CompositePass();
 
 private:
-    std::shared_ptr<Program> m_Shadow;
+    std::shared_ptr<Program> m_PointLightShadow;
     std::shared_ptr<Program> m_Basic;
     std::shared_ptr<Program> m_Light;
     std::shared_ptr<Program> m_Compositor;

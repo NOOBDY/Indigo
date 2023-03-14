@@ -6,9 +6,9 @@ Pipeline::Pipeline(){};
 
 void Pipeline::Init(int maxLightCount) {
     m_maxLightCount = maxLightCount;
-    m_Shadow = std::make_shared<Program>("../assets/shaders/shadow.vert",
-                                         "../assets/shaders/shadow.geom",
-                                         "../assets/shaders/shadow.frag");
+    m_PointLightShadow = std::make_shared<Program>(
+        "../assets/shaders/shadow.vert", "../assets/shaders/shadow.geom",
+        "../assets/shaders/shadow.frag");
 
     m_Basic = std::make_shared<Program>("../assets/shaders/phong.vert",
                                         "../assets/shaders/deferred_pass.frag");
@@ -58,7 +58,7 @@ void Pipeline::Init(int maxLightCount) {
     // UniformBuffer cameraUbo(sizeof(CameraData), 3);
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(
-        std::make_shared<UniformBuffer>(sizeof(Model::ModelInfo), 1));
+        std::make_shared<UniformBuffer>(sizeof(Model::ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
 }
@@ -85,7 +85,7 @@ void Pipeline::ShadowPass(Scene scene) {
     Renderer::DisableCullFace();
 
     // every light
-    m_Shadow->Bind();
+    m_PointLightShadow->Bind();
     for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         if (!light->GetCastShadow())
@@ -101,19 +101,19 @@ void Pipeline::ShadowPass(Scene scene) {
             std::shared_ptr<Model> model = scene.GetModel()[j];
             if (!model->GetCastShadows())
                 continue;
-            // scene[j].SetTransform(uiElements[j].GetTransform());
 
+            // scene[j].SetTransform(uiElements[j].GetTransform());
             lightMVP.model = model->GetTransform().GetTransformMatrix();
             m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
             // use first one to render shadow
             m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
-            // programShadow.Validate();
+            m_PointLightShadow->Validate();
 
             model->Draw();
         }
         m_ShadowFBO.Unbind();
     }
-    m_Shadow->Unbind();
+    m_PointLightShadow->Unbind();
 
     Renderer::EnableCullFace();
 }
