@@ -46,7 +46,7 @@ private:
     std::shared_ptr<Program> m_Light;
     std::shared_ptr<Program> m_Compositor;
     FrameBuffer m_ShadowFBO;
-    FrameBuffer m_BasePassFBO;
+    FrameBuffer m_BasicPassFBO;
     FrameBuffer m_LightPassFBO;
     FrameBuffer m_CompositeFBO;
 

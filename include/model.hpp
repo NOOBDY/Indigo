@@ -47,11 +47,13 @@ public:
         m_Roughness = roughness;
     }
     void SetCastShadows(bool castShadows) { m_CastShadows = castShadows; }
+    void SetVisible(bool visible) { m_Visible = visible; }
 
     std::shared_ptr<Texture> GetAlbedo() { return m_Albedo; }
     std::shared_ptr<Texture> GetNormal() { return m_Normal; }
     std::shared_ptr<Texture> GetRoughness() { return m_Roughness; }
     bool GetCastShadows() { return m_CastShadows; }
+    bool GetVisible() { return m_Visible; }
 
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }

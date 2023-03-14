@@ -71,6 +71,7 @@ void Pipeline::Render(Scene scene) {
 void Pipeline::ShadowPass(Scene scene) {
 
     MVP lightMVP;
+    Model::ModelData modelInfo;
     std::vector<LightData> lightInfos;
     for (int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
@@ -104,7 +105,9 @@ void Pipeline::ShadowPass(Scene scene) {
 
             // scene[j].SetTransform(uiElements[j].GetTransform());
             lightMVP.model = model->GetTransform().GetTransformMatrix();
+            modelInfo = model->GetModelData();
             m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
+            m_UBOs[1]->SetData(0, sizeof(Model::ModelData), &modelInfo);
             // use first one to render shadow
             m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
             m_PointLightShadow->Validate();
@@ -117,6 +120,39 @@ void Pipeline::ShadowPass(Scene scene) {
 
     Renderer::EnableCullFace();
 }
-void Pipeline::BasePass(Scene scene) {}
+void Pipeline::BasePass(Scene scene) {
+    m_BasicPassFBO.Bind();
+    m_Basic->Bind();
+    glViewport(0, 0, m_width, m_height);
+    Renderer::EnableDepthTest();
+    Renderer::Clear();
+    MVP modelMVP;
+    Model::ModelData modelInfo;
+    std::vector<LightData> lightInfos;
+    CameraData camData = camera.GetCameraData();
+    for (unsigned int i = 0; i < scene.GetModel().size(); i++) {
+        std::shared_ptr<Model> model = scene.GetModel()[i];
+        if (!model->GetVisible())
+            continue;
+        // if (i < 2) {
+        //     scene[i].SetTransform(uiElements[i].GetTransform());
+        // } else {
+        //     scene[i].GetTransform().SetPosition(uiData[i][0]);
+        //     scene[i].GetTransform().SetRotation(uiData[i][1]);
+        //     scene[i].GetTransform().SetScale(uiData[i][2]);
+        // }
+
+        modelMVP.model = model->GetTransform().GetTransformMatrix();
+        modelMVP.viewProjection = camera.GetViewProjection();
+        m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
+        m_UBOs[1]->SetData(0, sizeof(Model::ModelData), &modelInfo);
+        // lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        m_Basic->Validate();
+        model->Draw();
+    }
+    m_Basic->Unbind();
+    m_BasicPassFBO.Unbind();
+}
 void Pipeline::LightPass(Scene scene) {}
 void Pipeline::CompositePass() {}
