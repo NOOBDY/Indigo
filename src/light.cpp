@@ -72,3 +72,19 @@ LightData Light::GetLightData() {
 
     return data;
 }
+Texture::Target Light::GetShadowTarget() {
+    switch (m_Type) {
+    case Light::NONE:
+        throw std::invalid_argument("invalid light type for shadow");
+    case Light::POINT:
+        return Texture::Target::CUBE;
+    case Light::SPOT:
+        return Texture::Target::CUBE;
+    case Light::DIRECTION:
+        return Texture::Target::IMAGE_2D;
+    case Light::AMBIENT:
+        throw std::invalid_argument("invalid light type for shadow");
+    default:
+        throw std::invalid_argument("invalid light type for shadow");
+    }
+};

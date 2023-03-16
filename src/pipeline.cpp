@@ -32,8 +32,8 @@ void Pipeline::Init(int maxLightCount) {
     m_Light->SetInt("screenDepth", DEPTH);
 
     for (unsigned int i = 0; i < m_MaxLightCount; i++) {
-        m_Basic->Bind();
-        m_Basic->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
+        // m_Basic->Bind();
+        // m_Basic->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
         m_Light->Bind();
         m_Light->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
     }
@@ -73,14 +73,14 @@ void Pipeline::ShadowPass(Scene scene) {
     MVP lightMVP;
     Model::ModelData modelInfo;
     std::vector<LightData> lightInfos;
-    for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
+    int shadowCount =
+        for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         lightInfos.push_back(light->GetLightData());
-        if (i < m_MaxLightCount) {
+        if ()
             m_LightDepths.push_back(std::make_shared<Texture>(
                 light->GetTextureSize(), light->GetTextureSize(),
                 Texture::DEPTH, Texture::CUBE));
-        }
     }
     Renderer::EnableDepthTest();
     Renderer::DisableCullFace();
@@ -91,6 +91,7 @@ void Pipeline::ShadowPass(Scene scene) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         if (!light->GetCastShadow())
             continue;
+
         m_ShadowFBO.AttachTexture(m_LightDepths[i]->GetTextureID(),
                                   GL_DEPTH_ATTACHMENT);
         m_ShadowFBO.Bind();
@@ -134,19 +135,12 @@ void Pipeline::BasePass(Scene scene) {
         std::shared_ptr<Model> model = scene.GetModels()[i];
         if (!model->GetVisible())
             continue;
-        // if (i < 2) {
-        //     scene[i].SetTransform(uiElements[i].GetTransform());
-        // } else {
-        //     scene[i].GetTransform().SetPosition(uiData[i][0]);
-        //     scene[i].GetTransform().SetRotation(uiData[i][1]);
-        //     scene[i].GetTransform().SetScale(uiData[i][2]);
-        // }
-
         modelMVP.model = model->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
         m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
         m_UBOs[1]->SetData(0, sizeof(Model::ModelData), &modelInfo);
-        // lights.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+        // m_UBOs[2]->SetData(0, sizeof(LightData) * m_MaxLightCount,
+        // &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         m_Basic->Validate();
         model->Draw();

@@ -4,6 +4,7 @@
 #include "pch.hpp"
 
 #include "transform.hpp"
+#include "texture.hpp"
 
 struct LightData;
 
@@ -50,6 +51,7 @@ public:
     const Transform &GetTransform() const { return m_Transform; }
 
     void SetTransform(Transform transform) { m_Transform = transform; }
+    Texture::Target GetShadowTarget();
 
 private:
     Type m_Type;

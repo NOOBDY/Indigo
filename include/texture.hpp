@@ -39,6 +39,8 @@ public:
     GLuint GetTextureID() { return m_TextureID; }
     GLuint GetTextureLocation(const GLuint &programID,
                               const std::string &uniformName);
+    GLuint GetTextureTarget() { return m_Target; }
+    GLuint GetTextureFormat() { return m_Format; }
 
 private:
     void LoadImage(const std::string &textureFilepath, int bit);
@@ -51,6 +53,7 @@ private:
     Format m_Format;
     int m_Width;
     int m_Height;
+    int m_Bit;
 };
 
 #endif
