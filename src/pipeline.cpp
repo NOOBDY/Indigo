@@ -1,14 +1,10 @@
 #include "pipeline.hpp"
 
-// #define LIGHT_NUMBER 2
-
-Pipeline::Pipeline(){};
-
-void Pipeline::Init(int maxLightCount) {
-    m_MaxLightCount = maxLightCount;
-    m_PointLightShadow = std::make_shared<Program>(
-        "../assets/shaders/shadow.vert", "../assets/shaders/shadow.geom",
-        "../assets/shaders/shadow.frag");
+Pipeline::Pipeline() {
+    m_PointLightShadow =
+        std::make_shared<Program>("../assets/shaders/shadow.vert", //
+                                  "../assets/shaders/shadow.geom", //
+                                  "../assets/shaders/shadow.frag");
 
     m_Basic = std::make_shared<Program>("../assets/shaders/phong.vert",
                                         "../assets/shaders/deferred_pass.frag");
@@ -31,12 +27,12 @@ void Pipeline::Init(int maxLightCount) {
     m_Light->SetInt("screenARM", ARM);
     m_Light->SetInt("screenDepth", DEPTH);
 
-    for (unsigned int i = 0; i < m_MaxLightCount; i++) {
-        // m_Basic->Bind();
-        // m_Basic->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
-        m_Light->Bind();
-        m_Light->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW + i);
-    }
+    // for (unsigned int i = 0; i < m_LightCount; i++) {
+    //     // m_Basic->Bind();
+    //     // m_Basic->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW +
+    //     i); m_Light->Bind(); m_Light->SetInt("shadowMap[" + std::to_string(i)
+    //     + "]", SHADOW + i);
+    // }
 
     m_Compositor =
         std::make_shared<Program>("../assets/shaders/frame_screen.vert",
@@ -52,21 +48,19 @@ void Pipeline::Init(int maxLightCount) {
     m_Compositor->SetInt("screenVolume", VOLUME);
     m_Compositor->SetInt("screenDepth", DEPTH);
 
-    // UniformBuffer matrices(sizeof(Matrices), 0);
-    // UniformBuffer materials(sizeof(Model::ModelInfo), 1);
-    // UniformBuffer lights(sizeof(LightData) * m_maxLightCount, 2);
-    // UniformBuffer cameraUbo(sizeof(CameraData), 3);
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
 }
+
 void Pipeline::Render(Scene scene) {
     ShadowPass(scene);
     BasePass(scene);
     LightPass(scene);
-    CompositePass();
+    CompositorPass();
 }
+
 void Pipeline::ShadowPass(Scene scene) {
 
     MVP lightMVP;
@@ -118,6 +112,7 @@ void Pipeline::ShadowPass(Scene scene) {
 
     Renderer::EnableCullFace();
 }
+
 void Pipeline::BasePass(Scene scene) {
     m_BasicPassFBO.Bind();
     m_Basic->Bind();
@@ -145,5 +140,7 @@ void Pipeline::BasePass(Scene scene) {
     m_Basic->Unbind();
     m_BasicPassFBO.Unbind();
 }
+
 void Pipeline::LightPass(Scene scene) {}
-void Pipeline::CompositePass() {}
+
+void Pipeline::CompositorPass() {}

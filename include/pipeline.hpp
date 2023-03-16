@@ -30,21 +30,20 @@ class Pipeline {
 public:
     Pipeline();
 
-    void EnablePass(Pass pass);
-    void Init(int maxLightCount);
     void Render(Scene scene);
 
 private:
     void ShadowPass(Scene scene);
     void BasePass(Scene scene);
     void LightPass(Scene scene);
-    void CompositePass();
+    void CompositorPass();
 
 private:
     std::shared_ptr<Program> m_PointLightShadow;
     std::shared_ptr<Program> m_Basic;
     std::shared_ptr<Program> m_Light;
     std::shared_ptr<Program> m_Compositor;
+
     FrameBuffer m_ShadowFBO;
     FrameBuffer m_BasicPassFBO;
     FrameBuffer m_LightPassFBO;
@@ -55,6 +54,5 @@ private:
 
     int m_Width;
     int m_Height;
-    unsigned int m_MaxLightCount = 2;
 };
 #endif
