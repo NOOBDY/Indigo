@@ -35,8 +35,7 @@ public:
     void Unbind();
 
     void SetData();
-    void ChangeSize(const int width, const int height, Format type,
-                    Target format = IMAGE_2D, int bit = 16);
+    void ChangeSize(const int width, const int height);
 
     GLuint GetTextureID() { return m_TextureID; }
     GLuint GetTextureLocation(const GLuint &programID,

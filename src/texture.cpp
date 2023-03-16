@@ -192,3 +192,32 @@ Texture::Format Texture::Channels2Format(int channel) {
     LOG_ERROR("image channel {} unsupport", channel);
     throw;
 }
+void Texture::ChangeSize(int width, int height) {
+    glBindTexture(m_Target, m_TextureID);
+    if (m_Target == CUBE)
+        for (int i = 0; i < 6; i++)
+            glTexImage2D(                           //
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
+                0,                                  // level
+                Format2Bit(m_Format, m_Bit),        // internal format
+                width,                              //
+                height,                             //
+                0,                                  // border
+                m_Format,                           // format
+                GL_UNSIGNED_BYTE,                   // type
+                NULL                                //
+            );
+
+    else
+        glTexImage2D(                    //
+            m_Target,                    // target
+            0,                           // level
+            Format2Bit(m_Format, m_Bit), // internal format
+            width,                       //
+            height,                      //
+            0,                           // border
+            m_Format,                    // format
+            GL_UNSIGNED_BYTE,            // type
+            NULL                         //
+        );
+}
