@@ -35,7 +35,6 @@ public:
     void Unbind();
 
     void SetData();
-    void ChangeSize(const int width, const int height);
 
     GLuint GetTextureID() { return m_TextureID; }
     GLuint GetTextureLocation(const GLuint &programID,
@@ -47,6 +46,7 @@ private:
     void LoadImage(const std::string &textureFilepath, int bit);
     int Format2Bit(Format format, int bit);
     Format Channels2Format(int channel);
+    void Update(unsigned char *data = NULL);
 
 private:
     GLuint m_TextureID;
