@@ -81,11 +81,11 @@ layout(location = 3) in vec2 UV;
 layout(location = 4) in mat3 TBN;
 
 layout(location = 0) out vec4 screenAlbedo;
-layout(location = 1) out vec4 screenNormal;
-layout(location = 2) out vec4 screenPosition;
+layout(location = 1) out vec4 screenEmission;
+layout(location = 2) out vec4 screenNormal;
 // ARM(ao roughtless metallic)
 layout(location = 3) out vec4 screenARM;
-layout(location = 4) out vec4 screenEmission;
+layout(location = 4) out vec4 screenPosition;
 // out vec4 color;
 // uniform vec3 cameraPosition;
 

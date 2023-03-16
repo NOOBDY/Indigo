@@ -56,11 +56,11 @@ int main(int argc, char **argv) {
 
     enum {
         ALBEDO,
+        EMISSION,
         NORMAL,
         ARM,
-        EMISSION,
-        REFLECT,
         POSITION,
+        REFLECT,
         DEPTH,
         LIGHTING,
         VOLUME,
@@ -231,14 +231,14 @@ int main(int argc, char **argv) {
 #pragma region color buffer
     Texture screenAlbedo(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenAlbedo.GetTextureID(), attachments[0]);
+    Texture screenEmission(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
+    deferredFbo.AttachTexture(screenEmission.GetTextureID(), attachments[1]);
     Texture screenNormal(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
-    deferredFbo.AttachTexture(screenNormal.GetTextureID(), attachments[1]);
-    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
-    deferredFbo.AttachTexture(screenPosition.GetTextureID(), attachments[2]);
+    deferredFbo.AttachTexture(screenNormal.GetTextureID(), attachments[2]);
     Texture screenARM(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
     deferredFbo.AttachTexture(screenARM.GetTextureID(), attachments[3]);
-    Texture screenEmission(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
-    deferredFbo.AttachTexture(screenEmission.GetTextureID(), attachments[4]);
+    Texture screenPosition(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::RGBA);
+    deferredFbo.AttachTexture(screenPosition.GetTextureID(), attachments[4]);
     Texture screenDepth(SCREEN_WIDTH, SCREEN_HEIGHT, Texture::DEPTH);
     deferredFbo.AttachTexture(screenDepth.GetTextureID(), GL_DEPTH_ATTACHMENT);
     glDrawBuffers(5, attachments);

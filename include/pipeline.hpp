@@ -12,15 +12,16 @@
 class Pipeline {
     enum Pass {
         ALBEDO,
+        EMISSION,
         NORMAL,
         ARM,
-        EMISSION,
-        REFLECT,
         POSITION,
+        REFLECT,
         DEPTH,
         LIGHTING,
         VOLUME,
-        SHADOW // Must be last because cube map stuff
+        SHADOW, // Must be last because cube map stuff
+        PASS_NUMBER
     };
     struct MVP {
         glm::mat4 model;
@@ -52,6 +53,7 @@ private:
 
     std::vector<std::shared_ptr<Texture>> m_LightDepths;
     std::vector<std::shared_ptr<UniformBuffer>> m_UBOs;
+    std::vector<std::shared_ptr<Texture>> m_Passes;
 
     int m_Width;
     int m_Height;

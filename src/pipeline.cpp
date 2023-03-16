@@ -2,7 +2,12 @@
 
 // #define LIGHT_NUMBER 2
 
-Pipeline::Pipeline(){};
+Pipeline::Pipeline() {
+    for (int i = 0; i < PASS_NUMBER; i++) {
+        m_Passes.push_back(
+            std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA));
+    }
+};
 
 void Pipeline::Init(int maxLightCount) {
     m_MaxLightCount = maxLightCount;
@@ -145,5 +150,31 @@ void Pipeline::BasePass(Scene scene) {
     m_Basic->Unbind();
     m_BasicPassFBO.Unbind();
 }
-void Pipeline::LightPass(Scene scene) {}
+void Pipeline::LightPass(Scene scene) {
+    Renderer::EnableDepthTest();
+    // m_LightPassFBO.Bind();
+    // m_Light.Bind();
+    // screenAlbedo.Bind(ALBEDO);
+    // screenNormal.Bind(NORMAL);
+    // screenPosition.Bind(POSITION);
+    // screenEmission.Bind(EMISSION);
+    // screenDepth.Bind(DEPTH);
+    // for (unsigned int i = 0; i < lightDepths.size(); i++) {
+    //     lightDepths[i]->Bind(SHADOW + i);
+    // }
+    // // geo
+    // planeVAO.Bind();
+    // lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
+    // CameraData camData = activeCamera->GetCameraData();
+    // cameraUbo.SetData(0, sizeof(CameraData), &camData);
+
+    // Renderer::DisableDepthTest(); // direct render texture no need depth
+
+    // programDeferredLight.Validate();
+    // Renderer::Clear();
+    // Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
+
+    // programDeferredLight.Unbind();
+    // deferredLightFbo.Unbind();
+}
 void Pipeline::CompositePass() {}
