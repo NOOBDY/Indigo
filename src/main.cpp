@@ -4,6 +4,7 @@
 #include "exception.hpp"
 #include "window.hpp"
 #include "renderer.hpp"
+#include "pipeline.hpp"
 #include "controller.hpp"
 #include "program.hpp"
 #include "camera.hpp"
@@ -53,6 +54,8 @@ int main(int argc, char **argv) {
     Renderer::Init();
     Renderer::ClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     Controller::InitGUI(window);
+
+    Pipeline pipeline;
 
     enum {
         ALBEDO,
