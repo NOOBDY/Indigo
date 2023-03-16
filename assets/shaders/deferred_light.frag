@@ -61,6 +61,7 @@ struct DeferredData {
     vec3 emission;
     vec3 normal;
     vec3 position;
+    vec3 ARM;
     vec3 depth;
 };
 
@@ -191,7 +192,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     vec3 specular =
         vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0))
                        ? 0.0
-                       : pow(dotRV, material.maxShine));
+                       : pow(dotRV, deferredInfo.ARM.y*100));
 
     float shadow = shadow(position, light, index);
     // return vec4(shadow)/LIGHT_NUMBER;
@@ -228,6 +229,7 @@ void main() {
     baseInfo.normal = texture(screenNormal, UV).rgb;
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
+    baseInfo.ARM= texture(screenARM, UV).rgb;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
     // temPosition=temPosition* 600.0;

@@ -453,6 +453,7 @@ int main(int argc, char **argv) {
         screenNormal.Bind(NORMAL);
         screenPosition.Bind(POSITION);
         screenEmission.Bind(EMISSION);
+        screenARM.Bind(ARM);
         screenDepth.Bind(DEPTH);
 
         screenLight.Bind(LIGHTING);

@@ -54,6 +54,8 @@ void main() {
     // col+=gaussianBlur(screenEmission,0.5, UV);
 
     col += gaussianBlur(screenVolume, 0.5, UV);
+    col=texture(screenLight,UV).rgb;
+    // col=texture(screenARM,UV).rgb;
     // col-=texture(screenVolume,UV).xyz;
     // col=clamp(vec3(0.0),vec3(1.0),col);
 
