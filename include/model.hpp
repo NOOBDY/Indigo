@@ -6,6 +6,7 @@
 #include "texture.hpp"
 #include "transform.hpp"
 #include "vertex_array.hpp"
+struct ModelData;
 
 class Model {
 public:
@@ -15,24 +16,6 @@ public:
         ROUGHNESS,
         SHADOW, // first non-shadow texture index
     };
-    struct ModelData {
-        TransformData transform;
-
-        int useAlbedoTexture;
-        glm::vec3 albedoColor;
-
-        int useEmissionTexture;
-        glm::vec3 emissionColor;
-
-        int useARMTexture;
-        glm::vec3 ARM;
-
-        int useNormalTexture;
-        int id;
-        int castShadows;
-        int visible;
-    };
-
     Model(std::shared_ptr<VertexArray> vao, Transform transform = Transform());
     ~Model();
 
@@ -77,6 +60,24 @@ private:
     glm::vec3 m_AlbedoColor;
     glm::vec3 m_EmissionColor;
     glm::vec3 m_ARM;
+};
+
+struct ModelData {
+    TransformData transform;
+
+    int useAlbedoTexture;
+    glm::vec3 albedoColor;
+
+    int useEmissionTexture;
+    glm::vec3 emissionColor;
+
+    int useARMTexture;
+    glm::vec3 ARM;
+
+    int useNormalTexture;
+    int id;
+    int castShadows;
+    int visible;
 };
 
 #endif

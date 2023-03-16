@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
     LightData lightInfo[LIGHT_NUMBER];
 
     UniformBuffer matrices(sizeof(Matrices), 0);
-    UniformBuffer materials(sizeof(Material), 1);
+    UniformBuffer modelUbo(sizeof(ModelData), 1);
     UniformBuffer lightsUbo(sizeof(LightData) * LIGHT_NUMBER, 2);
     UniformBuffer cameraUbo(sizeof(CameraData), 3);
 
@@ -139,7 +139,6 @@ int main(int argc, char **argv) {
     testScene.AddLight(light2Test);
 
     // begin model 1
-    Material matColor1 = {glm::vec3(0.8f, 0.5f, 0.0f), 30.0f};
 
     std::vector<Controller::TransformSlider> transformSliders;
     std::vector<Controller::LightSlider> lightSliders;
@@ -352,7 +351,11 @@ int main(int argc, char **argv) {
                 models[j]->SetTransform(transformSliders[j].GetTransform());
 
                 lightMat.model = models[j]->GetTransform().GetTransformMatrix();
+                ModelData modelData = models[j]->GetModelData();
                 matrices.SetData(0, sizeof(Matrices), &lightMat);
+                lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER,
+                                  &lightInfo);
+                modelUbo.SetData(0, sizeof(ModelData), &modelData);
                 // use first one to render shadow
                 lightsUbo.SetData(0, sizeof(LightData), &lightInfo[i]);
                 programShadow.Validate();
@@ -399,11 +402,12 @@ int main(int argc, char **argv) {
             Matrices mat;
             mat.model = models[i]->GetTransform().GetTransformMatrix();
             mat.viewProjection = activeCamera->GetViewProjection();
+            ModelData modelData = models[i]->GetModelData();
+            CameraData camData = activeCamera->GetCameraData();
 
             matrices.SetData(0, sizeof(Matrices), &mat);
-            materials.SetData(0, sizeof(Material), &matColor1);
+            modelUbo.SetData(0, sizeof(ModelData), &modelData);
             lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-            CameraData camData = activeCamera->GetCameraData();
             cameraUbo.SetData(0, sizeof(CameraData), &camData);
             programDeferredPass.Validate();
             models[i]->Draw();

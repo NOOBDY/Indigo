@@ -57,8 +57,7 @@ void Pipeline::Init(int maxLightCount) {
     // UniformBuffer lights(sizeof(LightData) * m_maxLightCount, 2);
     // UniformBuffer cameraUbo(sizeof(CameraData), 3);
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
-    m_UBOs.push_back(
-        std::make_shared<UniformBuffer>(sizeof(Model::ModelData), 1));
+    m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
 }
@@ -71,7 +70,7 @@ void Pipeline::Render(Scene scene) {
 void Pipeline::ShadowPass(Scene scene) {
 
     MVP lightMVP;
-    Model::ModelData modelInfo;
+    ModelData modelInfo;
     std::vector<LightData> lightInfos;
     for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
@@ -106,7 +105,7 @@ void Pipeline::ShadowPass(Scene scene) {
             lightMVP.model = model->GetTransform().GetTransformMatrix();
             modelInfo = model->GetModelData();
             m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
-            m_UBOs[1]->SetData(0, sizeof(Model::ModelData), &modelInfo);
+            m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
             // use first one to render shadow
             m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
             m_PointLightShadow->Validate();
@@ -126,7 +125,7 @@ void Pipeline::BasePass(Scene scene) {
     Renderer::EnableDepthTest();
     Renderer::Clear();
     MVP modelMVP;
-    Model::ModelData modelInfo;
+    ModelData modelInfo;
     std::vector<LightData> lightInfos;
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
     for (unsigned int i = 0; i < scene.GetModels().size(); i++) {
@@ -136,7 +135,7 @@ void Pipeline::BasePass(Scene scene) {
         modelMVP.model = model->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
         m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
-        m_UBOs[1]->SetData(0, sizeof(Model::ModelData), &modelInfo);
+        m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
         // m_UBOs[2]->SetData(0, sizeof(LightData) * m_MaxLightCount,
         // &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
