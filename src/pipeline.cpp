@@ -1,27 +1,10 @@
 #include "pipeline.hpp"
 
-<<<<<<< HEAD
-// #define LIGHT_NUMBER 2
-
-Pipeline::Pipeline() {
-    for (int i = 0; i < PASS_NUMBER; i++) {
-        m_Passes.push_back(
-            std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA));
-    }
-};
-
-void Pipeline::Init(int maxLightCount) {
-    m_MaxLightCount = maxLightCount;
-    m_PointLightShadow = std::make_shared<Program>(
-        "../assets/shaders/shadow.vert", "../assets/shaders/shadow.geom",
-        "../assets/shaders/shadow.frag");
-=======
 Pipeline::Pipeline() {
     m_PointLightShadow =
         std::make_shared<Program>("../assets/shaders/shadow.vert", //
                                   "../assets/shaders/shadow.geom", //
                                   "../assets/shaders/shadow.frag");
->>>>>>> upstream/pipeline
 
     m_Basic = std::make_shared<Program>("../assets/shaders/phong.vert",
                                         "../assets/shaders/deferred_pass.frag");
@@ -157,7 +140,6 @@ void Pipeline::BasePass(Scene scene) {
     m_Basic->Unbind();
     m_BasicPassFBO.Unbind();
 }
-<<<<<<< HEAD
 void Pipeline::LightPass(Scene scene) {
     Renderer::EnableDepthTest();
     // m_LightPassFBO.Bind();
@@ -185,10 +167,4 @@ void Pipeline::LightPass(Scene scene) {
     // programDeferredLight.Unbind();
     // deferredLightFbo.Unbind();
 }
-void Pipeline::CompositePass() {}
-=======
-
-void Pipeline::LightPass(Scene scene) {}
-
 void Pipeline::CompositorPass() {}
->>>>>>> upstream/pipeline
