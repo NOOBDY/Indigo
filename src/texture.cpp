@@ -187,3 +187,11 @@ void Texture::Update(unsigned char *data) {
             data                         //
         );
 }
+void Texture::SetWidth(int width) {
+    m_Width = width;
+    Update(nullptr);
+}
+void Texture::SetHeight(int height) {
+    m_Height = height;
+    Update(nullptr);
+}
