@@ -17,7 +17,7 @@ Pipeline::Pipeline() {
 
     m_Light =
         std::make_shared<Program>("../assets/shaders/frame_deferred.vert",
-                                  "../assets/shaders/deferred_light.frag");
+                                  "../assets/shaders/pipeline_light.frag");
     m_Light->Bind();
     m_Light->SetInt("screenAlbedo", ALBEDO);
     m_Light->SetInt("screenEmission", EMISSION);
@@ -25,7 +25,14 @@ Pipeline::Pipeline() {
     m_Light->SetInt("screenARM", ARM);
     m_Light->SetInt("screenPosition", POSITION);
     m_Light->SetInt("screenDepth", DEPTH);
+
+    m_Light->SetInt("screenLight", LIGHTING);
+    m_Light->SetInt("screenVolume", VOLUME);
+
     m_Light->SetInt("reflectMap", REFLECT);
+
+    m_Light->SetInt("pointShadowMap", POINT_SHADOW);
+    m_Light->SetInt("directionShadowMap", DIRECTION_SHADOW);
 
     // for (unsigned int i = 0; i < m_LightCount; i++) {
     //     // m_Basic->Bind();
