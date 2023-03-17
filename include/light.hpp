@@ -28,10 +28,10 @@ public:
     void SetInner(float inner) { m_InnerCone = inner; }
     void SetOuter(float outer) { m_OuterCone = outer; }
     void SetShadowSize(int size) {
-        m_TextureSize = size;
+        m_ShadowSize = size;
         if (m_ShadowTexture) {
-            m_ShadowTexture->SetWidth(m_TextureSize);
-            m_ShadowTexture->SetHeight(m_TextureSize);
+            m_ShadowTexture->SetWidth(m_ShadowSize);
+            m_ShadowTexture->SetHeight(m_ShadowSize);
         }
     }
     void SetCastShadow(bool castShadow) { m_CastShadow = castShadow; }
@@ -48,7 +48,7 @@ public:
     float GetInnerCone() const { return m_InnerCone; };
     float GetOuterCone() const { return m_OuterCone; };
 
-    float GetTextureSize() const { return m_TextureSize; };
+    float GetTextureSize() const { return m_ShadowSize; };
     bool GetCastShadow() const { return m_CastShadow; };
     std::shared_ptr<Texture> GetShadowTexture() const {
         return m_ShadowTexture;
@@ -77,8 +77,8 @@ private:
     float m_FarPlane = 1000.0f;
 
     Transform m_Transform;
-    int m_TextureSize = 1024;
     bool m_CastShadow = true;
+    int m_ShadowSize = 1024;
     std::shared_ptr<Texture> m_ShadowTexture = nullptr;
 };
 

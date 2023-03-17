@@ -11,6 +11,8 @@
 
 class Pipeline {
     enum Pass {
+
+        // basic
         ALBEDO,
         EMISSION,
         NORMAL,
@@ -18,12 +20,17 @@ class Pipeline {
         POSITION,
         DEPTH,
 
+        //
         REFLECT,
+
+        // lighting
         LIGHTING,
         VOLUME,
+
+        // shadow
         POINT_SHADOW, // Must be last because cube map stuff
         DIRECTION_SHADOW,
-        PASS_NUMBER
+
     };
     struct MVP {
         glm::mat4 model;
@@ -34,6 +41,7 @@ public:
     Pipeline();
 
     void Render(Scene scene);
+    void Init();
 
 private:
     void ShadowPass(Scene scene);
@@ -53,7 +61,7 @@ private:
     FrameBuffer m_CompositeFBO;
 
     std::vector<std::shared_ptr<UniformBuffer>> m_UBOs;
-    std::vector<std::shared_ptr<Texture>> m_Passes;
+    std::map<int, std::shared_ptr<Texture>> m_Passes;
 
     std::shared_ptr<Model> m_Plane;
     int m_Width;

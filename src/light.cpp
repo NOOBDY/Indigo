@@ -5,7 +5,7 @@ Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
     : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(
-            m_TextureSize, m_TextureSize, Texture::DEPTH, GetShadowTarget());
+            m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
     }
 }
 void Light::SetLightType(Type lightType) {
@@ -13,7 +13,7 @@ void Light::SetLightType(Type lightType) {
     m_Type = lightType;
     if (lastTarget != GetShadowTarget()) {
         m_ShadowTexture = std::make_shared<Texture>(
-            m_TextureSize, m_TextureSize, Texture::DEPTH, GetShadowTarget());
+            m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
     }
 }
 

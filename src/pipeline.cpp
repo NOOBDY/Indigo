@@ -84,6 +84,64 @@ Pipeline::Pipeline() {
 
     Model plane(std::make_shared<VertexArray>(planeVAO));
 }
+void Pipeline::Init() {
+    unsigned int attachments[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
+                                  GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
+                                  GL_COLOR_ATTACHMENT4};
+
+#pragma region color buffer
+    m_BasicPassFBO.Bind();
+    m_Passes[ALBEDO] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[ALBEDO]->GetTextureID(),
+                                 attachments[0]);
+    m_Passes[EMISSION] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[EMISSION]->GetTextureID(),
+                                 attachments[1]);
+    m_Passes[NORMAL] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[NORMAL]->GetTextureID(),
+                                 attachments[2]);
+    m_Passes[ARM] = std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[ARM]->GetTextureID(), attachments[3]);
+
+    m_Passes[POSITION] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[POSITION]->GetTextureID(),
+                                 attachments[4]);
+    m_Passes[DEPTH] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[DEPTH]->GetTextureID(),
+                                 GL_DEPTH_ATTACHMENT);
+    glDrawBuffers(5, attachments);
+    m_BasicPassFBO.Unbind();
+#pragma endregion
+
+#pragma region lighting pass texture
+    m_LightPassFBO.Bind();
+    m_Passes[LIGHTING] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_LightPassFBO.AttachTexture(m_Passes[LIGHTING]->GetTextureID(),
+                                 attachments[0]);
+    m_Passes[VOLUME] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_LightPassFBO.AttachTexture(m_Passes[VOLUME]->GetTextureID(),
+                                 attachments[1]);
+    glDrawBuffers(2, attachments);
+
+    GLuint rbo1;
+
+    glCreateRenderbuffers(1, &rbo1);
+    glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, m_Width, m_Height);
+
+    glNamedFramebufferRenderbuffer(m_LightPassFBO.GetBufferID(),
+                                   GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
+                                   rbo1);
+
+    m_LightPassFBO.Unbind();
+#pragma endregion
+}
 
 void Pipeline::Render(Scene scene) {
     ShadowPass(scene);
@@ -127,7 +185,6 @@ void Pipeline::ShadowPass(Scene scene) {
             if (!model->GetCastShadows())
                 continue;
 
-            // scene[j].SetTransform(uiElements[j].GetTransform());
             lightMVP.model = model->GetTransform().GetTransformMatrix();
             modelInfo = model->GetModelData();
             m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
@@ -178,20 +235,27 @@ void Pipeline::LightPass(Scene scene) {
     glViewport(0, 0, m_Width, m_Height);
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
 
+    // basic pass
     for (int i = 0; i <= DEPTH; i++) {
         m_Passes[i]->Bind(i);
     }
-    // geo
+    // reflect pass need
+
     Renderer::DisableDepthTest(); // direct render texture no need depth
     Renderer::Clear();
     for (int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         if (!light->GetCastShadow())
             continue;
-        light->GetShadowTexture()->Bind(POINT_SHADOW);
+        if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
+            light->GetShadowTexture()->Bind(POINT_SHADOW);
+        else if (light->GetType() == Light::DIRECTION)
+            light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
+
         LightData lightInfo = light->GetLightData();
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        // shader need to delete light type to select use cube for image 2d
         m_Plane->Draw();
     }
     // programDeferredLight.Validate();
@@ -199,4 +263,20 @@ void Pipeline::LightPass(Scene scene) {
     m_Light->Bind();
     Renderer::EnableDepthTest();
 }
-void Pipeline::CompositorPass() {}
+void Pipeline::CompositorPass() {
+    Renderer::DisableDepthTest(); // direct render texture no need depth
+    m_Compositor->Bind();
+    m_CompositeFBO.Bind();
+    // basic pass
+    for (unsigned int i = 0; i <= DEPTH; i++) {
+        m_Passes[i]->Bind(i);
+    }
+
+    m_Passes[LIGHTING]->Bind(LIGHTING);
+    m_Passes[VOLUME]->Bind(VOLUME);
+
+    m_Plane->Draw();
+
+    m_CompositeFBO.Unbind();
+    m_Compositor->Unbind();
+}
