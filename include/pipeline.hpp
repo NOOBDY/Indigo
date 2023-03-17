@@ -16,11 +16,13 @@ class Pipeline {
         NORMAL,
         ARM,
         POSITION,
-        REFLECT,
         DEPTH,
+
+        REFLECT,
         LIGHTING,
         VOLUME,
-        SHADOW, // Must be last because cube map stuff
+        POINT_SHADOW, // Must be last because cube map stuff
+        DIRECTION_SHADOW,
         PASS_NUMBER
     };
     struct MVP {
@@ -53,6 +55,7 @@ private:
     std::vector<std::shared_ptr<UniformBuffer>> m_UBOs;
     std::vector<std::shared_ptr<Texture>> m_Passes;
 
+    std::shared_ptr<Model> m_Plane;
     int m_Width;
     int m_Height;
 };

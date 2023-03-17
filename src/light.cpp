@@ -9,9 +9,12 @@ Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
     }
 }
 void Light::SetLightType(Type lightType) {
+    Texture::Target lastTarget = GetShadowTarget();
     m_Type = lightType;
-    m_ShadowTexture = std::make_shared<Texture>(
-        m_TextureSize, m_TextureSize, Texture::DEPTH, GetShadowTarget());
+    if (lastTarget != GetShadowTarget()) {
+        m_ShadowTexture = std::make_shared<Texture>(
+            m_TextureSize, m_TextureSize, Texture::DEPTH, GetShadowTarget());
+    }
 }
 
 glm::mat4 Light::GetLightProjection() const {

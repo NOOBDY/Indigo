@@ -10,22 +10,22 @@ Pipeline::Pipeline() {
                                         "../assets/shaders/deferred_pass.frag");
     m_Basic->Bind();
     m_Basic->SetInt("albedoMap", ALBEDO);
-    m_Basic->SetInt("normalMap", NORMAL);
     m_Basic->SetInt("emissionMap", EMISSION);
-    m_Basic->SetInt("reflectMap", REFLECT);
+    m_Basic->SetInt("normalMap", NORMAL);
     m_Basic->SetInt("ARM", ARM);
+    m_Basic->SetInt("reflectMap", REFLECT);
 
     m_Light =
         std::make_shared<Program>("../assets/shaders/frame_deferred.vert",
                                   "../assets/shaders/deferred_light.frag");
     m_Light->Bind();
     m_Light->SetInt("screenAlbedo", ALBEDO);
-    m_Light->SetInt("screenNormal", NORMAL);
-    m_Light->SetInt("screenPosition", POSITION);
     m_Light->SetInt("screenEmission", EMISSION);
-    m_Light->SetInt("reflectMap", REFLECT);
+    m_Light->SetInt("screenNormal", NORMAL);
     m_Light->SetInt("screenARM", ARM);
+    m_Light->SetInt("screenPosition", POSITION);
     m_Light->SetInt("screenDepth", DEPTH);
+    m_Light->SetInt("reflectMap", REFLECT);
 
     // for (unsigned int i = 0; i < m_LightCount; i++) {
     //     // m_Basic->Bind();
@@ -39,19 +39,50 @@ Pipeline::Pipeline() {
                                   "../assets/shaders/frame_screen.frag");
     m_Compositor->Bind();
     m_Compositor->SetInt("screenAlbedo", ALBEDO);
-    m_Compositor->SetInt("screenNormal", NORMAL);
-    m_Compositor->SetInt("screenPosition", POSITION);
     m_Compositor->SetInt("screenEmission", EMISSION);
-    m_Compositor->SetInt("reflectMap", REFLECT);
+    m_Compositor->SetInt("screenNormal", NORMAL);
     m_Compositor->SetInt("screenARM", ARM);
+    m_Compositor->SetInt("screenPosition", POSITION);
+    m_Compositor->SetInt("screenDepth", DEPTH);
+
+    m_Compositor->SetInt("reflectMap", REFLECT);
     m_Compositor->SetInt("screenLight", LIGHTING);
     m_Compositor->SetInt("screenVolume", VOLUME);
-    m_Compositor->SetInt("screenDepth", DEPTH);
 
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
+    VertexArray planeVAO;
+
+    // vertices
+    planeVAO.AddVertexBuffer(std::make_shared<VertexBuffer>(
+        std::vector<float>{
+            -1.0f, 1.0f,  //
+            -1.0f, -1.0f, //
+            1.0f, -1.0f,  //
+            1.0f, 1.0f,   //
+        },
+        2 * sizeof(float)));
+
+    // UV
+    planeVAO.AddVertexBuffer(std::make_shared<VertexBuffer>(
+        std::vector<float>{
+            0.0f, 1.0f, //
+            0.0f, 0.0f, //
+            1.0f, 0.0f, //
+            1.0f, 1.0f, //
+        },
+        2 * sizeof(float)));
+
+    // Indices
+    planeVAO.SetIndexBuffer(
+        std::make_shared<IndexBuffer>(std::vector<unsigned int>{
+            0, 1, 2, //
+            0, 2, 3, //
+        }));
+
+    Model plane(std::make_shared<VertexArray>(planeVAO));
 }
 
 void Pipeline::Render(Scene scene) {
@@ -142,30 +173,30 @@ void Pipeline::BasePass(Scene scene) {
     m_BasicPassFBO.Unbind();
 }
 void Pipeline::LightPass(Scene scene) {
-    Renderer::EnableDepthTest();
-    // m_LightPassFBO.Bind();
-    // m_Light.Bind();
-    // screenAlbedo.Bind(ALBEDO);
-    // screenNormal.Bind(NORMAL);
-    // screenPosition.Bind(POSITION);
-    // screenEmission.Bind(EMISSION);
-    // screenDepth.Bind(DEPTH);
-    // for (unsigned int i = 0; i < lightDepths.size(); i++) {
-    //     lightDepths[i]->Bind(SHADOW + i);
-    // }
-    // // geo
-    // planeVAO.Bind();
-    // lightsUbo.SetData(0, sizeof(LightData) * LIGHT_NUMBER, &lightInfo);
-    // CameraData camData = activeCamera->GetCameraData();
-    // cameraUbo.SetData(0, sizeof(CameraData), &camData);
+    m_LightPassFBO.Bind();
+    m_Light->Bind();
+    glViewport(0, 0, m_Width, m_Height);
+    CameraData camData = scene.GetActiveCamera()->GetCameraData();
 
-    // Renderer::DisableDepthTest(); // direct render texture no need depth
-
+    for (int i = 0; i <= DEPTH; i++) {
+        m_Passes[i]->Bind(i);
+    }
+    // geo
+    Renderer::DisableDepthTest(); // direct render texture no need depth
+    Renderer::Clear();
+    for (int i = 0; i < scene.GetLights().size(); i++) {
+        std::shared_ptr<Light> light = scene.GetLights()[i];
+        if (!light->GetCastShadow())
+            continue;
+        light->GetShadowTexture()->Bind(POINT_SHADOW);
+        LightData lightInfo = light->GetLightData();
+        m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
+        m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        m_Plane->Draw();
+    }
     // programDeferredLight.Validate();
-    // Renderer::Clear();
-    // Renderer::Draw(planeVAO.GetIndexBuffer()->GetCount());
-
-    // programDeferredLight.Unbind();
-    // deferredLightFbo.Unbind();
+    m_LightPassFBO.Bind();
+    m_Light->Bind();
+    Renderer::EnableDepthTest();
 }
 void Pipeline::CompositorPass() {}

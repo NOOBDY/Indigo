@@ -27,7 +27,13 @@ public:
     void SetLightType(Type lightType);
     void SetInner(float inner) { m_InnerCone = inner; }
     void SetOuter(float outer) { m_OuterCone = outer; }
-    void SetShadowSize(int size) { m_TextureSize = size; }
+    void SetShadowSize(int size) {
+        m_TextureSize = size;
+        if (m_ShadowTexture) {
+            m_ShadowTexture->SetWidth(m_TextureSize);
+            m_ShadowTexture->SetHeight(m_TextureSize);
+        }
+    }
     void SetCastShadow(bool castShadow) { m_CastShadow = castShadow; }
 
     glm::mat4 GetLightProjection() const;
