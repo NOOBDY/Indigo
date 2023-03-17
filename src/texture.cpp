@@ -160,7 +160,7 @@ Texture::Format Texture::Channels2Format(int channel) {
 }
 void Texture::Update(unsigned char *data) {
     glBindTexture(m_Target, m_TextureID);
-    if (m_Target == CUBE)
+    if (m_Target == CUBE) {
         for (int i = 0; i < 6; i++)
             glTexImage2D(                           //
                 GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
@@ -174,7 +174,9 @@ void Texture::Update(unsigned char *data) {
                 data                                //
             );
 
-    else
+    }
+
+    else if (m_Target == IMAGE_2D) {
         glTexImage2D(                    //
             m_Target,                    // target
             0,                           // level
@@ -186,6 +188,9 @@ void Texture::Update(unsigned char *data) {
             GL_UNSIGNED_BYTE,            // type
             data                         //
         );
+    } else {
+        throw std::string("invalid target");
+    }
 }
 void Texture::SetWidth(int width) {
     m_Width = width;

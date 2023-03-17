@@ -50,7 +50,6 @@ private:
     FrameBuffer m_LightPassFBO;
     FrameBuffer m_CompositeFBO;
 
-    std::vector<std::shared_ptr<Texture>> m_LightDepths;
     std::vector<std::shared_ptr<UniformBuffer>> m_UBOs;
     std::vector<std::shared_ptr<Texture>> m_Passes;
 

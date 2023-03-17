@@ -2,7 +2,17 @@
 
 #pragma pack(16) // std140 layout pads by multiple of 16
 Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
-    : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {}
+    : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {
+    if (m_CastShadow) {
+        m_ShadowTexture = std::make_shared<Texture>(
+            m_TextureSize, m_TextureSize, Texture::DEPTH, GetShadowTarget());
+    }
+}
+void Light::SetLightType(Type lightType) {
+    m_Type = lightType;
+    m_ShadowTexture = std::make_shared<Texture>(
+        m_TextureSize, m_TextureSize, Texture::DEPTH, GetShadowTarget());
+}
 
 glm::mat4 Light::GetLightProjection() const {
 

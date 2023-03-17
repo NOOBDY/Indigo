@@ -69,24 +69,25 @@ void Pipeline::ShadowPass(Scene scene) {
     for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         lightInfos.push_back(light->GetLightData());
-        m_LightDepths.push_back(std::make_shared<Texture>(
-            light->GetTextureSize(), light->GetTextureSize(), Texture::DEPTH,
-            Texture::CUBE));
     }
     Renderer::EnableDepthTest();
     Renderer::DisableCullFace();
 
     // every light
-    m_PointLightShadow->Bind();
     for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         if (!light->GetCastShadow())
             continue;
 
-        m_ShadowFBO.AttachTexture(m_LightDepths[i]->GetTextureID(),
+        if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
+            m_PointLightShadow->Bind();
+        if (light->GetType() == Light::DIRECTION)
+            m_PointLightShadow->Bind();
+
+        glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
+        m_ShadowFBO.AttachTexture(light->GetShadowTexture()->GetTextureID(),
                                   GL_DEPTH_ATTACHMENT);
         m_ShadowFBO.Bind();
-        glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
         Renderer::Clear();
 
         // not render light ball
@@ -102,13 +103,13 @@ void Pipeline::ShadowPass(Scene scene) {
             m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
             // use first one to render shadow
             m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
-            m_PointLightShadow->Validate();
+            // m_PointLightShadow->Validate();
 
             model->Draw();
         }
+        m_PointLightShadow->Unbind();
         m_ShadowFBO.Unbind();
     }
-    m_PointLightShadow->Unbind();
 
     Renderer::EnableCullFace();
 }
