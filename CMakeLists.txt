@@ -60,9 +60,6 @@ add_executable(Indigo
     include/scene.hpp
     include/model.hpp
     include/light.hpp
-
-    assets/shaders/base.vert
-    assets/shaders/base.frag
 )
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE
