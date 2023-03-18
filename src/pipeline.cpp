@@ -1,6 +1,6 @@
 #include "pipeline.hpp"
 
-Pipeline::Pipeline() {
+Pipeline::Pipeline(int width, int height) : m_Width(width), m_Height(height) {
     m_PointLightShadow =
         std::make_shared<Program>("../assets/shaders/shadow.vert", //
                                   "../assets/shaders/shadow.geom", //
@@ -34,13 +34,6 @@ Pipeline::Pipeline() {
     m_Light->SetInt("pointShadowMap", POINT_SHADOW);
     m_Light->SetInt("directionShadowMap", DIRECTION_SHADOW);
 
-    // for (unsigned int i = 0; i < m_LightCount; i++) {
-    //     // m_Basic->Bind();
-    //     // m_Basic->SetInt("shadowMap[" + std::to_string(i) + "]", SHADOW +
-    //     i); m_Light->Bind(); m_Light->SetInt("shadowMap[" + std::to_string(i)
-    //     + "]", SHADOW + i);
-    // }
-
     m_Compositor =
         std::make_shared<Program>("../assets/shaders/frame_screen.vert",
                                   "../assets/shaders/frame_screen.frag");
@@ -60,10 +53,9 @@ Pipeline::Pipeline() {
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
-    VertexArray planeVAO;
 
     // vertices
-    planeVAO.AddVertexBuffer(std::make_shared<VertexBuffer>(
+    m_Screen.AddVertexBuffer(std::make_shared<VertexBuffer>(
         std::vector<float>{
             -1.0f, 1.0f,  //
             -1.0f, -1.0f, //
@@ -73,7 +65,7 @@ Pipeline::Pipeline() {
         2 * sizeof(float)));
 
     // UV
-    planeVAO.AddVertexBuffer(std::make_shared<VertexBuffer>(
+    m_Screen.AddVertexBuffer(std::make_shared<VertexBuffer>(
         std::vector<float>{
             0.0f, 1.0f, //
             0.0f, 0.0f, //
@@ -83,14 +75,13 @@ Pipeline::Pipeline() {
         2 * sizeof(float)));
 
     // Indices
-    planeVAO.SetIndexBuffer(
+    m_Screen.SetIndexBuffer(
         std::make_shared<IndexBuffer>(std::vector<unsigned int>{
             0, 1, 2, //
             0, 2, 3, //
         }));
-
-    Model plane(std::make_shared<VertexArray>(planeVAO));
 }
+
 void Pipeline::Init() {
     unsigned int attachments[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
                                   GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
@@ -118,11 +109,17 @@ void Pipeline::Init() {
     m_BasicPassFBO.AttachTexture(m_Passes[POSITION]->GetTextureID(),
                                  attachments[4]);
     m_Passes[DEPTH] =
-        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+        std::make_shared<Texture>(m_Width, m_Height, Texture::DEPTH);
     m_BasicPassFBO.AttachTexture(m_Passes[DEPTH]->GetTextureID(),
                                  GL_DEPTH_ATTACHMENT);
     glDrawBuffers(5, attachments);
     m_BasicPassFBO.Unbind();
+
+    // m_CompositorFBO.Bind();
+    // m_Passes[SCREEN] =
+    //     std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    // glDrawBuffers(1, attachments);
+    // m_CompositorFBO.Unbind();
 #pragma endregion
 
 #pragma region lighting pass texture
@@ -236,11 +233,13 @@ void Pipeline::BasePass(Scene scene) {
     m_Basic->Unbind();
     m_BasicPassFBO.Unbind();
 }
+
 void Pipeline::LightPass(Scene scene) {
     m_LightPassFBO.Bind();
     m_Light->Bind();
     glViewport(0, 0, m_Width, m_Height);
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
+    const auto lights = scene.GetLights();
 
     // basic pass
     for (int i = 0; i <= DEPTH; i++) {
@@ -250,8 +249,18 @@ void Pipeline::LightPass(Scene scene) {
 
     Renderer::DisableDepthTest(); // direct render texture no need depth
     Renderer::Clear();
-    for (int i = 0; i < scene.GetLights().size(); i++) {
-        std::shared_ptr<Light> light = scene.GetLights()[i];
+    m_Light->Validate();
+    m_Passes[ALBEDO]->Bind(ALBEDO);
+    m_Passes[EMISSION]->Bind(EMISSION);
+    m_Passes[NORMAL]->Bind(NORMAL);
+    m_Passes[ARM]->Bind(ARM);
+    m_Passes[POSITION]->Bind(POSITION);
+    m_Passes[DEPTH]->Bind(DEPTH);
+    m_Passes[LIGHTING]->Bind(LIGHTING);
+    m_Passes[VOLUME]->Bind(VOLUME);
+    for (unsigned int i = 0; i < lights.size(); i++) {
+        std::shared_ptr<Light> light = lights[i];
+
         if (!light->GetCastShadow())
             continue;
         if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
@@ -263,27 +272,36 @@ void Pipeline::LightPass(Scene scene) {
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         // shader need to delete light type to select use cube for image 2d
-        m_Plane->Draw();
+        m_Screen.Bind();
+        Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
-    // programDeferredLight.Validate();
-    m_LightPassFBO.Bind();
-    m_Light->Bind();
-    Renderer::EnableDepthTest();
+    m_Light->Unbind();
+    m_LightPassFBO.Unbind();
+    // Renderer::EnableDepthTest();
 }
+
 void Pipeline::CompositorPass() {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     m_Compositor->Bind();
-    m_CompositeFBO.Bind();
+    // m_CompositorFBO.Bind();
     // basic pass
-    for (unsigned int i = 0; i <= DEPTH; i++) {
-        m_Passes[i]->Bind(i);
-    }
 
+    m_Passes[ALBEDO]->Bind(ALBEDO);
+    m_Passes[EMISSION]->Bind(EMISSION);
+    m_Passes[NORMAL]->Bind(NORMAL);
+    m_Passes[ARM]->Bind(ARM);
+    m_Passes[POSITION]->Bind(POSITION);
+    m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
-    m_Plane->Draw();
+    m_Compositor->Validate();
 
-    m_CompositeFBO.Unbind();
+    // Renderer::Clear();
+    m_Screen.Bind();
+    Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+
     m_Compositor->Unbind();
+    // m_CompositorFBO.Unbind();
+    // Renderer::EnableDepthTest();
 }

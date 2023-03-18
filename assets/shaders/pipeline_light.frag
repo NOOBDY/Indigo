@@ -1,6 +1,6 @@
 #version 450 core
 
-#define LIGHT_NUMBER 2
+#define LIGHT_NUMBER 1
 #define NONE 0
 #define POINT 1
 #define SPOT 2
@@ -249,6 +249,6 @@ void main() {
     // screenVolume.xyz/=600;
     // screenVolume-=screenLight;
     // screenVolume= abs(screenVolume)* 10.0;
-    outScreenVolume = vec4(0);
-    outScreenLight = PhongLight( baseInfo, cameraInfo,lights);
+    outScreenVolume = texture(screenVolume, UV);
+    outScreenLight =texture(screenLight,UV) +PhongLight( baseInfo, cameraInfo,lights);
 }

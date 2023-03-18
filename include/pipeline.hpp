@@ -10,8 +10,8 @@
 #include "uniform_buffer.hpp"
 
 class Pipeline {
+public:
     enum Pass {
-
         // basic
         ALBEDO,
         EMISSION,
@@ -31,14 +31,14 @@ class Pipeline {
         POINT_SHADOW, // Must be last because cube map stuff
         DIRECTION_SHADOW,
 
+        SCREEN
     };
     struct MVP {
         glm::mat4 model;
         glm::mat4 viewProjection;
     };
 
-public:
-    Pipeline();
+    Pipeline(int width, int height);
 
     void Render(Scene scene);
     void Init();
@@ -58,13 +58,13 @@ private:
     FrameBuffer m_ShadowFBO;
     FrameBuffer m_BasicPassFBO;
     FrameBuffer m_LightPassFBO;
-    FrameBuffer m_CompositeFBO;
+    FrameBuffer m_CompositorFBO;
 
     std::vector<std::shared_ptr<UniformBuffer>> m_UBOs;
     std::map<int, std::shared_ptr<Texture>> m_Passes;
 
-    std::shared_ptr<Model> m_Plane;
-    int m_Width;
-    int m_Height;
+    VertexArray m_Screen;
+    int m_Width = 1280;
+    int m_Height = 720;
 };
 #endif

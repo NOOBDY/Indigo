@@ -18,16 +18,19 @@ void Model::Draw() const {
 
     Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
 }
+
 const ModelData Model::GetModelData() {
-    return ModelData{m_Transform.GetTransformData(),
-                     int(m_UseAlbedoTexture),
-                     m_AlbedoColor,
-                     int(m_UseEmissionTexture),
-                     m_EmissionColor,
-                     int(m_UseARMTexture),
-                     m_ARM,
-                     int(m_UseNormalTexture),
-                     m_ID,
-                     int(m_CastShadows),
-                     int(m_Visible)};
+    return ModelData{
+        m_Transform.GetTransformData(),
+        int(m_UseAlbedoTexture),
+        m_AlbedoColor,
+        int(m_UseEmissionTexture),
+        m_EmissionColor,
+        int(m_UseARMTexture),
+        m_ARM,
+        int(m_UseNormalTexture),
+        m_ID,
+        int(m_CastShadows),
+        int(m_Visible) //
+    };
 }
