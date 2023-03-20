@@ -21,17 +21,45 @@ public:
 
     void Draw() const;
 
-    void SetAlbedo(std::shared_ptr<Texture> albedo) { m_Albedo = albedo; }
-    void SetNormal(std::shared_ptr<Texture> normal) { m_Normal = normal; }
-    void SetRoughness(std::shared_ptr<Texture> roughness) {
-        m_Roughness = roughness;
+    void SetAlbedoTexture(std::shared_ptr<Texture> albedo) {
+        m_AlbedoTexture = albedo;
+    }
+    void SetNormalTexture(std::shared_ptr<Texture> normal) {
+        m_NormalTexture = normal;
+    }
+    void SetARMTexture(std::shared_ptr<Texture> ARM) { m_ARM_Texture = ARM; }
+
+    void SetAlbedo(glm::vec3 albedo) { m_AlbedoColor = albedo; }
+    void SetEmisstion(glm::vec3 emission) { m_EmissionColor = emission; }
+
+    void SetAO(float ao) { m_ARM.x = ao; }
+    void SetRoughtness(float roughness) { m_ARM.y = roughness; }
+    void SetMetallic(float metallic) { m_ARM.z = metallic; }
+
+    void SetUseAlbedoTexture(bool useAlbedoTexture) {
+        m_UseAlbedoTexture = useAlbedoTexture;
+    }
+    void SetUseEmissionTexture(bool useEmissionTexture) {
+        m_UseEmissionTexture = useEmissionTexture;
+    }
+    void SetUseNormalTexture(bool useNormalTexture) {
+        m_UseNormalTexture = useNormalTexture;
+    }
+    void SetUseARMTexture(bool useARMTexture) {
+        m_UseARMTexture = useARMTexture;
     }
     void SetCastShadows(bool castShadows) { m_CastShadows = castShadows; }
     void SetVisible(bool visible) { m_Visible = visible; }
 
-    std::shared_ptr<Texture> GetAlbedo() { return m_Albedo; }
-    std::shared_ptr<Texture> GetNormal() { return m_Normal; }
-    std::shared_ptr<Texture> GetRoughness() { return m_Roughness; }
+    std::shared_ptr<Texture> GetAlbedoTexture() { return m_AlbedoTexture; }
+    std::shared_ptr<Texture> GetNormalTexture() { return m_NormalTexture; }
+    std::shared_ptr<Texture> GetARMTexture() { return m_ARM_Texture; }
+    glm::vec3 GetAlbedoColor() { return m_AlbedoColor; }
+    glm::vec3 GetEmissionColor() { return m_EmissionColor; }
+    float GetAO() { return m_ARM.x; }
+    bool GetUseAlbedoTexture() { return m_UseAlbedoTexture; }
+    bool GetUseEmissionTexture() { return m_UseEmissionTexture; }
+    bool GetUseNormalTexture() { return m_UseNormalTexture; }
     bool GetCastShadows() { return m_CastShadows; }
     bool GetVisible() { return m_Visible; }
 
@@ -45,9 +73,9 @@ private:
     std::shared_ptr<VertexArray> m_VAO;
     Transform m_Transform;
 
-    std::shared_ptr<Texture> m_Albedo;
-    std::shared_ptr<Texture> m_Normal;
-    std::shared_ptr<Texture> m_Roughness;
+    std::shared_ptr<Texture> m_AlbedoTexture;
+    std::shared_ptr<Texture> m_NormalTexture;
+    std::shared_ptr<Texture> m_ARM_Texture;
     int m_ID;
 
     bool m_UseAlbedoTexture = true;
