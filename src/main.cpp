@@ -47,7 +47,6 @@ int main(int argc, char **argv) {
     std::shared_ptr<Light> light2Test =
         std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
 
-    // std::vector<Model> scene;
     Scene scene(mainCamera);
 
     scene.AddLight(light1Test);
@@ -180,11 +179,6 @@ int main(int argc, char **argv) {
         }
 
         activeCamera->UpdateView();
-
-        // texMainColor.Bind(Pipeline::ALBEDO);
-        // texMainColor.Bind(EMISSION);
-        // reflectMap.Bind(Pipeline::REFLECT);
-        // wallAOMap.Bind(Pipeline::EMISSION);
 #pragma region GUI
         Renderer::DisableDepthTest();
         ImGui_ImplOpenGL3_NewFrame();

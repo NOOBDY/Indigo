@@ -64,7 +64,7 @@ private:
     std::map<int, std::shared_ptr<Texture>> m_Passes;
 
     VertexArray m_Screen;
-    int m_Width = 1280;
-    int m_Height = 720;
+    int m_Width;
+    int m_Height;
 };
 #endif

@@ -114,12 +114,6 @@ void Pipeline::Init() {
                                  GL_DEPTH_ATTACHMENT);
     glDrawBuffers(5, attachments);
     m_BasicPassFBO.Unbind();
-
-    // m_CompositorFBO.Bind();
-    // m_Passes[SCREEN] =
-    //     std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
-    // glDrawBuffers(1, attachments);
-    // m_CompositorFBO.Unbind();
 #pragma endregion
 
 #pragma region lighting pass texture
@@ -155,14 +149,16 @@ void Pipeline::Render(Scene scene) {
 }
 
 void Pipeline::ShadowPass(Scene scene) {
-
     MVP lightMVP;
     ModelData modelInfo;
+
     std::vector<LightData> lightInfos;
+
     for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
         std::shared_ptr<Light> light = scene.GetLights()[i];
         lightInfos.push_back(light->GetLightData());
     }
+
     Renderer::EnableDepthTest();
     Renderer::DisableCullFace();
 
@@ -183,6 +179,8 @@ void Pipeline::ShadowPass(Scene scene) {
         m_ShadowFBO.Bind();
         Renderer::Clear();
 
+        m_PointLightShadow->Validate();
+
         // not render light ball
         for (unsigned int j = 0; j < scene.GetModels().size() - 2; j++) {
             std::shared_ptr<Model> model = scene.GetModels()[j];
@@ -195,12 +193,12 @@ void Pipeline::ShadowPass(Scene scene) {
             m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
             // use first one to render shadow
             m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
-            // m_PointLightShadow->Validate();
 
             model->Draw();
         }
-        m_PointLightShadow->Unbind();
+
         m_ShadowFBO.Unbind();
+        m_PointLightShadow->Unbind();
     }
 
     Renderer::EnableCullFace();
@@ -209,27 +207,36 @@ void Pipeline::ShadowPass(Scene scene) {
 void Pipeline::BasePass(Scene scene) {
     m_BasicPassFBO.Bind();
     m_Basic->Bind();
+
     glViewport(0, 0, m_Width, m_Height);
+
     Renderer::EnableDepthTest();
     Renderer::Clear();
+
     MVP modelMVP;
     ModelData modelInfo;
     std::vector<LightData> lightInfos;
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
+
+    m_Basic->Validate();
+
     for (unsigned int i = 0; i < scene.GetModels().size(); i++) {
         std::shared_ptr<Model> model = scene.GetModels()[i];
+
         if (!model->GetVisible())
             continue;
+
         modelMVP.model = model->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
+
         m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
         m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
         // m_UBOs[2]->SetData(0, sizeof(LightData) * m_MaxLightCount,
         // &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
-        m_Basic->Validate();
         model->Draw();
     }
+
     m_Basic->Unbind();
     m_BasicPassFBO.Unbind();
 }
@@ -241,15 +248,14 @@ void Pipeline::LightPass(Scene scene) {
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
     const auto lights = scene.GetLights();
 
-    // basic pass
-    for (int i = 0; i <= DEPTH; i++) {
+    for (int i = 0; i <= DEPTH; i++)
         m_Passes[i]->Bind(i);
-    }
+
     // reflect pass need
 
     Renderer::DisableDepthTest(); // direct render texture no need depth
     Renderer::Clear();
-    m_Light->Validate();
+
     m_Passes[ALBEDO]->Bind(ALBEDO);
     m_Passes[EMISSION]->Bind(EMISSION);
     m_Passes[NORMAL]->Bind(NORMAL);
@@ -258,11 +264,15 @@ void Pipeline::LightPass(Scene scene) {
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
+
+    m_Light->Validate();
+
     for (unsigned int i = 0; i < lights.size(); i++) {
         std::shared_ptr<Light> light = lights[i];
 
         if (!light->GetCastShadow())
             continue;
+
         if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
             light->GetShadowTexture()->Bind(POINT_SHADOW);
         else if (light->GetType() == Light::DIRECTION)
@@ -275,33 +285,19 @@ void Pipeline::LightPass(Scene scene) {
         m_Screen.Bind();
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
+
     m_Light->Unbind();
     m_LightPassFBO.Unbind();
-    // Renderer::EnableDepthTest();
 }
 
 void Pipeline::CompositorPass() {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     m_Compositor->Bind();
-    // m_CompositorFBO.Bind();
-    // basic pass
-
-    m_Passes[ALBEDO]->Bind(ALBEDO);
-    m_Passes[EMISSION]->Bind(EMISSION);
-    m_Passes[NORMAL]->Bind(NORMAL);
-    m_Passes[ARM]->Bind(ARM);
-    m_Passes[POSITION]->Bind(POSITION);
-    m_Passes[DEPTH]->Bind(DEPTH);
-    m_Passes[LIGHTING]->Bind(LIGHTING);
-    m_Passes[VOLUME]->Bind(VOLUME);
 
     m_Compositor->Validate();
 
-    // Renderer::Clear();
     m_Screen.Bind();
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
     m_Compositor->Unbind();
-    // m_CompositorFBO.Unbind();
-    // Renderer::EnableDepthTest();
 }
