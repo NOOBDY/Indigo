@@ -1,53 +1,53 @@
 #include "pipeline.hpp"
 
-Pipeline::Pipeline(int width, int height) : m_Width(width), m_Height(height) {
-    m_PointLightShadow =
-        std::make_shared<Program>("../assets/shaders/shadow.vert", //
-                                  "../assets/shaders/shadow.geom", //
-                                  "../assets/shaders/shadow.frag");
+#include "renderer.hpp"
 
-    m_Basic = std::make_shared<Program>("../assets/shaders/phong.vert",
-                                        "../assets/shaders/deferred_pass.frag");
-    m_Basic->Bind();
-    m_Basic->SetInt("albedoMap", ALBEDO);
-    m_Basic->SetInt("emissionMap", EMISSION);
-    m_Basic->SetInt("normalMap", NORMAL);
-    m_Basic->SetInt("ARM", ARM);
-    m_Basic->SetInt("reflectMap", REFLECT);
+Pipeline::Pipeline(int width, int height)
+    : m_PointLightShadow("../assets/shaders/shadow.vert",
+                         "../assets/shaders/shadow.geom",
+                         "../assets/shaders/shadow.frag"),
+      m_Basic("../assets/shaders/phong.vert",
+              "../assets/shaders/deferred_pass.frag"),
+      m_Light("../assets/shaders/frame_deferred.vert",
+              "../assets/shaders/pipeline_light.frag"),
+      m_Compositor("../assets/shaders/frame_screen.vert",
+                   "../assets/shaders/frame_screen.frag"),
+      m_Width(width), m_Height(height) {
 
-    m_Light =
-        std::make_shared<Program>("../assets/shaders/frame_deferred.vert",
-                                  "../assets/shaders/pipeline_light.frag");
-    m_Light->Bind();
-    m_Light->SetInt("screenAlbedo", ALBEDO);
-    m_Light->SetInt("screenEmission", EMISSION);
-    m_Light->SetInt("screenNormal", NORMAL);
-    m_Light->SetInt("screenARM", ARM);
-    m_Light->SetInt("screenPosition", POSITION);
-    m_Light->SetInt("screenDepth", DEPTH);
+    m_Basic.Bind();
+    m_Basic.SetInt("albedoMap", ALBEDO);
+    m_Basic.SetInt("emissionMap", EMISSION);
+    m_Basic.SetInt("normalMap", NORMAL);
+    m_Basic.SetInt("ARM", ARM);
+    m_Basic.SetInt("reflectMap", REFLECT);
 
-    m_Light->SetInt("screenLight", LIGHTING);
-    m_Light->SetInt("screenVolume", VOLUME);
+    m_Light.Bind();
+    m_Light.SetInt("screenAlbedo", ALBEDO);
+    m_Light.SetInt("screenEmission", EMISSION);
+    m_Light.SetInt("screenNormal", NORMAL);
+    m_Light.SetInt("screenARM", ARM);
+    m_Light.SetInt("screenPosition", POSITION);
+    m_Light.SetInt("screenDepth", DEPTH);
 
-    m_Light->SetInt("reflectMap", REFLECT);
+    m_Light.SetInt("screenLight", LIGHTING);
+    m_Light.SetInt("screenVolume", VOLUME);
 
-    m_Light->SetInt("pointShadowMap", POINT_SHADOW);
-    m_Light->SetInt("directionShadowMap", DIRECTION_SHADOW);
+    m_Light.SetInt("reflectMap", REFLECT);
 
-    m_Compositor =
-        std::make_shared<Program>("../assets/shaders/frame_screen.vert",
-                                  "../assets/shaders/frame_screen.frag");
-    m_Compositor->Bind();
-    m_Compositor->SetInt("screenAlbedo", ALBEDO);
-    m_Compositor->SetInt("screenEmission", EMISSION);
-    m_Compositor->SetInt("screenNormal", NORMAL);
-    m_Compositor->SetInt("screenARM", ARM);
-    m_Compositor->SetInt("screenPosition", POSITION);
-    m_Compositor->SetInt("screenDepth", DEPTH);
+    m_Light.SetInt("pointShadowMap", POINT_SHADOW);
+    m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
 
-    m_Compositor->SetInt("reflectMap", REFLECT);
-    m_Compositor->SetInt("screenLight", LIGHTING);
-    m_Compositor->SetInt("screenVolume", VOLUME);
+    m_Compositor.Bind();
+    m_Compositor.SetInt("screenAlbedo", ALBEDO);
+    m_Compositor.SetInt("screenEmission", EMISSION);
+    m_Compositor.SetInt("screenNormal", NORMAL);
+    m_Compositor.SetInt("screenARM", ARM);
+    m_Compositor.SetInt("screenPosition", POSITION);
+    m_Compositor.SetInt("screenDepth", DEPTH);
+
+    m_Compositor.SetInt("reflectMap", REFLECT);
+    m_Compositor.SetInt("screenLight", LIGHTING);
+    m_Compositor.SetInt("screenVolume", VOLUME);
 
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
@@ -169,9 +169,9 @@ void Pipeline::ShadowPass(Scene scene) {
             continue;
 
         if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
-            m_PointLightShadow->Bind();
+            m_PointLightShadow.Bind();
         if (light->GetType() == Light::DIRECTION)
-            m_PointLightShadow->Bind();
+            m_PointLightShadow.Bind();
 
         glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
         m_ShadowFBO.AttachTexture(light->GetShadowTexture()->GetTextureID(),
@@ -179,7 +179,7 @@ void Pipeline::ShadowPass(Scene scene) {
         m_ShadowFBO.Bind();
         Renderer::Clear();
 
-        m_PointLightShadow->Validate();
+        m_PointLightShadow.Validate();
 
         // not render light ball
         for (unsigned int j = 0; j < scene.GetModels().size() - 2; j++) {
@@ -198,7 +198,7 @@ void Pipeline::ShadowPass(Scene scene) {
         }
 
         m_ShadowFBO.Unbind();
-        m_PointLightShadow->Unbind();
+        m_PointLightShadow.Unbind();
     }
 
     Renderer::EnableCullFace();
@@ -206,7 +206,7 @@ void Pipeline::ShadowPass(Scene scene) {
 
 void Pipeline::BasePass(Scene scene) {
     m_BasicPassFBO.Bind();
-    m_Basic->Bind();
+    m_Basic.Bind();
 
     glViewport(0, 0, m_Width, m_Height);
 
@@ -218,7 +218,7 @@ void Pipeline::BasePass(Scene scene) {
     std::vector<LightData> lightInfos;
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
 
-    m_Basic->Validate();
+    m_Basic.Validate();
 
     for (unsigned int i = 0; i < scene.GetModels().size(); i++) {
         std::shared_ptr<Model> model = scene.GetModels()[i];
@@ -237,13 +237,13 @@ void Pipeline::BasePass(Scene scene) {
         model->Draw();
     }
 
-    m_Basic->Unbind();
+    m_Basic.Unbind();
     m_BasicPassFBO.Unbind();
 }
 
 void Pipeline::LightPass(Scene scene) {
     m_LightPassFBO.Bind();
-    m_Light->Bind();
+    m_Light.Bind();
     glViewport(0, 0, m_Width, m_Height);
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
     const auto lights = scene.GetLights();
@@ -265,7 +265,7 @@ void Pipeline::LightPass(Scene scene) {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
-    m_Light->Validate();
+    m_Light.Validate();
 
     for (unsigned int i = 0; i < lights.size(); i++) {
         std::shared_ptr<Light> light = lights[i];
@@ -286,18 +286,18 @@ void Pipeline::LightPass(Scene scene) {
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
 
-    m_Light->Unbind();
+    m_Light.Unbind();
     m_LightPassFBO.Unbind();
 }
 
 void Pipeline::CompositorPass() {
     Renderer::DisableDepthTest(); // direct render texture no need depth
-    m_Compositor->Bind();
+    m_Compositor.Bind();
 
-    m_Compositor->Validate();
+    m_Compositor.Validate();
 
     m_Screen.Bind();
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
-    m_Compositor->Unbind();
+    m_Compositor.Unbind();
 }

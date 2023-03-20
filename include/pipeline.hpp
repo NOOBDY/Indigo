@@ -4,7 +4,6 @@
 #include "pch.hpp"
 
 #include "program.hpp"
-#include "renderer.hpp"
 #include "scene.hpp"
 #include "frame_buffer.hpp"
 #include "uniform_buffer.hpp"
@@ -50,10 +49,10 @@ private:
     void CompositorPass();
 
 private:
-    std::shared_ptr<Program> m_PointLightShadow;
-    std::shared_ptr<Program> m_Basic;
-    std::shared_ptr<Program> m_Light;
-    std::shared_ptr<Program> m_Compositor;
+    Program m_PointLightShadow;
+    Program m_Basic;
+    Program m_Light;
+    Program m_Compositor;
 
     FrameBuffer m_ShadowFBO;
     FrameBuffer m_BasicPassFBO;
