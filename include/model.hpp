@@ -57,9 +57,12 @@ public:
     glm::vec3 GetAlbedoColor() { return m_AlbedoColor; }
     glm::vec3 GetEmissionColor() { return m_EmissionColor; }
     float GetAO() { return m_ARM.x; }
+    float GetRoughtness() { return m_ARM.y; }
+    float GetMetallic() { return m_ARM.z; }
     bool GetUseAlbedoTexture() { return m_UseAlbedoTexture; }
     bool GetUseEmissionTexture() { return m_UseEmissionTexture; }
     bool GetUseNormalTexture() { return m_UseNormalTexture; }
+    bool GetUseARMTexture() { return m_UseARMTexture; }
     bool GetCastShadows() { return m_CastShadows; }
     bool GetVisible() { return m_Visible; }
 
