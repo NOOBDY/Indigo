@@ -2,7 +2,7 @@
 #version 450 core
 
 // so far only one cube map
-#define LIGHT_NUMBER 2
+#define LIGHT_NUMBER 1
 #define NONE 0
 #define POINT 1
 #define SPOT 2

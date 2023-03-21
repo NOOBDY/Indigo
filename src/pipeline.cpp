@@ -229,12 +229,15 @@ void Pipeline::BasePass(Scene scene) {
             model->GetAlbedoTexture()->Bind(ALBEDO);
         if (model->GetUseEmissionTexture() && model->GetEmissionTexture())
             model->GetEmissionTexture()->Bind(EMISSION);
+        if (model->GetUseNormalTexture() && model->GetUseNormalTexture())
+            model->GetNormalTexture()->Bind(NORMAL);
         if (model->GetUseARMTexture() && model->GetARMTexture())
             model->GetARMTexture()->Bind(ARM);
 
         modelMVP.model = model->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
 
+        modelInfo = model->GetModelData();
         m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
         m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
         // m_UBOs[2]->SetData(0, sizeof(LightData) * m_MaxLightCount,

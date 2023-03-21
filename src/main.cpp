@@ -153,6 +153,7 @@ int main(int argc, char **argv) {
     for (unsigned i = 0; i < scene.GetModels().size(); i++) {
         const auto model = scene.GetModels()[i];
         model->SetAlbedoTexture(texMainColor);
+        model->SetUseAlbedoTexture(true);
     }
 
     do {
@@ -175,7 +176,7 @@ int main(int argc, char **argv) {
             models[i]->SetTransform(transformSliders[i].GetTransform());
         }
 
-        texMainColor->Bind(Pipeline::ALBEDO);
+        // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);
 
         activeCamera->GetTransform().SetPosition(

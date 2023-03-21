@@ -88,9 +88,9 @@ private:
     int m_ID;
 
     bool m_UseAlbedoTexture = true;
-    bool m_UseEmissionTexture = true;
-    bool m_UseARMTexture = true;
-    bool m_UseNormalTexture = true;
+    bool m_UseEmissionTexture = false;
+    bool m_UseARMTexture = false;
+    bool m_UseNormalTexture = false;
 
     bool m_CastShadows = true;
     bool m_Visible = true;
