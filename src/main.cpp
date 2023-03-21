@@ -98,11 +98,16 @@ int main(int argc, char **argv) {
     }
     // end model 2
 
-    Texture texMainColor("../assets/textures/little_city/main_color.jpg");
-    Texture texInterior("../assets/textures/little_city/interior.jpg");
-    Texture reflectMap("../assets/textures/vestibule_2k.hdr");
-    Texture wallNormalMap("../assets/textures/T_Wall_Damaged_2x1_A_N.png");
-    Texture wallAOMap("../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
+    std::shared_ptr<Texture> texMainColor = std::make_shared<Texture>(
+        "../assets/textures/little_city/main_color.jpg");
+    std::shared_ptr<Texture> texInterior = std::make_shared<Texture>(
+        "../assets/textures/little_city/interior.jpg");
+    std::shared_ptr<Texture> reflectMap =
+        std::make_shared<Texture>("../assets/textures/vestibule_2k.hdr");
+    std::shared_ptr<Texture> wallNormalMap = std::make_shared<Texture>(
+        "../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
+        "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     // light 1
     transformSliders.push_back(                     //
@@ -144,6 +149,11 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
+    const auto templ = scene.GetModels();
+    for (unsigned i = 0; i < scene.GetModels().size(); i++) {
+        const auto model = scene.GetModels()[i];
+        model->SetAlbedoTexture(texMainColor);
+    }
 
     do {
         glm::vec2 delta = window.GetCursorDelta();
@@ -165,7 +175,7 @@ int main(int argc, char **argv) {
             models[i]->SetTransform(transformSliders[i].GetTransform());
         }
 
-        texMainColor.Bind(Pipeline::ALBEDO);
+        texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);
 
         activeCamera->GetTransform().SetPosition(

@@ -24,13 +24,16 @@ public:
     void SetAlbedoTexture(std::shared_ptr<Texture> albedo) {
         m_AlbedoTexture = albedo;
     }
+    void SetEmissionTexture(std::shared_ptr<Texture> emission) {
+        m_EmissionTexture = emission;
+    }
     void SetNormalTexture(std::shared_ptr<Texture> normal) {
         m_NormalTexture = normal;
     }
     void SetARMTexture(std::shared_ptr<Texture> ARM) { m_ARM_Texture = ARM; }
 
     void SetAlbedo(glm::vec3 albedo) { m_AlbedoColor = albedo; }
-    void SetEmisstion(glm::vec3 emission) { m_EmissionColor = emission; }
+    void SetEmission(glm::vec3 emission) { m_EmissionColor = emission; }
 
     void SetAO(float ao) { m_ARM.x = ao; }
     void SetRoughtness(float roughness) { m_ARM.y = roughness; }
@@ -52,6 +55,7 @@ public:
     void SetVisible(bool visible) { m_Visible = visible; }
 
     std::shared_ptr<Texture> GetAlbedoTexture() { return m_AlbedoTexture; }
+    std::shared_ptr<Texture> GetEmissionTexture() { return m_EmissionTexture; }
     std::shared_ptr<Texture> GetNormalTexture() { return m_NormalTexture; }
     std::shared_ptr<Texture> GetARMTexture() { return m_ARM_Texture; }
     glm::vec3 GetAlbedoColor() { return m_AlbedoColor; }
@@ -59,6 +63,7 @@ public:
     float GetAO() { return m_ARM.x; }
     float GetRoughtness() { return m_ARM.y; }
     float GetMetallic() { return m_ARM.z; }
+
     bool GetUseAlbedoTexture() { return m_UseAlbedoTexture; }
     bool GetUseEmissionTexture() { return m_UseEmissionTexture; }
     bool GetUseNormalTexture() { return m_UseNormalTexture; }
@@ -77,6 +82,7 @@ private:
     Transform m_Transform;
 
     std::shared_ptr<Texture> m_AlbedoTexture;
+    std::shared_ptr<Texture> m_EmissionTexture;
     std::shared_ptr<Texture> m_NormalTexture;
     std::shared_ptr<Texture> m_ARM_Texture;
     int m_ID;
@@ -85,6 +91,7 @@ private:
     bool m_UseEmissionTexture = true;
     bool m_UseARMTexture = true;
     bool m_UseNormalTexture = true;
+
     bool m_CastShadows = true;
     bool m_Visible = true;
 

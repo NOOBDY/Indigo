@@ -225,6 +225,12 @@ void Pipeline::BasePass(Scene scene) {
 
         if (!model->GetVisible())
             continue;
+        if (model->GetUseAlbedoTexture() && model->GetAlbedoTexture())
+            model->GetAlbedoTexture()->Bind(ALBEDO);
+        if (model->GetUseEmissionTexture() && model->GetEmissionTexture())
+            model->GetEmissionTexture()->Bind(EMISSION);
+        if (model->GetUseARMTexture() && model->GetARMTexture())
+            model->GetARMTexture()->Bind(ARM);
 
         modelMVP.model = model->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
@@ -295,6 +301,14 @@ void Pipeline::CompositorPass() {
     m_Compositor.Bind();
 
     m_Compositor.Validate();
+    m_Passes[ALBEDO]->Bind(ALBEDO);
+    m_Passes[EMISSION]->Bind(EMISSION);
+    m_Passes[NORMAL]->Bind(NORMAL);
+    m_Passes[ARM]->Bind(ARM);
+    m_Passes[POSITION]->Bind(POSITION);
+    m_Passes[DEPTH]->Bind(DEPTH);
+    m_Passes[LIGHTING]->Bind(LIGHTING);
+    m_Passes[VOLUME]->Bind(VOLUME);
 
     m_Screen.Bind();
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
