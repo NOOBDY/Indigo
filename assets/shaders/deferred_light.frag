@@ -192,7 +192,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     vec3 specular =
         vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0))
                        ? 0.0
-                       : pow(dotRV, deferredInfo.ARM.y*100));
+                       : pow(dotRV, deferredInfo.ARM.y * 100));
 
     float shadow = shadow(position, light, index);
     // return vec4(shadow)/LIGHT_NUMBER;
@@ -205,7 +205,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                     fadeOut * spot,
                 shadow);
 }
-vec4 PhongLight( DeferredData deferredInfo, CameraData cameraInfo ,
+vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
                 LightData lights[LIGHT_NUMBER]) {
     vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
@@ -214,7 +214,8 @@ vec4 PhongLight( DeferredData deferredInfo, CameraData cameraInfo ,
             continue;
         // color3 = light.lightColor;
         color4 +=
-            AllLight(cameraInfo.transform.position, deferredInfo, light, i) / LIGHT_NUMBER;
+            AllLight(cameraInfo.transform.position, deferredInfo, light, i) /
+            LIGHT_NUMBER;
     }
 
     return color4;
@@ -229,7 +230,7 @@ void main() {
     baseInfo.normal = texture(screenNormal, UV).rgb;
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
-    baseInfo.ARM= texture(screenARM, UV).rgb;
+    baseInfo.ARM = texture(screenARM, UV).rgb;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
     // temPosition=temPosition* 600.0;
@@ -241,5 +242,5 @@ void main() {
     // screenVolume-=screenLight;
     // screenVolume= abs(screenVolume)* 10.0;
     screenVolume = vec4(0);
-    screenLight = PhongLight( baseInfo, cameraInfo,lights);
+    screenLight = PhongLight(baseInfo, cameraInfo, lights);
 }

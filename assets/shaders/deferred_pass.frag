@@ -75,7 +75,7 @@ layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
 };
-layout(std140, binding = 1) uniform ModelInfo{
+layout(std140, binding = 1) uniform ModelInfo {
     ModelData modelInfo;
 };
 
@@ -111,13 +111,18 @@ uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 void main() {
     vec3 color3 = vec3(0.);
     float maxDepth = 600.0;
-    screenAlbedo.xyz =(modelInfo.useAlbedoTexture==1) ?texture(albedoMap, UV).xyz:modelInfo.albedoColor;
-    screenEmission.xyz =(modelInfo.useEmissionTexture==1) ?texture(emissionMap, UV).xyz:modelInfo.emissionColor;
-    screenARM.xyz =(modelInfo.useARMTexture==1) ?texture(ARM, UV).xyz:modelInfo.ARM;
+    screenAlbedo.xyz = (modelInfo.useAlbedoTexture == 1)
+                           ? texture(albedoMap, UV).xyz
+                           : modelInfo.albedoColor;
+    screenEmission.xyz = (modelInfo.useEmissionTexture == 1)
+                             ? texture(emissionMap, UV).xyz
+                             : modelInfo.emissionColor;
+    screenARM.xyz =
+        (modelInfo.useARMTexture == 1) ? texture(ARM, UV).xyz : modelInfo.ARM;
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
     screenNormal.xyz = normalize(normal);
     // make sure the normalmap is in right format
-    if (modelInfo.useNormalTexture==1) {
+    if (modelInfo.useNormalTexture == 1) {
         screenNormal.xyz = TBN * (texture(normalMap, UV).xyz * 2 - 1);
     }
 
