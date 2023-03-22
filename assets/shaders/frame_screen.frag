@@ -53,7 +53,7 @@ void main() {
     vec3 col = texture(screenLight, UV).rgb;
     // col+=gaussianBlur(screenEmission,0.5, UV);
 
-    // col += gaussianBlur(screenVolume, 0.5, UV);
+    col += gaussianBlur(screenVolume, 0.5, UV);
     // col=texture(screenLight,UV).rgb;
     // col=texture(screenARM,UV).rgb;
     // col-=texture(screenVolume,UV).xyz;

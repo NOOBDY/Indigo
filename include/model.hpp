@@ -87,13 +87,13 @@ private:
     std::shared_ptr<Texture> m_ARM_Texture;
     int m_ID;
 
-    bool m_UseAlbedoTexture = true;
-    bool m_UseEmissionTexture = false;
-    bool m_UseARMTexture = false;
-    bool m_UseNormalTexture = false;
+    bool m_UseAlbedoTexture;
+    bool m_UseEmissionTexture;
+    bool m_UseARMTexture;
+    bool m_UseNormalTexture;
 
-    bool m_CastShadows = true;
-    bool m_Visible = true;
+    bool m_CastShadows;
+    bool m_Visible;
 
     glm::vec3 m_AlbedoColor;
     glm::vec3 m_EmissionColor;
@@ -103,14 +103,14 @@ private:
 struct ModelData {
     TransformData transform;
 
-    int useAlbedoTexture;
     glm::vec3 albedoColor;
+    int useAlbedoTexture;
 
-    int useEmissionTexture;
     glm::vec3 emissionColor;
+    int useEmissionTexture;
 
-    int useARMTexture;
     glm::vec3 ARM;
+    int useARMTexture;
 
     int useNormalTexture;
     int id;

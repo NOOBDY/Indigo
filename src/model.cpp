@@ -7,6 +7,17 @@
 Model::Model(std::shared_ptr<VertexArray> vao, Transform transform)
     : m_VAO(vao), m_Transform(transform) {
     LOG_TRACE("Creating Model");
+
+    m_UseAlbedoTexture = false;
+    m_UseEmissionTexture = false;
+    m_UseARMTexture = false;
+    m_UseNormalTexture = false;
+    m_CastShadows = true;
+    m_Visible = true;
+
+    m_AlbedoColor = glm::vec3(1, 1, 1);
+    m_EmissionColor = glm::vec3(0, 1, 0);
+    m_ARM = glm::vec3(1, 0.5, 0.5);
 }
 
 Model::~Model() {
@@ -22,12 +33,13 @@ void Model::Draw() const {
 const ModelData Model::GetModelData() {
     return ModelData{
         m_Transform.GetTransformData(),
-        int(m_UseAlbedoTexture),
         m_AlbedoColor,
-        int(m_UseEmissionTexture),
+        int(m_UseAlbedoTexture),
         m_EmissionColor,
-        int(m_UseARMTexture),
+        int(m_UseEmissionTexture),
         m_ARM,
+        int(m_UseARMTexture),
+
         int(m_UseNormalTexture),
         m_ID,
         int(m_CastShadows),

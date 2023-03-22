@@ -154,6 +154,10 @@ int main(int argc, char **argv) {
         const auto model = scene.GetModels()[i];
         model->SetAlbedoTexture(texMainColor);
         model->SetUseAlbedoTexture(true);
+        // model->SetNormalTexture(wallNormalMap);
+        // model->SetVisible(false);
+        // model->SetCastShadows(false);
+        // model->SetUseNormalTexture(true);
     }
 
     do {
