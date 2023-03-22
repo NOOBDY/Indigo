@@ -62,6 +62,7 @@ struct DeferredData {
     vec3 normal;
     vec3 position;
     vec3 ARM;
+    vec3 ID;
     vec3 depth;
 };
 
@@ -93,6 +94,7 @@ uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
 uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
+uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
 uniform sampler2D screenLight;
@@ -239,6 +241,7 @@ void main() {
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
+    baseInfo.ID= texture(screenID, UV).rgb;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
     // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
     // temPosition=temPosition* 600.0;

@@ -1,14 +1,6 @@
 
 #version 450 core
 
-// so far only one cube map
-#define LIGHT_NUMBER 1
-#define NONE 0
-#define POINT 1
-#define SPOT 2
-#define DIRECTION 3
-#define AMBIENT 4
-
 struct TransformData {
     mat4 transform;
 
@@ -80,7 +72,7 @@ layout(std140, binding = 1) uniform ModelInfo {
 };
 
 layout(std140, binding = 2) uniform Lights {
-    LightData lights[LIGHT_NUMBER];
+    LightData lights;
 };
 
 layout(std140, binding = 3) uniform Camera {
@@ -98,6 +90,7 @@ layout(location = 2) out vec4 screenNormal;
 // ARM(ao roughtless metallic)
 layout(location = 3) out vec4 screenARM;
 layout(location = 4) out vec4 screenPosition;
+layout(location = 5) out vec4 screenID;
 // out vec4 color;
 // uniform vec3 cameraPosition;
 
@@ -105,8 +98,7 @@ uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
 uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
-uniform sampler2D ARM;
-uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+uniform sampler2D ARMMap;
 
 void main() {
     vec3 color3 = vec3(0.);
@@ -118,7 +110,7 @@ void main() {
                              ? texture(emissionMap, UV).xyz
                              : modelInfo.emissionColor;
     screenARM.xyz =
-        (modelInfo.useARMTexture == 1) ? texture(ARM, UV).xyz : modelInfo.ARM;
+        (modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz : modelInfo.ARM;
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
     screenNormal.xyz = normalize(normal);
     // make sure the normalmap is in right format

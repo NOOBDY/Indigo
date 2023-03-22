@@ -19,6 +19,7 @@ public:
         NORMAL,
         ARM,
         POSITION,
+        ID,
         DEPTH,
 
         //

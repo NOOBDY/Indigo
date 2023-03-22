@@ -9,6 +9,7 @@ uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
 uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
+// uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
 uniform sampler2D screenLight;

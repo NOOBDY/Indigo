@@ -18,7 +18,7 @@ Pipeline::Pipeline(int width, int height)
     m_Basic.SetInt("albedoMap", ALBEDO);
     m_Basic.SetInt("emissionMap", EMISSION);
     m_Basic.SetInt("normalMap", NORMAL);
-    m_Basic.SetInt("ARM", ARM);
+    m_Basic.SetInt("ARMMap", ARM);
     m_Basic.SetInt("reflectMap", REFLECT);
 
     m_Light.Bind();
@@ -27,6 +27,7 @@ Pipeline::Pipeline(int width, int height)
     m_Light.SetInt("screenNormal", NORMAL);
     m_Light.SetInt("screenARM", ARM);
     m_Light.SetInt("screenPosition", POSITION);
+    m_Light.SetInt("screenID", ID);
     m_Light.SetInt("screenDepth", DEPTH);
 
     m_Light.SetInt("screenLight", LIGHTING);
@@ -43,6 +44,7 @@ Pipeline::Pipeline(int width, int height)
     m_Compositor.SetInt("screenNormal", NORMAL);
     m_Compositor.SetInt("screenARM", ARM);
     m_Compositor.SetInt("screenPosition", POSITION);
+    m_Compositor.SetInt("screenID", ID);
     m_Compositor.SetInt("screenDepth", DEPTH);
 
     m_Compositor.SetInt("reflectMap", REFLECT);
@@ -85,7 +87,7 @@ Pipeline::Pipeline(int width, int height)
 void Pipeline::Init() {
     unsigned int attachments[] = {GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1,
                                   GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3,
-                                  GL_COLOR_ATTACHMENT4};
+                                  GL_COLOR_ATTACHMENT4, GL_COLOR_ATTACHMENT5};
 
 #pragma region color buffer
     m_BasicPassFBO.Bind();
@@ -108,11 +110,13 @@ void Pipeline::Init() {
         std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
     m_BasicPassFBO.AttachTexture(m_Passes[POSITION]->GetTextureID(),
                                  attachments[4]);
+    m_Passes[ID] = std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_BasicPassFBO.AttachTexture(m_Passes[ID]->GetTextureID(), attachments[5]);
     m_Passes[DEPTH] =
         std::make_shared<Texture>(m_Width, m_Height, Texture::DEPTH);
     m_BasicPassFBO.AttachTexture(m_Passes[DEPTH]->GetTextureID(),
                                  GL_DEPTH_ATTACHMENT);
-    glDrawBuffers(5, attachments);
+    glDrawBuffers(6, attachments);
     m_BasicPassFBO.Unbind();
 #pragma endregion
 
@@ -270,6 +274,7 @@ void Pipeline::LightPass(Scene scene) {
     m_Passes[NORMAL]->Bind(NORMAL);
     m_Passes[ARM]->Bind(ARM);
     m_Passes[POSITION]->Bind(POSITION);
+    m_Passes[ID]->Bind(ID);
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
@@ -309,6 +314,7 @@ void Pipeline::CompositorPass() {
     m_Passes[NORMAL]->Bind(NORMAL);
     m_Passes[ARM]->Bind(ARM);
     m_Passes[POSITION]->Bind(POSITION);
+    m_Passes[ID]->Bind(ID);
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
