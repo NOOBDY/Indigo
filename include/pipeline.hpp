@@ -42,6 +42,8 @@ public:
     Pipeline(int width, int height);
 
     void Render(Scene scene);
+    void SetWidth(int width);
+    void SetHeight(int height);
     void Init();
 
 private:
@@ -51,6 +53,7 @@ private:
     void CompositorPass();
 
 private:
+    void UpdatePass();
     Program m_PointLightShadow;
     Program m_Basic;
     Program m_Light;
