@@ -155,9 +155,9 @@ int main(int argc, char **argv) {
         model->SetAlbedoTexture(texMainColor);
         model->SetUseAlbedoTexture(true);
         // model->SetNormalTexture(wallNormalMap);
+        // model->SetUseNormalTexture(true);
         // model->SetVisible(false);
         // model->SetCastShadows(false);
-        // model->SetUseNormalTexture(true);
     }
 
     do {
