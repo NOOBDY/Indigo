@@ -63,6 +63,7 @@ public:
     float GetAO() { return m_ARM.x; }
     float GetRoughtness() { return m_ARM.y; }
     float GetMetallic() { return m_ARM.z; }
+    unsigned int GetID() { return m_ID; }
 
     bool GetUseAlbedoTexture() { return m_UseAlbedoTexture; }
     bool GetUseEmissionTexture() { return m_UseEmissionTexture; }
@@ -85,7 +86,7 @@ private:
     std::shared_ptr<Texture> m_EmissionTexture;
     std::shared_ptr<Texture> m_NormalTexture;
     std::shared_ptr<Texture> m_ARM_Texture;
-    int m_ID;
+    const unsigned int m_ID;
 
     bool m_UseAlbedoTexture;
     bool m_UseEmissionTexture;
@@ -113,7 +114,7 @@ struct ModelData {
     int useARMTexture;
 
     int useNormalTexture;
-    int id;
+    unsigned id;
     int castShadows;
     int visible;
 };

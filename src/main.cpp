@@ -149,7 +149,6 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
-    const auto templ = scene.GetModels();
     for (unsigned i = 0; i < scene.GetModels().size(); i++) {
         const auto model = scene.GetModels()[i];
         model->SetAlbedoTexture(texMainColor);

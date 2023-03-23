@@ -60,6 +60,7 @@ add_executable(Indigo
     include/scene.hpp
     include/model.hpp
     include/light.hpp
+    include/id_generator.hpp
 )
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE

@@ -49,7 +49,7 @@ struct ModelData {
     int useARMTexture;
 
     int useNormalTexture;
-    int id;
+    uint id;
     int castShadows;
     int visible;
 };
@@ -99,6 +99,23 @@ uniform sampler2D normalMap;
 uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
 uniform sampler2D ARMMap;
+vec3 unpackColor(float f) 
+{
+    vec3 color;
+    color.r = floor(f / 65536);
+    color.g = floor((f - color.r * 65536) / 256.0);
+    color.b = floor(f - color.r * 65536 - color.g * 256.0);
+    return color / 256.0;
+}
+uint Hash32(uint x)
+{
+    x ^= x >> 16;
+    x *= 0x7feb352dU;
+    x ^= x >> 15;
+    x *= 0x846ca68bU;
+    x ^= x >> 16;
+    return x;
+}
 
 void main() {
     vec3 color3 = vec3(0.);
@@ -113,6 +130,9 @@ void main() {
         (modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz : modelInfo.ARM;
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
     screenNormal.xyz = normalize(normal);
+    screenID.xyz=unpackColor(Hash32(modelInfo.id));
+    // screenID.xyz=vec3(modelInfo.id);
+
     // make sure the normalmap is in right format
     if (modelInfo.useNormalTexture == 1) {
         screenNormal.xyz = TBN * (texture(normalMap, UV).xyz * 2 - 1);
