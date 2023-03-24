@@ -232,15 +232,7 @@ void main() {
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
-    // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
-    // temPosition=temPosition* 600.0;
 
-    // screenLight.xyz =info.position;
-    // screenVolume.xyz=temPosition.xyz;
-    // screenLight.xyz/=600;
-    // screenVolume.xyz/=600;
-    // screenVolume-=screenLight;
-    // screenVolume= abs(screenVolume)* 10.0;
     screenVolume = vec4(0);
     screenLight = PhongLight(baseInfo, cameraInfo, lights);
 }

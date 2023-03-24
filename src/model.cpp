@@ -31,7 +31,7 @@ void Model::Draw() const {
     Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
 }
 
-const ModelData Model::GetModelData() {
+ModelData Model::GetModelData() {
     return ModelData{
         m_Transform.GetTransformData(),
         m_AlbedoColor,

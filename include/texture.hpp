@@ -48,7 +48,7 @@ private:
     void LoadImage(const std::string &textureFilepath, int bit);
     int Format2Bit(Format format, int bit);
     Format Channels2Format(int channel);
-    void Update(unsigned char *data = nullptr);
+    void Update(unsigned char *data);
 
 private:
     GLuint m_TextureID;

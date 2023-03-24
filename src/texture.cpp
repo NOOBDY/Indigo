@@ -13,7 +13,7 @@ Texture::Texture(const int width, const int height, Format format,
     glCreateTextures(target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
-    Update();
+    Update(nullptr);
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -142,8 +142,8 @@ int Texture::Format2Bit(Texture::Format inFormat, int bit) {
     }
     }
     throw std::runtime_error("invalid bit number");
-    // return GL_RGB8;
 }
+
 Texture::Format Texture::Channels2Format(int channel) {
     switch (channel) {
     case 1:
@@ -155,9 +155,10 @@ Texture::Format Texture::Channels2Format(int channel) {
     case 4:
         return Texture::Format::RGBA;
     }
-    LOG_ERROR("image channel {} unsupport", channel);
+    LOG_ERROR("image channel {} unsupported", channel);
     throw;
 }
+
 void Texture::Update(unsigned char *data) {
     glBindTexture(m_Target, m_TextureID);
     if (m_Target == CUBE) {
@@ -189,13 +190,15 @@ void Texture::Update(unsigned char *data) {
             data                         //
         );
     } else {
-        throw std::string("invalid target");
+        throw std::runtime_error("invalid target");
     }
 }
+
 void Texture::SetWidth(int width) {
     m_Width = width;
     Update(nullptr);
 }
+
 void Texture::SetHeight(int height) {
     m_Height = height;
     Update(nullptr);
