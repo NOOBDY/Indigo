@@ -240,7 +240,7 @@ void main() {
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
-    baseInfo.ID= texture(screenID, UV).rgb;
+    baseInfo.ID = texture(screenID, UV).rgb;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
 
     outScreenVolume = texture(screenVolume, UV);
