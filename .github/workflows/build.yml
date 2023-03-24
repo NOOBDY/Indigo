@@ -54,8 +54,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          cmake --build build
-          mv build/Debug/Indigo.exe build/
+          cmake --build build --config ${{ matrix.build_type }}
+          mv build/${{ matrix.build_type }}/Indigo.exe build/
 
       - name: Uploading Binary
         uses: actions/upload-artifact@v3
