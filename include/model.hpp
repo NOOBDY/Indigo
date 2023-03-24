@@ -20,7 +20,7 @@ struct ModelData {
     int useARMTexture;
 
     int useNormalTexture;
-    int id;
+    unsigned int id;
     int castShadows;
     int visible;
 };
@@ -47,7 +47,7 @@ public:
     void SetNormalTexture(std::shared_ptr<Texture> normal) {
         m_NormalTexture = normal;
     }
-    void SetARMTexture(std::shared_ptr<Texture> ARM) { m_ARM_Texture = ARM; }
+    void SetARMTexture(std::shared_ptr<Texture> ARM) { m_ARMTexture = ARM; }
 
     void SetAlbedoColor(glm::vec3 albedo) { m_AlbedoColor = albedo; }
     void SetEmissionColor(glm::vec3 emission) { m_EmissionColor = emission; }
@@ -77,7 +77,7 @@ public:
     std::shared_ptr<Texture> GetAlbedoTexture() { return m_AlbedoTexture; }
     std::shared_ptr<Texture> GetEmissionTexture() { return m_EmissionTexture; }
     std::shared_ptr<Texture> GetNormalTexture() { return m_NormalTexture; }
-    std::shared_ptr<Texture> GetARMTexture() { return m_ARM_Texture; }
+    std::shared_ptr<Texture> GetARMTexture() { return m_ARMTexture; }
 
     glm::vec3 GetAlbedoColor() { return m_AlbedoColor; }
     glm::vec3 GetEmissionColor() { return m_EmissionColor; }
@@ -108,7 +108,7 @@ private:
     std::shared_ptr<Texture> m_AlbedoTexture;
     std::shared_ptr<Texture> m_EmissionTexture;
     std::shared_ptr<Texture> m_NormalTexture;
-    std::shared_ptr<Texture> m_ARM_Texture;
+    std::shared_ptr<Texture> m_ARMTexture;
     const unsigned int m_ID;
 
     bool m_UseAlbedoTexture;

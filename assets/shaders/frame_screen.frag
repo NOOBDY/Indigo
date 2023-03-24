@@ -56,9 +56,9 @@ void main() {
 
     col.xyz += gaussianBlur(screenVolume, 0.5, UV);
 
-    //screenID.a = model id ;model start from 1 and need to 
-    col=texture(screenID, UV);
-    // col.xyz=vec3(col.a*255==2);
+    // screenID.a = model id ;model start from 1 and need to
+    // col = texture(screenID, UV);
+    // col.xyz = vec3(col.a * 255 == 2);
 
     // col = cube_uv(UV);
     FragColor = vec4(col.xyz, 1.0);
