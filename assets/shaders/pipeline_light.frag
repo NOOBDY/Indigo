@@ -145,8 +145,7 @@ float shadow(vec3 position, LightData light, int index) {
     float bias = 1.5;
     int samples = 20;
     float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
-    // return shadow;
-    // return 1.0-shadow;
+
     for (int i = 0; i < samples; ++i) {
         float closestDepth =
             texture(pointShadowMap, dir + gridSamplingDisk[i] * diskRadius).r;
@@ -207,7 +206,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
-    outScreenVolume += vec4(specular * light.power, 1.0);
+    outScreenVolume += vec4(abs(specular) * light.power, 1.0);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -240,15 +239,7 @@ void main() {
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
-    // vec3 temPosition= vec4(texture(screenPosition, UV).xyz*2.0-1.0,1.0).xyz;
-    // temPosition=temPosition* 600.0;
 
-    // screenLight.xyz =info.position;
-    // screenVolume.xyz=temPosition.xyz;
-    // screenLight.xyz/=600;
-    // screenVolume.xyz/=600;
-    // screenVolume-=screenLight;
-    // screenVolume= abs(screenVolume)* 10.0;
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
         texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);

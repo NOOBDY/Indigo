@@ -318,20 +318,24 @@ void Pipeline::CompositorPass() {
 
     m_Compositor.Unbind();
 }
+
 void Pipeline::SetWidth(int width) {
     m_Width = width;
     UpdatePass();
 }
+
 void Pipeline::SetHeight(int height) {
     m_Height = height;
     UpdatePass();
 }
+
 void Pipeline::UpdatePass() {
-    for (auto i = m_Passes.begin(); i != m_Passes.end();) {
-        if (i->first == REFLECT || i->first == POINT_SHADOW ||
-            i->first == DIRECTION_SHADOW)
+    for (const auto &pass : m_Passes) {
+        if (pass.first == REFLECT || pass.first == POINT_SHADOW ||
+            pass.first == DIRECTION_SHADOW)
             continue;
-        i->second->SetWidth(m_Width);
-        i->second->SetHeight(m_Height);
+
+        pass.second->SetWidth(m_Width);
+        pass.second->SetHeight(m_Height);
     }
 }

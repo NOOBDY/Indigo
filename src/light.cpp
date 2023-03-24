@@ -1,6 +1,5 @@
 #include "light.hpp"
 
-#pragma pack(16) // std140 layout pads by multiple of 16
 Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
     : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {
     if (m_CastShadow) {
@@ -8,6 +7,7 @@ Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
             m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
     }
 }
+
 void Light::SetLightType(Type lightType) {
     Texture::Target lastTarget = GetShadowTarget();
     m_Type = lightType;
