@@ -8,38 +8,12 @@
 
 Texture::Texture(const int width, const int height, Format format,
                  Target target, int bit)
-    : m_Target(target), m_Width(width), m_Height(height) {
+    : m_Target(target), m_Format(format), m_Width(width), m_Height(height),
+      m_Bit(bit) {
     glCreateTextures(target, 1, &m_TextureID);
     LOG_TRACE("Creating Texture {}", m_TextureID);
 
-    glBindTexture(target, m_TextureID);
-
-    if (target == CUBE)
-        for (int i = 0; i < 6; i++)
-            glTexImage2D(                           //
-                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
-                0,                                  // level
-                Format2Bit(format, bit),            // internal format
-                width,                              //
-                height,                             //
-                0,                                  // border
-                format,                             // format
-                GL_UNSIGNED_BYTE,                   // type
-                NULL                                //
-            );
-
-    else
-        glTexImage2D(                //
-            target,                  // target
-            0,                       // level
-            Format2Bit(format, bit), // internal format
-            width,                   //
-            height,                  //
-            0,                       // border
-            format,                  // format
-            GL_UNSIGNED_BYTE,        // type
-            NULL                     //
-        );
+    Update(nullptr);
 
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -74,7 +48,6 @@ void Texture::Unbind() {
 
 void Texture::LoadImage(const std::string &textureFilepath, int bit) {
     m_Target = IMAGE_2D;
-    glBindTexture(m_Target, m_TextureID);
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
     unsigned char *data =
@@ -83,9 +56,11 @@ void Texture::LoadImage(const std::string &textureFilepath, int bit) {
     if (data == NULL) {
         throw FileNotFoundException(textureFilepath);
     }
+    m_Target = IMAGE_2D;
     m_Format = Channels2Format(channels);
     m_Width = width;
     m_Height = height;
+    m_Bit = bit;
 
     /**
      * TODO: Add support for 1 channel png files
@@ -96,17 +71,8 @@ void Texture::LoadImage(const std::string &textureFilepath, int bit) {
      * for format table
      * https://registry.khronos.org/OpenGL-Refpages/gl4/html/glTexImage2D.xhtml
      */
-    glTexImage2D(                  //
-        m_Target,                  // target
-        0,                         // level
-        Format2Bit(m_Format, bit), // internal format
-        width,                     //
-        height,                    //
-        0,                         // border
-        m_Format,                  // format
-        GL_UNSIGNED_BYTE,          // type
-        data                       //
-    );
+
+    Update(data);
 
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(m_Target, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -176,8 +142,8 @@ int Texture::Format2Bit(Texture::Format inFormat, int bit) {
     }
     }
     throw std::runtime_error("invalid bit number");
-    // return GL_RGB8;
 }
+
 Texture::Format Texture::Channels2Format(int channel) {
     switch (channel) {
     case 1:
@@ -189,6 +155,51 @@ Texture::Format Texture::Channels2Format(int channel) {
     case 4:
         return Texture::Format::RGBA;
     }
-    LOG_ERROR("image channel {} unsupport", channel);
+    LOG_ERROR("image channel {} unsupported", channel);
     throw;
+}
+
+void Texture::Update(unsigned char *data) {
+    glBindTexture(m_Target, m_TextureID);
+    if (m_Target == CUBE) {
+        for (int i = 0; i < 6; i++)
+            glTexImage2D(                           //
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, // target
+                0,                                  // level
+                Format2Bit(m_Format, m_Bit),        // internal format
+                m_Width,                            //
+                m_Height,                           //
+                0,                                  // border
+                m_Format,                           // format
+                GL_UNSIGNED_BYTE,                   // type
+                data                                //
+            );
+
+    }
+
+    else if (m_Target == IMAGE_2D) {
+        glTexImage2D(                    //
+            m_Target,                    // target
+            0,                           // level
+            Format2Bit(m_Format, m_Bit), // internal format
+            m_Width,                     //
+            m_Height,                    //
+            0,                           // border
+            m_Format,                    // format
+            GL_UNSIGNED_BYTE,            // type
+            data                         //
+        );
+    } else {
+        throw std::runtime_error("invalid target");
+    }
+}
+
+void Texture::SetWidth(int width) {
+    m_Width = width;
+    Update(nullptr);
+}
+
+void Texture::SetHeight(int height) {
+    m_Height = height;
+    Update(nullptr);
 }

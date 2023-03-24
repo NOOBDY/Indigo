@@ -4,6 +4,8 @@
 #include "pch.hpp"
 
 #include "transform.hpp"
+#include "texture.hpp"
+// #include "id_generator.hpp"
 
 struct LightData;
 
@@ -23,9 +25,17 @@ public:
     void SetLightColor(glm::vec3 color) { m_Color = color; }
     void SetRadius(float radius) { m_Radius = radius; }
     void SetPower(float power) { m_Power = power; }
-    void SetLightType(Type lightType) { m_Type = lightType; }
+    void SetLightType(Type lightType);
     void SetInner(float inner) { m_InnerCone = inner; }
     void SetOuter(float outer) { m_OuterCone = outer; }
+    void SetShadowSize(int size) {
+        m_ShadowSize = size;
+        if (m_ShadowTexture) {
+            m_ShadowTexture->SetWidth(m_ShadowSize);
+            m_ShadowTexture->SetHeight(m_ShadowSize);
+        }
+    }
+    void SetCastShadow(bool castShadow) { m_CastShadow = castShadow; }
 
     glm::mat4 GetLightProjection() const;
     std::vector<glm::mat4> GetLightProjectionCube() const;
@@ -39,10 +49,19 @@ public:
     float GetInnerCone() const { return m_InnerCone; };
     float GetOuterCone() const { return m_OuterCone; };
 
+    float GetTextureSize() const { return m_ShadowSize; };
+    bool GetCastShadow() const { return m_CastShadow; };
+    std::shared_ptr<Texture> GetShadowTexture() const {
+        return m_ShadowTexture;
+    };
+
     LightData GetLightData();
+    Texture::Target GetShadowTarget();
 
     Transform &GetTransform() { return m_Transform; }
     const Transform &GetTransform() const { return m_Transform; }
+
+    void SetTransform(Transform transform) { m_Transform = transform; }
 
 private:
     Type m_Type;
@@ -59,6 +78,9 @@ private:
     float m_FarPlane = 1000.0f;
 
     Transform m_Transform;
+    bool m_CastShadow = true;
+    int m_ShadowSize = 1024;
+    std::shared_ptr<Texture> m_ShadowTexture = nullptr;
 };
 
 struct LightData {
@@ -77,8 +99,9 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
+    // lazy to fix padding issues
+    int castShadow;
     float pad1;
-    float pad2;
 };
 
 #endif

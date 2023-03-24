@@ -1,8 +1,21 @@
 #include "light.hpp"
 
-#pragma pack(16) // std140 layout pads by multiple of 16
 Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
-    : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {}
+    : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {
+    if (m_CastShadow) {
+        m_ShadowTexture = std::make_shared<Texture>(
+            m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
+    }
+}
+
+void Light::SetLightType(Type lightType) {
+    Texture::Target lastTarget = GetShadowTarget();
+    m_Type = lightType;
+    if (lastTarget != GetShadowTarget()) {
+        m_ShadowTexture = std::make_shared<Texture>(
+            m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
+    }
+}
 
 glm::mat4 Light::GetLightProjection() const {
 
@@ -66,8 +79,25 @@ LightData Light::GetLightData() {
 
     data.nearPlane = m_NearPlane;
     data.farPlane = m_FarPlane;
+    // lazy to fix padding issues
+    data.castShadow = int(m_CastShadow);
     data.pad1 = 0.0;
-    data.pad2 = 0.0;
 
     return data;
 }
+Texture::Target Light::GetShadowTarget() {
+    switch (m_Type) {
+    case Light::NONE:
+        throw std::invalid_argument("invalid light type for shadow");
+    case Light::POINT:
+        return Texture::Target::CUBE;
+    case Light::SPOT:
+        return Texture::Target::CUBE;
+    case Light::DIRECTION:
+        return Texture::Target::IMAGE_2D;
+    case Light::AMBIENT:
+        throw std::invalid_argument("invalid light type for shadow");
+    default:
+        throw std::invalid_argument("invalid light type for shadow");
+    }
+};

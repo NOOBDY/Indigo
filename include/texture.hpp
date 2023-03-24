@@ -33,17 +33,22 @@ public:
      */
     void Bind(unsigned int slot);
     void Unbind();
-
-    void SetData();
+    void SetWidth(int width);
+    void SetHeight(int height);
 
     GLuint GetTextureID() { return m_TextureID; }
     GLuint GetTextureLocation(const GLuint &programID,
                               const std::string &uniformName);
+    GLuint GetTextureTarget() { return m_Target; }
+    GLuint GetTextureFormat() { return m_Format; }
+    int GetWidth() { return m_Width; }
+    int GetHeight() { return m_Height; }
 
 private:
     void LoadImage(const std::string &textureFilepath, int bit);
     int Format2Bit(Format format, int bit);
     Format Channels2Format(int channel);
+    void Update(unsigned char *data);
 
 private:
     GLuint m_TextureID;
@@ -51,6 +56,7 @@ private:
     Format m_Format;
     int m_Width;
     int m_Height;
+    int m_Bit;
 };
 
 #endif

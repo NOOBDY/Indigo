@@ -36,6 +36,8 @@ add_executable(Indigo
     src/frame_buffer.cpp
     src/texture.cpp
     src/transform.cpp
+    src/pipeline.cpp
+    src/scene.cpp
     src/model.cpp
     src/light.cpp
 
@@ -54,11 +56,11 @@ add_executable(Indigo
     include/frame_buffer.hpp
     include/texture.hpp
     include/transform.hpp
+    include/pipeline.hpp
+    include/scene.hpp
     include/model.hpp
     include/light.hpp
-
-    assets/shaders/base.vert
-    assets/shaders/base.frag
+    include/id_generator.hpp
 )
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE

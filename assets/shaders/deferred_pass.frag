@@ -1,14 +1,6 @@
 
 #version 450 core
 
-// so far only one cube map
-#define LIGHT_NUMBER 2
-#define NONE 0
-#define POINT 1
-#define SPOT 2
-#define DIRECTION 3
-#define AMBIENT 4
-
 struct TransformData {
     mat4 transform;
 
@@ -44,14 +36,26 @@ struct LightData {
     float pad2;
 };
 
-struct MaterialData {
-    vec3 baseColor;
-    float maxShine;
-    // vec3 normal;
+struct ModelData {
+    TransformData transform;
+
+    vec3 albedoColor;
+    int useAlbedoTexture;
+
+    vec3 emissionColor;
+    int useEmissionTexture;
+
+    vec3 ARM;
+    int useARMTexture;
+
+    int useNormalTexture;
+    uint id;
+    int castShadows;
+    int visible;
 };
 
 struct CameraData {
-    // TransformData transform;
+    TransformData transform;
     mat4 projection;
     mat4 view;
     float nearPlane;
@@ -59,12 +63,16 @@ struct CameraData {
     float aspectRatio;
     float FOV;
 };
-layout(std140, binding = 1) uniform Materials {
-    MaterialData material;
+layout(std140, binding = 0) uniform Matrices {
+    mat4 model;
+    mat4 viewProjection;
+};
+layout(std140, binding = 1) uniform ModelInfo {
+    ModelData modelInfo;
 };
 
 layout(std140, binding = 2) uniform Lights {
-    LightData lights[LIGHT_NUMBER];
+    LightData lights;
 };
 
 layout(std140, binding = 3) uniform Camera {
@@ -77,47 +85,65 @@ layout(location = 3) in vec2 UV;
 layout(location = 4) in mat3 TBN;
 
 layout(location = 0) out vec4 screenAlbedo;
-layout(location = 1) out vec4 screenNormal;
-layout(location = 2) out vec4 screenPosition;
+layout(location = 1) out vec4 screenEmission;
+layout(location = 2) out vec4 screenNormal;
 // ARM(ao roughtless metallic)
 layout(location = 3) out vec4 screenARM;
-layout(location = 4) out vec4 screenEmission;
+layout(location = 4) out vec4 screenPosition;
+layout(location = 5) out vec4 screenID;
 // out vec4 color;
-uniform vec3 cameraPosition;
+// uniform vec3 cameraPosition;
 
 uniform sampler2D albedoMap; // samplers are opaque types and
 uniform sampler2D normalMap;
 uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
-uniform sampler2D ARM;
-uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
-layout(std140, binding = 0) uniform Matrices {
-    mat4 model;
-    mat4 viewProjection;
-};
+uniform sampler2D ARMMap;
+vec3 unpackColor(uint f) {
+    vec3 color;
+    f /= 256;
+    color.r = floor(f / 65536);
+    color.g = floor((f - color.r * 65536) / 256.0);
+    color.b = floor(f - color.r * 65536 - color.g * 256.0);
+    color.xyz /= 256.0;
+    return color;
+}
+uint Hash32(uint x) {
+    x ^= x >> 16;
+    x *= 0x7feb352dU;
+    x ^= x >> 15;
+    x *= 0x846ca68bU;
+    x ^= x >> 16;
+    return x;
+}
 
 void main() {
     vec3 color3 = vec3(0.);
     float maxDepth = 600.0;
-    // color3 = PhongLight(cameraPosition, worldPosition, lights, material);
-    screenAlbedo.xyz = texture(albedoMap, UV).xyz;
-    screenEmission.xyz = texture(emissionMap, UV).xyz;
-    // screenEmsstion.xyz=vec3(1,0,0);
-    // screenPosition.xyz=(viewProjection*vec4(worldPosition,1.0)).xyz;
-    // screenPosition=(viewProjection*model*vec4(geoPosition,1.0))*0.01;
-    // screenPosition.w=1.0;
+    screenAlbedo.xyz = (modelInfo.useAlbedoTexture == 1)
+                           ? texture(albedoMap, UV).xyz
+                           : modelInfo.albedoColor;
+    screenEmission.xyz = (modelInfo.useEmissionTexture == 1)
+                             ? texture(emissionMap, UV).xyz
+                             : modelInfo.emissionColor;
+    screenARM.xyz = (modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz
+                                                   : modelInfo.ARM;
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
     screenNormal.xyz = normalize(normal);
+    screenID.xyz = unpackColor(Hash32(modelInfo.id));
+    screenID.a = modelInfo.id / 256.0;
+    // screenID.xyz=vec3(screenID.z);
+    // screenID.xyz=vec3(modelInfo.id==3);
+
     // make sure the normalmap is in right format
-    if (false) {
+    if (modelInfo.useNormalTexture == 1) {
         screenNormal.xyz = TBN * (texture(normalMap, UV).xyz * 2 - 1);
     }
-    screenARM.xyz = vec3(1.0, 0.5, 0.5);
 
     // color3 = ColorTransform(color3);
-    float len = length(vec3(worldPosition - cameraPosition));
-    len /= cameraInfo.farPlane;
-    vec4 tem = viewProjection * vec4(worldPosition, 1.0);
+    // float len = length(vec3(worldPosition - cameraInfo.transform.position));
+    // len /= cameraInfo.farPlane;
+    // vec4 tem = viewProjection * vec4(worldPosition, 1.0);
 
     // way1
     //  gl_FragDepth = (tem.z/tem.w)*0.5+0.5;

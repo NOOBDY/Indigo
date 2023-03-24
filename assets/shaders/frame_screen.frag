@@ -9,6 +9,7 @@ uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
 uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
+uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
 uniform sampler2D screenLight;
@@ -50,13 +51,15 @@ vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
 }
 
 void main() {
-    vec3 col = texture(screenLight, UV).rgb;
+    vec4 col = texture(screenLight, UV).rgba;
     // col+=gaussianBlur(screenEmission,0.5, UV);
 
-    col += gaussianBlur(screenVolume, 0.5, UV);
-    // col-=texture(screenVolume,UV).xyz;
-    // col=clamp(vec3(0.0),vec3(1.0),col);
+    col.xyz += gaussianBlur(screenVolume, 0.5, UV);
+
+    // screenID.a = model id ;model start from 1 and need to
+    // col = texture(screenID, UV);
+    // col.xyz = vec3(col.a * 255 == 2);
 
     // col = cube_uv(UV);
-    FragColor = vec4(col, 1.0);
+    FragColor = vec4(col.xyz, 1.0);
 }
