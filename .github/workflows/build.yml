@@ -55,7 +55,7 @@ jobs:
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           cmake --build build --config ${{ matrix.build_type }}
-          mv build/Debug/Indigo.exe build/
+          mv build/${{ matrix.build_type }}/Indigo.exe build/
 
       - name: Uploading Binary
         uses: actions/upload-artifact@v3
