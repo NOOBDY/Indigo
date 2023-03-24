@@ -99,13 +99,15 @@ uniform sampler2D normalMap;
 uniform sampler2D emissionMap;
 uniform sampler2D reflectMap;
 uniform sampler2D ARMMap;
-vec3 unpackColor(float f) 
+vec3 unpackColor(uint f) 
 {
     vec3 color;
+    f/=256;
     color.r = floor(f / 65536);
     color.g = floor((f - color.r * 65536) / 256.0);
     color.b = floor(f - color.r * 65536 - color.g * 256.0);
-    return color / 256.0;
+    color.xyz/=256.0;
+    return color;
 }
 uint Hash32(uint x)
 {
@@ -131,7 +133,9 @@ void main() {
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
     screenNormal.xyz = normalize(normal);
     screenID.xyz=unpackColor(Hash32(modelInfo.id));
-    // screenID.xyz=vec3(modelInfo.id);
+    screenID.a=modelInfo.id/256.0;
+    // screenID.xyz=vec3(screenID.z);
+    // screenID.xyz=vec3(modelInfo.id==3);
 
     // make sure the normalmap is in right format
     if (modelInfo.useNormalTexture == 1) {

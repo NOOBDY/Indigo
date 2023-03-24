@@ -110,7 +110,8 @@ void Pipeline::Init() {
         std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
     m_BasicPassFBO.AttachTexture(m_Passes[POSITION]->GetTextureID(),
                                  attachments[4]);
-    m_Passes[ID] = std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_Passes[ID] = std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA,
+                                             Texture::IMAGE_2D, 8);
     m_BasicPassFBO.AttachTexture(m_Passes[ID]->GetTextureID(), attachments[5]);
     m_Passes[DEPTH] =
         std::make_shared<Texture>(m_Width, m_Height, Texture::DEPTH);
