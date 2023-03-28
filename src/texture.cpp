@@ -238,7 +238,10 @@ void Texture::SaveTexture(std::string path) {
         new unsigned char[channelNumber * int(m_Bit / 8) * m_Width * m_Height];
     GetTexturePixels(pixels);
     stbi_flip_vertically_on_write(1);
+    // it will take about 2s to save
+    LOG_INFO("saveing image {}", path);
     stbi_write_png(path.c_str(), m_Width, m_Height, channelNumber, pixels,
                    m_Width * channelNumber);
+    LOG_INFO("saved");
     free(pixels);
 }
