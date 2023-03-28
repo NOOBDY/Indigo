@@ -43,12 +43,15 @@ public:
     GLuint GetTextureFormat() { return m_Format; }
     int GetWidth() { return m_Width; }
     int GetHeight() { return m_Height; }
+    void SaveTexture(std::string path);
 
 private:
     void LoadImage(const std::string &textureFilepath, int bit);
     int Format2Bit(Format format, int bit);
+    int Format2Channels(Format format);
     Format Channels2Format(int channel);
     void Update(unsigned char *data);
+    void GetTexturePixels(unsigned char *point);
 
 private:
     GLuint m_TextureID;

@@ -1,7 +1,9 @@
 #include "texture.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image.h>
+#include <stb_image_write.h>
 
 #include "log.hpp"
 #include "exception.hpp"
@@ -158,6 +160,29 @@ Texture::Format Texture::Channels2Format(int channel) {
     LOG_ERROR("image channel {} unsupported", channel);
     throw;
 }
+int Texture::Format2Channels(Format format) {
+    switch (format) {
+    case Format::DEPTH:
+        return 1;
+        break;
+    case Format::R:
+        return 1;
+        break;
+    case Format::RG:
+        return 2;
+        break;
+    case Format::RGB:
+        return 3;
+        break;
+    case Format::RGBA:
+        return 4;
+        break;
+
+    default:
+        throw std::runtime_error("invalid format");
+        break;
+    }
+}
 
 void Texture::Update(unsigned char *data) {
     glBindTexture(m_Target, m_TextureID);
@@ -202,4 +227,18 @@ void Texture::SetWidth(int width) {
 void Texture::SetHeight(int height) {
     m_Height = height;
     Update(nullptr);
+}
+void Texture::GetTexturePixels(unsigned char *pointer) {
+    glBindTexture(m_Target, m_TextureID);
+    glGetTexImage(m_Target, 0, m_Format, GL_UNSIGNED_BYTE, pointer);
+}
+void Texture::SaveTexture(std::string path) {
+    int channelNumber = Format2Channels(m_Format);
+    unsigned char *pixels =
+        new unsigned char[channelNumber * int(m_Bit / 8) * m_Width * m_Height];
+    GetTexturePixels(pixels);
+    stbi_flip_vertically_on_write(1);
+    stbi_write_png(path.c_str(), m_Width, m_Height, channelNumber, pixels,
+                   m_Width * channelNumber);
+    free(pixels);
 }

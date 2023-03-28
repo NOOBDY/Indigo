@@ -45,6 +45,7 @@ public:
     void Render(Scene scene);
     void SetWidth(int width);
     void SetHeight(int height);
+    void SavePass(Pass targetPass, std::string path);
     void Init();
 
 private:

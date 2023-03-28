@@ -346,3 +346,8 @@ void Pipeline::UpdatePass() {
         pass.second->SetHeight(m_Height);
     }
 }
+void Pipeline::SavePass(Pass targetPass, std::string path) {
+    if (m_Passes.find(targetPass) == m_Passes.end())
+        throw std::runtime_error("not support texture to save as image");
+    m_Passes[targetPass]->SaveTexture(path);
+};

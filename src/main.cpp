@@ -226,6 +226,7 @@ int main(int argc, char **argv) {
         glfwSwapBuffers(window.GetWindow());
         window.PollEvents();
     } while (!window.ShouldClose());
+    pipeline.SavePass(Pipeline::LIGHTING, "lighting.png");
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
