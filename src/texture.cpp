@@ -44,8 +44,35 @@ void Texture::Bind(unsigned int slot) {
     LOG_TRACE("Binding Texture");
     glBindTextureUnit(slot, m_TextureID);
 }
+
 void Texture::Unbind() {
     glBindTexture(m_Target, 0);
+}
+
+void Texture::SetWidth(int width) {
+    m_Width = width;
+    Update(nullptr);
+}
+
+void Texture::SetHeight(int height) {
+    m_Height = height;
+    Update(nullptr);
+}
+
+GLuint Texture::GetTextureLocation(const GLuint &programID,
+                                   const std::string &uniformName) {
+    return glGetUniformLocation(programID, uniformName.c_str());
+}
+
+unsigned int Texture::GetModelIDAtPosition(glm::vec2 pos) const {
+    std::vector<unsigned char> pixels = GetTexturePixels();
+
+    unsigned int target =
+        pixels[(m_Width * pos.x + pos.y) * 4 * sizeof(unsigned char)];
+
+    unsigned int mask = 0x000000FF; // ID is stored in the alpha channel
+
+    return target & mask;
 }
 
 void Texture::LoadImage(const std::string &textureFilepath, int bit) {
@@ -86,12 +113,8 @@ void Texture::LoadImage(const std::string &textureFilepath, int bit) {
     stbi_image_free(data);
 }
 
-GLuint Texture::GetTextureLocation(const GLuint &programID,
-                                   const std::string &uniformName) {
-    return glGetUniformLocation(programID, uniformName.c_str());
-}
 /// @brief change format to internal format
-int Texture::Format2Bit(Texture::Format inFormat, int bit) {
+int Texture::Format2Bit(Texture::Format inFormat, int bit) const {
     // GL_RGBA16 will be 16bit for each channel totally 64 bit
     switch (bit) {
     case 8: {
@@ -146,21 +169,7 @@ int Texture::Format2Bit(Texture::Format inFormat, int bit) {
     throw std::runtime_error("invalid bit number");
 }
 
-Texture::Format Texture::Channels2Format(int channel) {
-    switch (channel) {
-    case 1:
-        return Texture::Format::R;
-    case 2:
-        return Texture::Format::RG;
-    case 3:
-        return Texture::Format::RGB;
-    case 4:
-        return Texture::Format::RGBA;
-    }
-    LOG_ERROR("image channel {} unsupported", channel);
-    throw;
-}
-int Texture::Format2Channels(Format format) {
+int Texture::Format2Channels(Format format) const {
     switch (format) {
     case Format::DEPTH:
         return 1;
@@ -182,6 +191,32 @@ int Texture::Format2Channels(Format format) {
         throw std::runtime_error("invalid format");
         break;
     }
+}
+
+Texture::Format Texture::Channels2Format(int channel) const {
+    switch (channel) {
+    case 1:
+        return Texture::Format::R;
+    case 2:
+        return Texture::Format::RG;
+    case 3:
+        return Texture::Format::RGB;
+    case 4:
+        return Texture::Format::RGBA;
+    }
+    LOG_ERROR("image channel {} unsupported", channel);
+    throw;
+}
+
+void Texture::SaveTexture(std::string path) const {
+    int channelNumber = Format2Channels(m_Format);
+    std::vector<unsigned char> pixels = GetTexturePixels();
+    stbi_flip_vertically_on_write(1);
+    // it will take about 2s to save
+    LOG_INFO("saving image {}", path);
+    stbi_write_png(path.c_str(), m_Width, m_Height, channelNumber,
+                   pixels.data(), m_Width * channelNumber);
+    LOG_INFO("saved");
 }
 
 void Texture::Update(unsigned char *data) {
@@ -219,29 +254,13 @@ void Texture::Update(unsigned char *data) {
     }
 }
 
-void Texture::SetWidth(int width) {
-    m_Width = width;
-    Update(nullptr);
-}
+std::vector<unsigned char> Texture::GetTexturePixels() const {
+    std::vector<unsigned char> pixels;
+    pixels.reserve(Format2Channels(m_Format) * (m_Bit / sizeof(char)) *
+                   m_Width * m_Height);
 
-void Texture::SetHeight(int height) {
-    m_Height = height;
-    Update(nullptr);
-}
-void Texture::GetTexturePixels(unsigned char *pointer) {
-    glBindTexture(m_Target, m_TextureID);
-    glGetTexImage(m_Target, 0, m_Format, GL_UNSIGNED_BYTE, pointer);
-}
-void Texture::SaveTexture(std::string path) {
-    int channelNumber = Format2Channels(m_Format);
-    unsigned char *pixels =
-        new unsigned char[channelNumber * int(m_Bit / 8) * m_Width * m_Height];
-    GetTexturePixels(pixels);
-    stbi_flip_vertically_on_write(1);
-    // it will take about 2s to save
-    LOG_INFO("saveing image {}", path);
-    stbi_write_png(path.c_str(), m_Width, m_Height, channelNumber, pixels,
-                   m_Width * channelNumber);
-    LOG_INFO("saved");
-    free(pixels);
+    glGetTextureImage(m_TextureID, 0, m_Format, GL_UNSIGNED_BYTE,
+                      m_Width * m_Height, pixels.data());
+
+    return pixels;
 }

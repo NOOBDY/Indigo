@@ -43,15 +43,17 @@ public:
     GLuint GetTextureFormat() { return m_Format; }
     int GetWidth() { return m_Width; }
     int GetHeight() { return m_Height; }
-    void SaveTexture(std::string path);
+    unsigned int GetModelIDAtPosition(glm::vec2 pos) const;
+
+    void SaveTexture(std::string path) const;
 
 private:
     void LoadImage(const std::string &textureFilepath, int bit);
-    int Format2Bit(Format format, int bit);
-    int Format2Channels(Format format);
-    Format Channels2Format(int channel);
+    int Format2Bit(Format format, int bit) const;
+    int Format2Channels(Format format) const;
+    Format Channels2Format(int channel) const;
     void Update(unsigned char *data);
-    void GetTexturePixels(unsigned char *point);
+    std::vector<unsigned char> GetTexturePixels() const;
 
 private:
     GLuint m_TextureID;
