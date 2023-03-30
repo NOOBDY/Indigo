@@ -162,6 +162,7 @@ int main(int argc, char **argv) {
     do {
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
+        glm::vec2 CursorPos = window.GetCursorPos();
 
         const auto activeCamera = scene.GetActiveCamera();
         const auto models = scene.GetModels();
@@ -190,6 +191,8 @@ int main(int argc, char **argv) {
         if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
             activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
                                         delta.y * -2 / window.GetHeight());
+
+            LOG_INFO(pipeline.GetIdByPosition(CursorPos));
         }
 
         activeCamera->UpdateView();

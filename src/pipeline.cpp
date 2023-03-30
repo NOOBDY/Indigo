@@ -351,3 +351,7 @@ void Pipeline::SavePass(Pass targetPass, std::string path) {
         throw std::runtime_error("not support texture to save as image");
     m_Passes[targetPass]->SaveTexture(path);
 };
+
+unsigned int Pipeline::GetIdByPosition(glm::vec2 pos) {
+    return m_Passes[ID]->GetTexturePosition(pos)[0];
+};

@@ -4,8 +4,8 @@
 #include "pch.hpp"
 
 #include <unordered_map>
-namespace ID {
 static unsigned int idCounter = 0;
+namespace ID {
 
 unsigned int Hash(unsigned int x) {
 

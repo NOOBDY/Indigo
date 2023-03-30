@@ -64,15 +64,17 @@ GLuint Texture::GetTextureLocation(const GLuint &programID,
     return glGetUniformLocation(programID, uniformName.c_str());
 }
 
-unsigned int Texture::GetModelIDAtPosition(glm::vec2 pos) const {
+std::vector<unsigned char> Texture::GetTexturePosition(glm::vec2 pos) const {
     std::vector<unsigned char> pixels = GetTexturePixels();
+    std::vector<unsigned char> target;
+    unsigned int pixelsSize =
+        Format2Channels(m_Format) * (m_Bit / sizeof(char));
 
-    unsigned int target =
-        pixels[(m_Width * pos.x + pos.y) * 4 * sizeof(unsigned char)];
-
-    unsigned int mask = 0x000000FF; // ID is stored in the alpha channel
-
-    return target & mask;
+    target.reserve(pixelsSize);
+    int start = pixelsSize * (m_Width * pos.y + pos.x);
+    target.insert(target.begin(), pixels.data() + start,
+                  pixels.data() + start + pixelsSize);
+    return target;
 }
 
 void Texture::LoadImage(const std::string &textureFilepath, int bit) {
@@ -260,7 +262,9 @@ std::vector<unsigned char> Texture::GetTexturePixels() const {
                    m_Width * m_Height);
 
     glGetTextureImage(m_TextureID, 0, m_Format, GL_UNSIGNED_BYTE,
-                      m_Width * m_Height, pixels.data());
+                      Format2Channels(m_Format) * (m_Bit / sizeof(char)) *
+                          m_Width * m_Height,
+                      pixels.data());
 
     return pixels;
 }

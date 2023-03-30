@@ -43,7 +43,7 @@ public:
     GLuint GetTextureFormat() { return m_Format; }
     int GetWidth() { return m_Width; }
     int GetHeight() { return m_Height; }
-    unsigned int GetModelIDAtPosition(glm::vec2 pos) const;
+    std::vector<unsigned char> GetTexturePosition(glm::vec2 pos) const;
 
     void SaveTexture(std::string path) const;
 
