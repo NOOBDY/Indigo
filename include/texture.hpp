@@ -33,6 +33,7 @@ public:
      */
     void Bind(unsigned int slot);
     void Unbind();
+
     void SetWidth(int width);
     void SetHeight(int height);
 
@@ -43,7 +44,9 @@ public:
     GLuint GetTextureFormat() { return m_Format; }
     int GetWidth() { return m_Width; }
     int GetHeight() { return m_Height; }
-    std::vector<unsigned char> GetTexturePosition(glm::vec2 pos) const;
+    // Get size of each pixel accounting for channels and bit count
+    int GetPixelSize() const { return Format2Channels(m_Format) * (m_Bit / 8); }
+    std::vector<unsigned char> GetPixelColorByPosition(glm::vec2 pos) const;
 
     void SaveTexture(std::string path) const;
 

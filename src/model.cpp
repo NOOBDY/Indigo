@@ -6,7 +6,7 @@
 #include "id_generator.hpp"
 
 Model::Model(std::shared_ptr<VertexArray> vao, Transform transform)
-    : m_VAO(vao), m_Transform(transform), m_ID(ID::GeneratorId()) {
+    : m_VAO(vao), m_Transform(transform), m_ID(ID::GeneratorID()) {
     LOG_TRACE("Creating Model");
 
     m_UseAlbedoTexture = false;

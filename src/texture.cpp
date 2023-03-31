@@ -64,16 +64,16 @@ GLuint Texture::GetTextureLocation(const GLuint &programID,
     return glGetUniformLocation(programID, uniformName.c_str());
 }
 
-std::vector<unsigned char> Texture::GetTexturePosition(glm::vec2 pos) const {
-    std::vector<unsigned char> pixels = GetTexturePixels();
-    std::vector<unsigned char> target;
-    unsigned int pixelsSize =
-        Format2Channels(m_Format) * (m_Bit / sizeof(char));
+std::vector<unsigned char>
+Texture::GetPixelColorByPosition(glm::vec2 pos) const {
+    std::vector<GLubyte> pixels = GetTexturePixels();
+    std::vector<GLubyte> target;
+    unsigned int pixelsSize = GetPixelSize();
 
     target.reserve(pixelsSize);
     int start = pixelsSize * (m_Width * pos.y + pos.x);
-    target.insert(target.begin(), pixels.data() + start,
-                  pixels.data() + start + pixelsSize);
+    target.insert(target.begin(), &pixels[start], &pixels[start + pixelsSize]);
+
     return target;
 }
 
@@ -256,15 +256,12 @@ void Texture::Update(unsigned char *data) {
     }
 }
 
-std::vector<unsigned char> Texture::GetTexturePixels() const {
-    std::vector<unsigned char> pixels;
-    pixels.reserve(Format2Channels(m_Format) * (m_Bit / sizeof(char)) *
-                   m_Width * m_Height);
+std::vector<GLubyte> Texture::GetTexturePixels() const {
+    std::vector<GLubyte> pixels;
+    pixels.resize(GetPixelSize() * m_Width * m_Height);
 
     glGetTextureImage(m_TextureID, 0, m_Format, GL_UNSIGNED_BYTE,
-                      Format2Channels(m_Format) * (m_Bit / sizeof(char)) *
-                          m_Width * m_Height,
-                      pixels.data());
+                      GetPixelSize() * m_Width * m_Height, pixels.data());
 
     return pixels;
 }

@@ -350,8 +350,12 @@ void Pipeline::SavePass(Pass targetPass, std::string path) {
     if (m_Passes.find(targetPass) == m_Passes.end())
         throw std::runtime_error("not support texture to save as image");
     m_Passes[targetPass]->SaveTexture(path);
-};
+}
 
 unsigned int Pipeline::GetIdByPosition(glm::vec2 pos) {
-    return m_Passes[ID]->GetTexturePosition(pos)[0];
-};
+
+    GLubyte id = m_Passes[ID]->GetPixelColorByPosition(glm::vec2{
+        pos.x, m_Height - pos.y})[3]; // OpenGL and GLFW have different Y axis
+                                      // direction id is stored in alpha channel
+    return static_cast<unsigned int>(id);
+}

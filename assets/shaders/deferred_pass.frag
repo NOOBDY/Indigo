@@ -131,7 +131,7 @@ void main() {
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
     screenNormal.xyz = normalize(normal);
     screenID.xyz = unpackColor(Hash32(modelInfo.id));
-    screenID.a = modelInfo.id / 256.0;
+    screenID.a = modelInfo.id / 255.0;
     // screenID.xyz=vec3(screenID.z);
     // screenID.xyz=vec3(modelInfo.id==3);
 
