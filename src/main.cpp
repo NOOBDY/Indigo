@@ -162,8 +162,10 @@ int main(int argc, char **argv) {
     do {
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
+
         if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-            LOG_DEBUG("{}", pipeline.GetIdByPosition(window.GetCursorPos()));
+            unsigned int id = pipeline.GetIdByPosition(window.GetCursorPos());
+            scene.SetActiveSceneObject(id);
         }
 
         const auto activeCamera = scene.GetActiveCamera();

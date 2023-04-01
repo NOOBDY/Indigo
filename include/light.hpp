@@ -3,13 +3,14 @@
 
 #include "pch.hpp"
 
+#include "scene_object.hpp"
 #include "transform.hpp"
 #include "texture.hpp"
 // #include "id_generator.hpp"
 
 struct LightData;
 
-class Light {
+class Light : public SceneObject {
 public:
     enum Type {
         NONE,

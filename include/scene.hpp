@@ -7,6 +7,7 @@
 #include "light.hpp"
 #include "model.hpp"
 #include "texture.hpp"
+#include "scene_object.hpp"
 
 class Scene {
 public:
@@ -22,8 +23,16 @@ public:
         return m_Cameras[m_ActiveCameraID];
     }
 
-    std::vector<std::shared_ptr<Model>> GetModels() const { return m_Models; }
-    std::vector<std::shared_ptr<Light>> GetLights() const { return m_Lights; }
+    std::vector<std::shared_ptr<Model>> GetModels() const;
+    std::vector<std::shared_ptr<Light>> GetLights() const;
+
+    // ID should be the order of Model/Light added
+    void SetActiveSceneObject(unsigned int id);
+    /**
+     * no `std::shared_ptr<SceneObject> GetActiveSceneObject()` due to
+     * possible null pointer referencing
+     */
+    int GetActiveSceneObjectID() const { return m_ActiveObjectID; }
 
     void SetEnvironmentMap(const std::shared_ptr<Texture> map) {
         m_EnvironmentMap = map;
@@ -33,8 +42,8 @@ private:
     unsigned int m_ActiveCameraID;
     std::vector<std::shared_ptr<Camera>> m_Cameras;
 
-    std::vector<std::shared_ptr<Model>> m_Models;
-    std::vector<std::shared_ptr<Light>> m_Lights;
+    int m_ActiveObjectID; // -1 for nothing active
+    std::vector<std::shared_ptr<SceneObject>> m_SceneObjects;
 
     std::shared_ptr<Texture> m_EnvironmentMap;
 };

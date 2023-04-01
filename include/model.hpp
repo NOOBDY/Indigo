@@ -3,6 +3,7 @@
 
 #include "pch.hpp"
 
+#include "scene_object.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
 #include "vertex_array.hpp"
@@ -25,7 +26,7 @@ struct ModelData {
     int visible;
 };
 
-class Model {
+class Model final : public SceneObject {
 public:
     enum TextureTypes {
         ALBEDO,
