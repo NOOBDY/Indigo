@@ -1,9 +1,8 @@
 #include "light.hpp"
 
 Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
-    : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {
-
-    m_ObjectType = SceneObject::LIGHT;
+    : SceneObject(SceneObject::LIGHT), m_Type(type), m_Color(lightColor),
+      m_Radius(radius), m_Power(power) {
 
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(

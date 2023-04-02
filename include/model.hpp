@@ -95,16 +95,11 @@ public:
     bool GetCastShadows() { return m_CastShadows; }
     bool GetVisible() { return m_Visible; }
 
-    Transform &GetTransform() { return m_Transform; }
-    const Transform &GetTransform() const { return m_Transform; }
-
-    void SetTransform(Transform transform) { m_Transform = transform; }
     /// not const for transform class issues
     ModelData GetModelData();
 
 private:
     std::shared_ptr<VertexArray> m_VAO;
-    Transform m_Transform;
 
     std::shared_ptr<Texture> m_AlbedoTexture;
     std::shared_ptr<Texture> m_EmissionTexture;

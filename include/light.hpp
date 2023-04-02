@@ -59,11 +59,6 @@ public:
     LightData GetLightData();
     Texture::Target GetShadowTarget();
 
-    Transform &GetTransform() { return m_Transform; }
-    const Transform &GetTransform() const { return m_Transform; }
-
-    void SetTransform(Transform transform) { m_Transform = transform; }
-
 private:
     Type m_Type;
 
@@ -78,7 +73,6 @@ private:
     float m_NearPlane = 1;
     float m_FarPlane = 1000.0f;
 
-    Transform m_Transform;
     bool m_CastShadow = true;
     int m_ShadowSize = 1024;
     std::shared_ptr<Texture> m_ShadowTexture = nullptr;

@@ -6,10 +6,9 @@
 #include "id_generator.hpp"
 
 Model::Model(std::shared_ptr<VertexArray> vao, Transform transform)
-    : m_VAO(vao), m_Transform(transform), m_ID(ID::GeneratorID()) {
+    : SceneObject(SceneObject::MODEL, transform), m_VAO(vao),
+      m_ID(ID::GeneratorID()) {
     LOG_TRACE("Creating Model");
-
-    m_ObjectType = SceneObject::MODEL;
 
     m_UseAlbedoTexture = false;
     m_UseEmissionTexture = false;
