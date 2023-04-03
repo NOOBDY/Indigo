@@ -118,6 +118,7 @@ int main(int argc, char **argv) {
 
     for (const auto &model : scene.GetModels()) {
         model->SetAlbedoTexture(texMainColor);
+        // model->SetNormalTexture(wallNormalMap);
         model->SetUseAlbedoTexture(true);
         // model->SetNormalTexture(wallNormalMap);
         // model->SetUseNormalTexture(true);
@@ -142,14 +143,16 @@ int main(int argc, char **argv) {
         // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);
 
-        activeCamera->GetTransform().SetPosition(
-            activeCamera->GetTransform().GetPosition() +
-            10 * window.GetScrollOffset().y *
-                glm::normalize(activeCamera->GetTransform().GetPosition()));
+        if (!io.WantCaptureMouse) {
+            activeCamera->GetTransform().SetPosition(
+                activeCamera->GetTransform().GetPosition() +
+                10 * window.GetScrollOffset().y *
+                    glm::normalize(activeCamera->GetTransform().GetPosition()));
 
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-            activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                        delta.y * -2 / window.GetHeight());
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
+                activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
+                                            delta.y * -2 / window.GetHeight());
+            }
         }
 
         activeCamera->UpdateView();
@@ -162,6 +165,8 @@ int main(int argc, char **argv) {
         float framerate = ImGui::GetIO().Framerate;
 
         ImGui::Begin("Debug Info");
+        ImGui::SetWindowPos({1170, 10});
+        ImGui::SetWindowSize({100, 85});
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
         ImGui::Text("(%d, %d)", (int)window.GetScrollOffset().x,
@@ -171,34 +176,20 @@ int main(int argc, char **argv) {
         auto object = scene.GetActiveSceneObject();
 
         if (object) {
-            glm::vec3 position = object->GetTransform().GetPosition();
-            glm::vec3 rotation = object->GetTransform().GetRotation();
-            glm::vec3 scale = object->GetTransform().GetScale();
-            ImGui::Begin("Transform");
-            ImGui::SetWindowSize({270, 100});
-            ImGui::SetWindowPos({10, 10});
-            ImGui::SliderFloat3("Position", &position[0], -300, 300);
-            ImGui::SliderFloat3("Rotation", &rotation[0], 0, 360);
-            ImGui::SliderFloat3("Scale", &scale[0], 0.1f, 5.0f);
-            ImGui::End();
+            Controller::TransformGUI(object);
 
-            if (object->GetObjectType() == SceneObject::LIGHT) {
-                auto light = std::dynamic_pointer_cast<Light>(object);
-                auto power = light->GetPower();
-                auto radius = light->GetRadius();
+            switch (object->GetObjectType()) {
+            case SceneObject::MODEL:
+                Controller::ModelAttributeGUI(
+                    std::dynamic_pointer_cast<Model>(object));
+                break;
 
-                ImGui::Begin("Light Attributes");
-                ImGui::SetWindowSize({270, 85});
-                ImGui::SetWindowPos({10, 115});
-                ImGui::SliderFloat("Power", &power, 0.1f, 10.0f);
-                ImGui::SliderFloat("Radius", &radius, 1.0f, 1000.0f);
-                ImGui::End();
-
-                light->SetPower(power);
-                light->SetRadius(radius);
+            case SceneObject::LIGHT: {
+                Controller::LightAttributeGUI(
+                    std::dynamic_pointer_cast<Light>(object));
+                break;
             }
-
-            object->SetTransform(Transform(position, rotation, scale));
+            }
         }
 
         ImGui::Render();

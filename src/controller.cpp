@@ -8,7 +8,7 @@ void InitGUI(Window &window) {
     LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    io.IniFilename = "../assets/imgui.ini";
+    // io.IniFilename = "../assets/imgui.ini";
     io.ConfigWindowsMoveFromTitleBarOnly = true;
 
     ImGui::StyleColorsDark();
@@ -17,29 +17,98 @@ void InitGUI(Window &window) {
     ImGui_ImplOpenGL3_Init("#version 450");
 }
 
-TransformSlider::TransformSlider(const std::string label,
-                                 const glm::vec3 position,
-                                 const glm::vec3 rotation,
-                                 const glm::vec3 scale)
-    : m_Label(label + " Transform"), m_Position(position), m_Rotation(rotation),
-      m_Scale(scale) {}
+void TransformGUI(std::shared_ptr<SceneObject> object) {
+    glm::vec3 position = object->GetTransform().GetPosition();
+    glm::vec3 rotation = object->GetTransform().GetRotation();
+    glm::vec3 scale = object->GetTransform().GetScale();
 
-void TransformSlider::Update() {
-    ImGui::Begin(m_Label.c_str());
-    ImGui::SliderFloat3("Position", &m_Position[0], -300, 300);
-    ImGui::SliderFloat3("Rotation", &m_Rotation[0], 0, 360);
-    ImGui::SliderFloat3("Scale", &m_Scale[0], 0.1f, 5.0f);
+    ImGui::Begin("Transform");
+    ImGui::SetWindowPos({10, 10});
+    ImGui::SetWindowSize({270, 100});
+    ImGui::DragFloat3("Position", &position[0], 1, 0, 0, "%.1f");
+    ImGui::DragFloat3("Rotation", &rotation[0], 1, 0, 360, "%.1f");
+    ImGui::DragFloat3("Scale", &scale[0], 0.1f, 0, 0, "%.1f");
     ImGui::End();
+
+    object->SetTransform(Transform(position, rotation, scale));
 }
 
-LightSlider::LightSlider(const std::string label, const float power,
-                         const float radius)
-    : m_Label(label + " Light Attribute"), m_Power(power), m_Radius(radius) {}
+void ModelAttributeGUI(std::shared_ptr<Model> model) {
+    auto hasAlbedo = model->GetAlbedoTexture() != nullptr;
+    auto useAlbedo = model->GetUseAlbedoTexture() && hasAlbedo;
 
-void LightSlider::Update() {
-    ImGui::Begin(m_Label.c_str());
-    ImGui::SliderFloat("Power", &m_Power, 0.1f, 10.0f);
-    ImGui::SliderFloat("Radius", &m_Radius, 1.0f, 1000.0f);
+    auto hasNormal = model->GetNormalTexture() != nullptr;
+    auto useNormal = model->GetUseNormalTexture() && hasNormal;
+
+    auto hasEmission = model->GetEmissionTexture() != nullptr;
+    auto useEmission = model->GetUseEmissionTexture() && hasEmission;
+
+    auto hasARM = model->GetARMTexture() != nullptr;
+    auto useARM = model->GetUseARMTexture() && hasARM;
+
+    auto castShadow = model->GetCastShadows();
+    auto visible = model->GetVisible();
+
+    ImGui::Begin("Model Attributes");
+    ImGui::SetWindowPos({10, 115});
+    ImGui::SetWindowSize({270, 170});
+
+    ImGui::BeginDisabled(!hasAlbedo);
+    ImGui::Checkbox("Albedo", &useAlbedo);
+    ImGui::EndDisabled();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
+        !hasAlbedo) {
+        ImGui::SetTooltip("No albedo texture set");
+    }
+
+    ImGui::BeginDisabled(!hasNormal);
+    ImGui::Checkbox("Normal", &useNormal);
+    ImGui::EndDisabled();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
+        !hasNormal) {
+        ImGui::SetTooltip("No normal texture set");
+    }
+
+    ImGui::BeginDisabled(model->GetEmissionTexture() == nullptr);
+    ImGui::Checkbox("Emission", &useEmission);
+    ImGui::EndDisabled();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
+        !hasEmission) {
+        ImGui::SetTooltip("No emission texture set");
+    }
+
+    ImGui::BeginDisabled(model->GetARMTexture() == nullptr);
+    ImGui::Checkbox("ARM", &useARM);
+    ImGui::EndDisabled();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !hasARM) {
+        ImGui::SetTooltip("No ARM texture set");
+    }
+
+    ImGui::Checkbox("Shadow", &castShadow);
+    ImGui::Checkbox("Show/Hide", &visible);
     ImGui::End();
+
+    model->SetUseAlbedoTexture(useAlbedo);
+    model->SetUseNormalTexture(useNormal);
+    // model->SetUseEmissionTexture(useEmission);
+    // model->SetUseARMTexture(useARM);
+    model->SetCastShadows(castShadow);
+    model->SetVisible(visible);
 }
+
+void LightAttributeGUI(std::shared_ptr<Light> light) {
+    auto power = light->GetPower();
+    auto radius = light->GetRadius();
+
+    ImGui::Begin("Light Attributes");
+    ImGui::SetWindowPos({10, 115});
+    ImGui::SetWindowSize({270, 85});
+    ImGui::DragFloat("Power", &power, 0.1f, 0.1f, 10, "%.1f");
+    ImGui::DragFloat("Radius", &radius, 5, 1, 1000, "%.1f");
+    ImGui::End();
+
+    light->SetPower(power);
+    light->SetRadius(radius);
+}
+
 } // namespace Controller
