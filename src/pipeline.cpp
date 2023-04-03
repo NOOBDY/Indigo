@@ -225,7 +225,7 @@ void Pipeline::BasePass(Scene scene) {
             model->GetAlbedoTexture()->Bind(ALBEDO);
         if (model->GetUseEmissionTexture() && model->GetEmissionTexture())
             model->GetEmissionTexture()->Bind(EMISSION);
-        if (model->GetUseNormalTexture() && model->GetUseNormalTexture())
+        if (model->GetUseNormalTexture() && model->GetNormalTexture())
             model->GetNormalTexture()->Bind(NORMAL);
         if (model->GetUseARMTexture() && model->GetARMTexture())
             model->GetARMTexture()->Bind(ARM);
