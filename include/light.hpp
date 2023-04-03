@@ -21,7 +21,7 @@ public:
         AMBIENT,
     };
 
-    Light(Type type, Transform transform, float power = 1.0f,
+    Light(std::string label, Type type, Transform transform, float power = 1.0f,
           float radius = 1.0f, glm::vec3 lightColor = glm::vec3(1.0f),
           bool castShadow = true);
 

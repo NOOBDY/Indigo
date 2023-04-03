@@ -6,7 +6,7 @@
 
 Model::Model(std::string label, std::shared_ptr<VertexArray> vao,
              Transform transform)
-    : SceneObject(SceneObject::MODEL, transform), m_Label(label), m_VAO(vao) {
+    : SceneObject(SceneObject::MODEL, label, transform), m_VAO(vao) {
     LOG_TRACE("Creating Model");
 
     m_UseAlbedoTexture = false;

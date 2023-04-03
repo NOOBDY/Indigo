@@ -156,20 +156,13 @@ void Pipeline::Render(Scene scene) {
 void Pipeline::ShadowPass(Scene scene) {
     MVP lightMVP;
     ModelData modelInfo;
-
-    std::vector<LightData> lightInfos;
-
-    for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
-        std::shared_ptr<Light> light = scene.GetLights()[i];
-        lightInfos.push_back(light->GetLightData());
-    }
+    LightData lightInfo;
 
     Renderer::EnableDepthTest();
     Renderer::DisableCullFace();
 
     // every light
-    for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
-        std::shared_ptr<Light> light = scene.GetLights()[i];
+    for (const auto &light : scene.GetLights()) {
         if (!light->GetCastShadow())
             continue;
 
@@ -177,6 +170,8 @@ void Pipeline::ShadowPass(Scene scene) {
             m_PointLightShadow.Bind();
         if (light->GetType() == Light::DIRECTION)
             m_PointLightShadow.Bind();
+
+        lightInfo = light->GetLightData();
 
         glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
         m_ShadowFBO.AttachTexture(light->GetShadowTexture()->GetTextureID(),
@@ -187,8 +182,7 @@ void Pipeline::ShadowPass(Scene scene) {
         m_PointLightShadow.Validate();
 
         // not render light ball
-        for (unsigned int j = 0; j < scene.GetModels().size() - 2; j++) {
-            std::shared_ptr<Model> model = scene.GetModels()[j];
+        for (const auto &model : scene.GetModels()) {
             if (!model->GetCastShadows())
                 continue;
 
@@ -197,7 +191,7 @@ void Pipeline::ShadowPass(Scene scene) {
             m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
             m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
             // use first one to render shadow
-            m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
+            m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
 
             model->Draw();
         }
@@ -220,7 +214,6 @@ void Pipeline::BasePass(Scene scene) {
 
     MVP modelMVP;
     ModelData modelInfo;
-    std::vector<LightData> lightInfos;
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
 
     m_Basic.Validate();
@@ -253,8 +246,9 @@ void Pipeline::BasePass(Scene scene) {
         modelMVP.model = light->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
 
+        modelInfo = light->GetModelData();
         m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
-        m_UBOs[1]->SetData(0, sizeof(MVP), &modelInfo);
+        m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         light->Draw();
     }
@@ -290,15 +284,15 @@ void Pipeline::LightPass(Scene scene) {
 
     m_Light.Validate();
 
-    for (unsigned int i = 0; i < lights.size(); i++) {
-        std::shared_ptr<Light> light = lights[i];
-
+    for (const auto &light : lights) {
         if (!light->GetCastShadow())
             continue;
 
-        if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
+        if (light->GetType() == Light::POINT ||
+            light->GetType() == Light::SPOT) {
             light->GetShadowTexture()->Bind(POINT_SHADOW);
-        else if (light->GetType() == Light::DIRECTION)
+
+        } else if (light->GetType() == Light::DIRECTION)
             light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
 
         LightData lightInfo = light->GetLightData();

@@ -42,19 +42,6 @@ int main(int argc, char **argv) {
     std::shared_ptr<Camera> mainCamera =
         std::make_shared<Camera>(45.0f, window.GetAspectRatio());
 
-    std::shared_ptr<Light> light1 =
-        std::make_shared<Light>(Light::POINT,
-                                Transform({50, 100, 200}, //
-                                          {0, 0, 0},      //
-                                          {20, 20, 20}),
-                                1, 1000, glm::vec3(1.0f));
-    std::shared_ptr<Light> light2 =
-        std::make_shared<Light>(Light::POINT,
-                                Transform({-300, 300, 0}, //
-                                          {0, 0, 0},      //
-                                          {20, 20, 20}),
-                                2, 1000, glm::vec3(1.0f));
-
     Scene scene(mainCamera);
 
     // begin model 1
@@ -102,62 +89,40 @@ int main(int argc, char **argv) {
     std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
-    std::shared_ptr<Model> light1Sphere;
-    std::shared_ptr<Model> light2Sphere;
-
     try {
-        light1Sphere = std::make_shared<Model>(
-            "Light 1",                                         //
-            Importer::LoadFile("../assets/models/sphere.obj"), //
-            Transform({50, 100, 200},                          //
-                      {0, 0, 0},                               //
-                      {20, 20, 20}));
-
-        light1Sphere->SetCastShadows(false);
-
-        light1->SetPower(1);
-        light1->SetRadius(1000);
-        light1->SetTransform(light1Sphere->GetTransform());
-
-        scene.AddModel(light1Sphere);
+        std::shared_ptr<Light> light1 = std::make_shared<Light>( //
+            "Light 1",                                           //
+            Light::POINT,                                        //
+            Transform({50, 100, 200},                            //
+                      {0, 0, 0},                                 //
+                      {20, 20, 20}),
+            1, 1000, glm::vec3(1.0f));
+        scene.AddLight(light1);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
 
     try {
-        light2Sphere = std::make_shared<Model>(
-            "Light 2",                                         //
-            Importer::LoadFile("../assets/models/sphere.obj"), //
-            Transform({-300, 300, 0},                          //
-                      {0, 0, 0},                               //
-                      {20, 20, 20}));
+        std::shared_ptr<Light> light2 = std::make_shared<Light>( //
+            "Light 2",                                           //
+            Light::POINT,                                        //
+            Transform({-300, 300, 0},                            //
+                      {0, 0, 0},                                 //
+                      {20, 20, 20}),
+            2, 1000, glm::vec3(1.0f));
 
-        light2Sphere->SetCastShadows(false);
-
-        light2->SetPower(2);
-        light2->SetRadius(1000);
-        light2->SetTransform(light2Sphere->GetTransform());
-
-        scene.AddModel(light2Sphere);
+        scene.AddLight(light2);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
 
-    for (unsigned i = 0; i < scene.GetModels().size(); i++) {
-        const auto model = scene.GetModels()[i];
+    for (const auto &model : scene.GetModels()) {
         model->SetAlbedoTexture(texMainColor);
         model->SetUseAlbedoTexture(true);
         // model->SetNormalTexture(wallNormalMap);
         // model->SetUseNormalTexture(true);
         // model->SetVisible(false);
         // model->SetCastShadows(false);
-    }
-
-    scene.AddLight(light1);
-    scene.AddLight(light2);
-
-    for (const auto &obj : scene.GetModels()) {
-        LOG_DEBUG("{}", obj->GetLabel());
     }
 
     do {
@@ -173,8 +138,6 @@ int main(int argc, char **argv) {
         }
 
         const std::shared_ptr<Camera> activeCamera = scene.GetActiveCamera();
-        const std::vector<std::shared_ptr<Model>> models = scene.GetModels();
-        const std::vector<std::shared_ptr<Light>> lights = scene.GetLights();
 
         // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);

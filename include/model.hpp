@@ -94,8 +94,6 @@ public:
     float GetRoughness() const { return m_ARM.y; }
     float GetMetallic() const { return m_ARM.z; }
 
-    std::string GetLabel() const { return m_Label; }
-
     bool GetUseAlbedoTexture() const { return m_UseAlbedoTexture; }
     bool GetUseEmissionTexture() const { return m_UseEmissionTexture; }
     bool GetUseNormalTexture() const { return m_UseNormalTexture; }
@@ -107,8 +105,6 @@ public:
     ModelData GetModelData();
 
 private:
-    std::string m_Label;
-
     std::shared_ptr<VertexArray> m_VAO;
 
     std::shared_ptr<Texture> m_AlbedoTexture;

@@ -12,11 +12,15 @@ public:
         LIGHT,
     };
 
-    SceneObject(ObjectType type, Transform transform = Transform())
-        : m_ID(idCount++), m_ObjectType(type), m_Transform(transform) {}
+    SceneObject(ObjectType type, std::string label,
+                Transform transform = Transform())
+        : m_ID(idCount++), m_Label(label), m_ObjectType(type),
+          m_Transform(transform) {}
     virtual ~SceneObject() = default;
 
-    virtual unsigned int GetID() { return m_ID; }
+    virtual unsigned int GetID() const { return m_ID; }
+
+    virtual std::string GetLabel() const { return m_Label; }
 
     virtual ObjectType GetObjectType() const { return m_ObjectType; }
 
@@ -26,6 +30,8 @@ public:
 protected:
     static unsigned int idCount;
     unsigned int m_ID;
+
+    std::string m_Label;
 
     ObjectType m_ObjectType;
 

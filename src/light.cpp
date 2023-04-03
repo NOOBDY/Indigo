@@ -3,9 +3,9 @@
 #include "importer.hpp"
 #include "renderer.hpp"
 
-Light::Light(Type type, Transform transform, float power, float radius,
-             glm::vec3 lightColor, bool castShadow)
-    : SceneObject(SceneObject::LIGHT, transform),
+Light::Light(std::string label, Type type, Transform transform, float power,
+             float radius, glm::vec3 lightColor, bool castShadow)
+    : SceneObject(SceneObject::LIGHT, label, transform),
       m_VAO(Importer::LoadFile("../assets/models/sphere.obj")), //
       m_Type(type), m_Color(lightColor),                        //
       m_Radius(radius), m_Power(power),                         //
@@ -123,17 +123,22 @@ Texture::Target Light::GetShadowTarget() {
 }
 
 ModelData Light::GetModelData() {
+    /**
+     * ! This code is lying
+     * ! Turning R from ARM to 0 breaks light sphere shading
+     * ! even when the flag is turned off
+     */
     return ModelData{
         m_Transform.GetTransformData(), //
-        {1, 1, 1},                      //
-        1,                              //
-        {0, 0, 0},                      //
-        0,                              //
-        {},                             //
-        0,                              //
-        0,                              //
+        {1, 1, 1},                      // Albedo
+        static_cast<int>(false),        //
+        {0, 0, 0},                      // Emission
+        static_cast<int>(false),        //
+        {0, 0.1, 0},                    // ARM
+        static_cast<int>(false),        //
+        static_cast<int>(false),        // Normal
         m_ID,                           //
-        0,                              //
-        0                               //
+        static_cast<int>(false),        // CastShadow
+        static_cast<int>(true),         // Visible
     };
 }
