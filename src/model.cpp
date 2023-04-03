@@ -5,9 +5,10 @@
 #include "renderer.hpp"
 #include "id_generator.hpp"
 
-Model::Model(std::shared_ptr<VertexArray> vao, Transform transform)
-    : SceneObject(SceneObject::MODEL, transform), m_VAO(vao),
-      m_ID(ID::GeneratorID()) {
+Model::Model(std::string label, std::shared_ptr<VertexArray> vao,
+             Transform transform)
+    : SceneObject(SceneObject::MODEL, transform), m_Label(label),
+      m_ID(ID::GeneratorID()), m_VAO(vao) {
     LOG_TRACE("Creating Model");
 
     m_UseAlbedoTexture = false;

@@ -46,5 +46,9 @@ std::vector<std::shared_ptr<Light>> Scene::GetLights() const {
 }
 
 void Scene::SetActiveSceneObject(unsigned int id) {
-    m_ActiveObjectID = id > 0 && id < m_SceneObjects.size() ? id : -1;
+    m_ActiveObjectID = id >= 0 && id < m_SceneObjects.size() ? id : -1;
+}
+
+std::shared_ptr<SceneObject> Scene::GetActiveSceneObject() const {
+    return m_ActiveObjectID != -1 ? m_SceneObjects[m_ActiveObjectID] : nullptr;
 }

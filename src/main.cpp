@@ -49,9 +49,6 @@ int main(int argc, char **argv) {
 
     Scene scene(mainCamera);
 
-    scene.AddLight(light1Test);
-    scene.AddLight(light2Test);
-
     // begin model 1
 
     std::vector<Controller::TransformSlider> transformSliders;
@@ -66,6 +63,7 @@ int main(int argc, char **argv) {
 
     try {
         main = std::make_shared<Model>(
+            "Model 1",
             Importer::LoadFile("../assets/models/little_city/main.glb"),
             Transform({0, 0, 0},       //
                       {180, 180, 180}, //
@@ -87,6 +85,7 @@ int main(int argc, char **argv) {
 
     try {
         interior = std::make_shared<Model>(
+            "Model 2",
             Importer::LoadFile("../assets/models/little_city/interior.glb"),
             Transform({0, 0, 0},       //
                       {180, 180, 180}, //
@@ -130,7 +129,7 @@ int main(int argc, char **argv) {
 
     try {
         light1Sphere = std::make_shared<Model>(
-            Importer::LoadFile("../assets/models/sphere.obj"));
+            "Light 1", Importer::LoadFile("../assets/models/sphere.obj"));
 
         light1Sphere->SetCastShadows(false);
 
@@ -141,7 +140,7 @@ int main(int argc, char **argv) {
 
     try {
         light2Sphere = std::make_shared<Model>(
-            Importer::LoadFile("../assets/models/sphere.obj"));
+            "Light 2", Importer::LoadFile("../assets/models/sphere.obj"));
 
         light2Sphere->SetCastShadows(false);
 
@@ -149,6 +148,7 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
+
     for (unsigned i = 0; i < scene.GetModels().size(); i++) {
         const auto model = scene.GetModels()[i];
         model->SetAlbedoTexture(texMainColor);
@@ -159,11 +159,21 @@ int main(int argc, char **argv) {
         // model->SetCastShadows(false);
     }
 
+    scene.AddLight(light1Test);
+    scene.AddLight(light2Test);
+
+    for (const auto &obj : scene.GetModels()) {
+        LOG_DEBUG("{}", obj->GetLabel());
+    }
+
     do {
+        auto &io = ImGui::GetIO();
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
 
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
+        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT) &&
+            !io.WantCaptureMouse) {
             unsigned int id = pipeline.GetIdByPosition(window.GetCursorPos());
             scene.SetActiveSceneObject(id);
         }
@@ -212,6 +222,20 @@ int main(int argc, char **argv) {
         ImGui::Text("(%d, %d)", (int)window.GetScrollOffset().x,
                     (int)window.GetScrollOffset().y);
         ImGui::End();
+
+        auto object = scene.GetActiveSceneObject();
+        if (object) {
+            glm::vec3 position = object->GetTransform().GetPosition();
+            glm::vec3 rotation = object->GetTransform().GetRotation();
+            glm::vec3 scale = object->GetTransform().GetScale();
+            ImGui::Begin("Transform");
+            ImGui::SetWindowSize({270, 100});
+            ImGui::SetWindowPos({10, 600});
+            ImGui::SliderFloat3("Position", &position[0], -300, 300);
+            ImGui::SliderFloat3("Rotation", &rotation[0], 0, 360);
+            ImGui::SliderFloat3("Scale", &scale[0], 0.1f, 5.0f);
+            ImGui::End();
+        }
 
         transformSliders[0].Update();
         transformSliders[1].Update();

@@ -29,9 +29,9 @@ public:
     // ID should be the order of Model/Light added
     void SetActiveSceneObject(unsigned int id);
     /**
-     * no `std::shared_ptr<SceneObject> GetActiveSceneObject()` due to
-     * possible null pointer referencing
+     * returns `nullptr` if there is no active object
      */
+    std::shared_ptr<SceneObject> GetActiveSceneObject() const;
     int GetActiveSceneObjectID() const { return m_ActiveObjectID; }
 
     void SetEnvironmentMap(const std::shared_ptr<Texture> map) {
