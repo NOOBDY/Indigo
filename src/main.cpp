@@ -42,10 +42,18 @@ int main(int argc, char **argv) {
     std::shared_ptr<Camera> mainCamera =
         std::make_shared<Camera>(45.0f, window.GetAspectRatio());
 
-    std::shared_ptr<Light> light1Test =
-        std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
-    std::shared_ptr<Light> light2Test =
-        std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
+    std::shared_ptr<Light> light1 =
+        std::make_shared<Light>(Light::POINT,
+                                Transform({50, 100, 200}, //
+                                          {0, 0, 0},      //
+                                          {20, 20, 20}),
+                                1, 1000, glm::vec3(1.0f));
+    std::shared_ptr<Light> light2 =
+        std::make_shared<Light>(Light::POINT,
+                                Transform({-300, 300, 0}, //
+                                          {0, 0, 0},      //
+                                          {20, 20, 20}),
+                                2, 1000, glm::vec3(1.0f));
 
     Scene scene(mainCamera);
 
@@ -107,9 +115,9 @@ int main(int argc, char **argv) {
 
         light1Sphere->SetCastShadows(false);
 
-        light1Test->SetPower(1);
-        light1Test->SetRadius(1000);
-        light1Test->SetTransform(light1Sphere->GetTransform());
+        light1->SetPower(1);
+        light1->SetRadius(1000);
+        light1->SetTransform(light1Sphere->GetTransform());
 
         scene.AddModel(light1Sphere);
     } catch (std::exception &e) {
@@ -126,9 +134,9 @@ int main(int argc, char **argv) {
 
         light2Sphere->SetCastShadows(false);
 
-        light2Test->SetPower(2);
-        light2Test->SetRadius(1000);
-        light2Test->SetTransform(light2Sphere->GetTransform());
+        light2->SetPower(2);
+        light2->SetRadius(1000);
+        light2->SetTransform(light2Sphere->GetTransform());
 
         scene.AddModel(light2Sphere);
     } catch (std::exception &e) {
@@ -145,8 +153,8 @@ int main(int argc, char **argv) {
         // model->SetCastShadows(false);
     }
 
-    scene.AddLight(light1Test);
-    scene.AddLight(light2Test);
+    scene.AddLight(light1);
+    scene.AddLight(light2);
 
     for (const auto &obj : scene.GetModels()) {
         LOG_DEBUG("{}", obj->GetLabel());
@@ -164,9 +172,9 @@ int main(int argc, char **argv) {
             scene.SetActiveSceneObject(id);
         }
 
-        const auto activeCamera = scene.GetActiveCamera();
-        const auto models = scene.GetModels();
-        const auto lights = scene.GetLights();
+        const std::shared_ptr<Camera> activeCamera = scene.GetActiveCamera();
+        const std::vector<std::shared_ptr<Model>> models = scene.GetModels();
+        const std::vector<std::shared_ptr<Light>> lights = scene.GetLights();
 
         // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);

@@ -95,7 +95,6 @@ public:
     float GetMetallic() const { return m_ARM.z; }
 
     std::string GetLabel() const { return m_Label; }
-    unsigned int GetID() const { return m_ID; }
 
     bool GetUseAlbedoTexture() const { return m_UseAlbedoTexture; }
     bool GetUseEmissionTexture() const { return m_UseEmissionTexture; }
@@ -109,7 +108,6 @@ public:
 
 private:
     std::string m_Label;
-    unsigned int m_ID;
 
     std::shared_ptr<VertexArray> m_VAO;
 

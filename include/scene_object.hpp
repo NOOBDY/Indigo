@@ -13,8 +13,10 @@ public:
     };
 
     SceneObject(ObjectType type, Transform transform = Transform())
-        : m_ObjectType(type), m_Transform(transform) {}
+        : m_ID(idCount++), m_ObjectType(type), m_Transform(transform) {}
     virtual ~SceneObject() = default;
+
+    virtual unsigned int GetID() { return m_ID; }
 
     virtual ObjectType GetObjectType() const { return m_ObjectType; }
 
@@ -22,6 +24,9 @@ public:
     virtual void SetTransform(Transform transform) { m_Transform = transform; }
 
 protected:
+    static unsigned int idCount;
+    unsigned int m_ID;
+
     ObjectType m_ObjectType;
 
     Transform m_Transform;

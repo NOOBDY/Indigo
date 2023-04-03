@@ -1,13 +1,30 @@
 #include "light.hpp"
 
-Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
-    : SceneObject(SceneObject::LIGHT), m_Type(type), m_Color(lightColor),
-      m_Radius(radius), m_Power(power) {
+#include "importer.hpp"
+#include "renderer.hpp"
+
+Light::Light(Type type, Transform transform, float power, float radius,
+             glm::vec3 lightColor, bool castShadow)
+    : SceneObject(SceneObject::LIGHT, transform),
+      m_VAO(Importer::LoadFile("../assets/models/sphere.obj")), //
+      m_Type(type), m_Color(lightColor),                        //
+      m_Radius(radius), m_Power(power),                         //
+      m_InnerCone(20.0f), m_OuterCone(30.0f),                   //
+      m_NearPlane(1.0f), m_FarPlane(1000.0f),                   //
+      m_CastShadow(castShadow),                                 //
+      m_ShadowSize(1024),                                       //
+      m_ShadowTexture(nullptr) {
 
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(
             m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
     }
+}
+
+void Light::Draw() const {
+    m_VAO->Bind();
+
+    Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
 }
 
 void Light::SetLightType(Type lightType) {
@@ -87,6 +104,7 @@ LightData Light::GetLightData() {
 
     return data;
 }
+
 Texture::Target Light::GetShadowTarget() {
     switch (m_Type) {
     case Light::NONE:
@@ -102,4 +120,20 @@ Texture::Target Light::GetShadowTarget() {
     default:
         throw std::invalid_argument("invalid light type for shadow");
     }
-};
+}
+
+ModelData Light::GetModelData() {
+    return ModelData{
+        m_Transform.GetTransformData(), //
+        {1, 1, 1},                      //
+        1,                              //
+        {0, 0, 0},                      //
+        0,                              //
+        {},                             //
+        0,                              //
+        0,                              //
+        m_ID,                           //
+        0,                              //
+        0                               //
+    };
+}

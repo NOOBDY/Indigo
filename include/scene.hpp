@@ -23,6 +23,9 @@ public:
         return m_Cameras[m_ActiveCameraID];
     }
 
+    std::vector<std::shared_ptr<SceneObject>> GetSceneObjects() const {
+        return m_SceneObjects;
+    }
     std::vector<std::shared_ptr<Model>> GetModels() const;
     std::vector<std::shared_ptr<Light>> GetLights() const;
 

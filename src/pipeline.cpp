@@ -225,9 +225,7 @@ void Pipeline::BasePass(Scene scene) {
 
     m_Basic.Validate();
 
-    for (unsigned int i = 0; i < scene.GetModels().size(); i++) {
-        std::shared_ptr<Model> model = scene.GetModels()[i];
-
+    for (const auto &model : scene.GetModels()) {
         if (!model->GetVisible())
             continue;
         if (model->GetUseAlbedoTexture() && model->GetAlbedoTexture())
@@ -249,6 +247,16 @@ void Pipeline::BasePass(Scene scene) {
         // &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         model->Draw();
+    }
+
+    for (const auto &light : scene.GetLights()) {
+        modelMVP.model = light->GetTransform().GetTransformMatrix();
+        modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
+
+        m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
+        m_UBOs[1]->SetData(0, sizeof(MVP), &modelInfo);
+        m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        light->Draw();
     }
 
     m_Basic.Unbind();
