@@ -74,7 +74,7 @@ private:
     float m_InnerCone = 20.0f;
     float m_OuterCone = 30.0f;
 
-    float m_NearPlane = 1;
+    float m_NearPlane = 0.5;
     float m_FarPlane = 1000.0f;
 
     Transform m_Transform;

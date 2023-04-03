@@ -19,7 +19,7 @@ void Light::SetLightType(Type lightType) {
 }
 
 glm::mat4 Light::GetLightOrth() {
-    float size = 500.0;
+    float size = m_Radius;
 
     glm::mat4 lightProjection =
         glm::ortho(-size, size, -size, size, m_NearPlane, m_FarPlane);

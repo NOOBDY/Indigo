@@ -110,10 +110,10 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     // light 1
-    transformSliders.push_back(                     //
-        Controller::TransformSlider("Light 1",      //
-                                    {50, 100, 200}, //
-                                    {0, 0, 0},      //
+    transformSliders.push_back(                  //
+        Controller::TransformSlider("Light 1",   //
+                                    {0, 300, 0}, //
+                                    {0, 0, 0},   //
                                     {20, 20, 20}));
     lightSliders.push_back(Controller::LightSlider("Light 1", 1, 500));
 

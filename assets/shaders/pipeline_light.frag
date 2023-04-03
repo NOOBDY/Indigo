@@ -156,23 +156,24 @@ float pointShadow(vec3 position, LightData light) {
     shadow /= float(samples);
     return (shadow);
 }
-float directionShadow(vec3 position, LightData light) {
+float directionShadow(vec3 position, vec3 normal,LightData light) {
     vec3 dir = position - light.transform.position;
     vec4 tem=(light.lightProjections[0] *vec4(position,1.0));
     vec2 projectPosition=tem.xy/tem.w;
+    projectPosition=projectPosition*0.5+0.5;
     float lightDepth = texture(directionShadowMap, projectPosition).x;
     lightDepth *= light.farPlane;
     float currentDepth = length(dir);
     float shadow = 0.0;
-    float bias = 1.5;
-    int samples = 20;
-    float diskRadius = (1.0 + (currentDepth / light.farPlane)) / 15.0;
-
+    float bias = max(0.1 * (1.0 - dot(normal, -normalize(dir))), 0.005);
+    bias=1.5;
+    int samples = 9;
+    vec2 texelSize = 1.0 / textureSize(directionShadowMap, 0);
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            vec2 newSample= projectPosition+vec2(x,y);
+            vec2 newSample= projectPosition+vec2(x,y)*texelSize;
             float closestDepth =
                 texture(directionShadowMap,newSample).r;
             closestDepth *= light.farPlane; // undo mapping [0;1]
@@ -182,7 +183,7 @@ float directionShadow(vec3 position, LightData light) {
     }
     // outScreenLight.xyz=position;
     // outScreenLight= texture(directionShadowMap, projectPosition);
-    shadow /= float(9);
+    shadow /= float(samples);
     return (shadow);
 }
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
@@ -217,7 +218,8 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     // diffuse lighting
     float dotLN = max(dot(halfwayVec, n), 0.0);
-    vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
+    // vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
+    vec3 diffuse = deferredInfo.albedo ;
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
@@ -234,12 +236,12 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     if(light.lightType==POINT||light.lightType==SPOT)
         shadow=pointShadow(position, light);
     else if(light.lightType==DIRECTION)
-        shadow=directionShadow(position, light);
-    return vec4(shadow);
+        shadow=directionShadow(position,n, light);
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
     outScreenVolume += vec4(abs(specular) * light.power, 1.0);
+    // return vec4(shadow);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -277,6 +279,7 @@ void main() {
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
         texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);
+    // outScreenVolume = texture(directionShadowMap, UV);
     // PhongLight(baseInfo, cameraInfo, lights);
     // outScreenLight.xyz =
     //     vec3(texture(directionShadowMap,UV).r);
