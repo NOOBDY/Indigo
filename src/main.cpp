@@ -50,15 +50,6 @@ int main(int argc, char **argv) {
     Scene scene(mainCamera);
 
     // begin model 1
-
-    std::vector<Controller::TransformSlider> transformSliders;
-    std::vector<Controller::LightSlider> lightSliders;
-
-    transformSliders.push_back(Controller::TransformSlider("Model 1",       //
-                                                           {0, 0, 0},       //
-                                                           {180, 180, 180}, //
-                                                           {1, 1, 1}));
-
     std::shared_ptr<Model> main;
 
     try {
@@ -76,11 +67,6 @@ int main(int argc, char **argv) {
     // end model 1
 
     // begin model 2
-    transformSliders.push_back(Controller::TransformSlider("Model 2",       //
-                                                           {0, 0, 0},       //
-                                                           {180, 180, 180}, //
-                                                           {1, 1, 1}));
-
     std::shared_ptr<Model> interior;
 
     try {
@@ -107,22 +93,6 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_N.png");
     std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
-
-    // light 1
-    transformSliders.push_back(                     //
-        Controller::TransformSlider("Light 1",      //
-                                    {50, 100, 200}, //
-                                    {0, 0, 0},      //
-                                    {20, 20, 20}));
-    lightSliders.push_back(Controller::LightSlider("Light 1", 1, 500));
-
-    // light 2
-    transformSliders.push_back(                     //
-        Controller::TransformSlider("Light 2",      //
-                                    {-300, 300, 0}, //
-                                    {0, 0, 0},      //
-                                    {20, 20, 20}));
-    lightSliders.push_back(Controller::LightSlider("Light 2", 2, 500));
 
     std::shared_ptr<Model> light1Sphere;
     std::shared_ptr<Model> light2Sphere;
@@ -197,19 +167,6 @@ int main(int argc, char **argv) {
         const auto activeCamera = scene.GetActiveCamera();
         const auto models = scene.GetModels();
         const auto lights = scene.GetLights();
-
-        // for (unsigned int i = 0; i < lights.size(); i++) {
-        //     lights[i]->SetTransform(
-        //         transformSliders[i + 2].GetTransform()); // two non-light
-        //         models
-        //     lights[i]->SetPower(lightSliders[i].GetPower());
-        //     lights[i]->SetRadius(lightSliders[i].GetRadius());
-        //     // lightInfo[i] = lights[i]->GetLightData();
-        // }
-
-        // for (unsigned int i = 0; i < models.size(); i++) {
-        //     models[i]->SetTransform(transformSliders[i].GetTransform());
-        // }
 
         // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);
