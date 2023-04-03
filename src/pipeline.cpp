@@ -4,14 +4,14 @@
 
 Pipeline::Pipeline(int width, int height)
     : m_PointLightShadow("../assets/shaders/shadow.vert",
-                         "../assets/shaders/shadow.geom",
+                         "../assets/shaders/shadow_point.geom",
                          "../assets/shaders/shadow.frag"),
-      m_Basic("../assets/shaders/phong.vert",
-              "../assets/shaders/deferred_pass.frag"),
-      m_Light("../assets/shaders/frame_deferred.vert",
-              "../assets/shaders/pipeline_light.frag"),
+      m_Basic("../assets/shaders/base_pass.vert",
+              "../assets/shaders/base_pass.frag"),
+      m_Light("../assets/shaders/frame_screen.vert",
+              "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
-                   "../assets/shaders/frame_screen.frag"),
+                   "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height) {
 
     m_Basic.Bind();
