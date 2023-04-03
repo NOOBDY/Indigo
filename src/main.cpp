@@ -43,14 +43,14 @@ int main(int argc, char **argv) {
         std::make_shared<Camera>(45.0f, window.GetAspectRatio());
 
     std::shared_ptr<Light> light1Test =
-        std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
+        std::make_shared<Light>(Light::DIRECTION, glm::vec3(1.0f));
     std::shared_ptr<Light> light2Test =
         std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
 
     Scene scene(mainCamera);
 
     scene.AddLight(light1Test);
-    scene.AddLight(light2Test);
+    // scene.AddLight(light2Test);
 
     // begin model 1
 

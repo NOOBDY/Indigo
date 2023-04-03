@@ -175,10 +175,12 @@ void Pipeline::ShadowPass(Scene scene) {
         if (!light->GetCastShadow())
             continue;
 
-        if (light->GetType() == Light::DIRECTION)
+        if (light->GetType() == Light::DIRECTION) {
             m_DirectionLightShadow.Bind();
-        else if (light->GetType() == Light::POINT ||
-                 light->GetType() == Light::SPOT)
+            lightMVP.viewProjection = light->GetLightOrth();
+
+        } else if (light->GetType() == Light::POINT ||
+                   light->GetType() == Light::SPOT)
             m_PointLightShadow.Bind();
 
         glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());

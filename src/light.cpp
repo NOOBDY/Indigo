@@ -5,6 +5,7 @@ Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(
             m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
+        // LOG_INFO(m_ShadowTexture->GetTextureFormat());
     }
 }
 
@@ -17,15 +18,13 @@ void Light::SetLightType(Type lightType) {
     }
 }
 
-glm::mat4 Light::GetLightOrth() const {
+glm::mat4 Light::GetLightOrth() {
+    float size = 500.0;
 
     glm::mat4 lightProjection =
-        glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, m_NearPlane, m_FarPlane);
-    // glm::mat4 lightProjection = glm::perspective(
-    //     glm::radians(90.0f), (GLfloat)1280 / (GLfloat)720, nearPlane,
-    //     farPlane);
-    glm::mat4 lightView = glm::lookAt(
-        m_Transform.GetPosition(), glm::vec3(0.0f), glm::vec3(0.0, -1.0, 0.0));
+        glm::ortho(-size, size, -size, size, m_NearPlane, m_FarPlane);
+
+    glm::mat4 lightView = m_Transform.GetDirection4();
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
     return lightSpaceMatrix;
@@ -72,10 +71,10 @@ LightData Light::GetLightData() {
 
     data.innerCone = m_InnerCone;
     data.outerCone = m_OuterCone;
-    std::vector<glm::mat4> lightProjectionVector;
     if (m_Type == DIRECTION)
-        lightProjectionVector[0] = GetLightOrth();
+        data.projections[0] = GetLightOrth();
     else if (m_Type == POINT || m_Type == SPOT) {
+        std::vector<glm::mat4> lightProjectionVector;
         lightProjectionVector = GetLightProjectionCube();
         for (int i = 0; i < 6; i++)
             data.projections[i] = lightProjectionVector[i];
