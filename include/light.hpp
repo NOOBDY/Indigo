@@ -37,7 +37,7 @@ public:
     }
     void SetCastShadow(bool castShadow) { m_CastShadow = castShadow; }
 
-    glm::mat4 GetLightProjection() const;
+    glm::mat4 GetLightOrth() const;
     std::vector<glm::mat4> GetLightProjectionCube() const;
 
     Type GetType() const { return m_Type; };

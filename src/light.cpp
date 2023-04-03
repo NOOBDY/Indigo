@@ -17,7 +17,7 @@ void Light::SetLightType(Type lightType) {
     }
 }
 
-glm::mat4 Light::GetLightProjection() const {
+glm::mat4 Light::GetLightOrth() const {
 
     glm::mat4 lightProjection =
         glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, m_NearPlane, m_FarPlane);
@@ -60,7 +60,6 @@ std::vector<glm::mat4> Light::GetLightProjectionCube() const {
 }
 
 LightData Light::GetLightData() {
-    std::vector<glm::mat4> lightProjectionVector = GetLightProjectionCube();
     LightData data;
 
     data.transform = m_Transform.GetTransformData();
@@ -73,9 +72,14 @@ LightData Light::GetLightData() {
 
     data.innerCone = m_InnerCone;
     data.outerCone = m_OuterCone;
-
-    for (int i = 0; i < 6; i++)
-        data.projections[i] = lightProjectionVector[i];
+    std::vector<glm::mat4> lightProjectionVector;
+    if (m_Type == DIRECTION)
+        lightProjectionVector[0] = GetLightOrth();
+    else if (m_Type == POINT || m_Type == SPOT) {
+        lightProjectionVector = GetLightProjectionCube();
+        for (int i = 0; i < 6; i++)
+            data.projections[i] = lightProjectionVector[i];
+    }
 
     data.nearPlane = m_NearPlane;
     data.farPlane = m_FarPlane;

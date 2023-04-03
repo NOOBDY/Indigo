@@ -3,9 +3,11 @@
 #include "renderer.hpp"
 
 Pipeline::Pipeline(int width, int height)
-    : m_PointLightShadow("../assets/shaders/shadow.vert",
-                         "../assets/shaders/shadow.geom",
+    : m_PointLightShadow("../assets/shaders/shadow_point.vert",
+                         "../assets/shaders/shadow_point.geom",
                          "../assets/shaders/shadow.frag"),
+      m_DirectionLightShadow("../assets/shaders/phong.vert",
+                             "../assets/shaders/shadow.frag"),
       m_Basic("../assets/shaders/phong.vert",
               "../assets/shaders/deferred_pass.frag"),
       m_Light("../assets/shaders/frame_deferred.vert",
@@ -173,9 +175,10 @@ void Pipeline::ShadowPass(Scene scene) {
         if (!light->GetCastShadow())
             continue;
 
-        if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
-            m_PointLightShadow.Bind();
         if (light->GetType() == Light::DIRECTION)
+            m_DirectionLightShadow.Bind();
+        else if (light->GetType() == Light::POINT ||
+                 light->GetType() == Light::SPOT)
             m_PointLightShadow.Bind();
 
         glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
@@ -183,8 +186,6 @@ void Pipeline::ShadowPass(Scene scene) {
                                   GL_DEPTH_ATTACHMENT);
         m_ShadowFBO.Bind();
         Renderer::Clear();
-
-        m_PointLightShadow.Validate();
 
         // not render light ball
         for (unsigned int j = 0; j < scene.GetModels().size() - 2; j++) {

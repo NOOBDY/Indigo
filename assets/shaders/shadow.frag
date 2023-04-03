@@ -2,11 +2,11 @@
 
 #define LIGHT_NUMBER 1
 
-in vec3 normal;
-in vec3 geoPosition;
-in vec3 worldPosition;
-in vec2 UV;
-in vec4 test;
+layout(location = 0) in vec3 geoPosition;
+layout(location = 1) in vec3 worldPosition;
+layout(location = 2) in vec3 normal;
+layout(location = 3) in vec2 UV;
+layout(location = 4) in mat3 TBN;
 
 out vec4 color;
 
