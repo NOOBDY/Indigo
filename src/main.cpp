@@ -129,9 +129,17 @@ int main(int argc, char **argv) {
 
     try {
         light1Sphere = std::make_shared<Model>(
-            "Light 1", Importer::LoadFile("../assets/models/sphere.obj"));
+            "Light 1",                                         //
+            Importer::LoadFile("../assets/models/sphere.obj"), //
+            Transform({50, 100, 200},                          //
+                      {0, 0, 0},                               //
+                      {20, 20, 20}));
 
         light1Sphere->SetCastShadows(false);
+
+        light1Test->SetPower(1);
+        light1Test->SetRadius(1000);
+        light1Test->SetTransform(light1Sphere->GetTransform());
 
         scene.AddModel(light1Sphere);
     } catch (std::exception &e) {
@@ -140,9 +148,17 @@ int main(int argc, char **argv) {
 
     try {
         light2Sphere = std::make_shared<Model>(
-            "Light 2", Importer::LoadFile("../assets/models/sphere.obj"));
+            "Light 2",                                         //
+            Importer::LoadFile("../assets/models/sphere.obj"), //
+            Transform({-300, 300, 0},                          //
+                      {0, 0, 0},                               //
+                      {20, 20, 20}));
 
         light2Sphere->SetCastShadows(false);
+
+        light2Test->SetPower(2);
+        light2Test->SetRadius(1000);
+        light2Test->SetTransform(light2Sphere->GetTransform());
 
         scene.AddModel(light2Sphere);
     } catch (std::exception &e) {
@@ -182,17 +198,18 @@ int main(int argc, char **argv) {
         const auto models = scene.GetModels();
         const auto lights = scene.GetLights();
 
-        for (unsigned int i = 0; i < lights.size(); i++) {
-            lights[i]->SetTransform(
-                transformSliders[i + 2].GetTransform()); // two non-light models
-            lights[i]->SetPower(lightSliders[i].GetPower());
-            lights[i]->SetRadius(lightSliders[i].GetRadius());
-            // lightInfo[i] = lights[i]->GetLightData();
-        }
+        // for (unsigned int i = 0; i < lights.size(); i++) {
+        //     lights[i]->SetTransform(
+        //         transformSliders[i + 2].GetTransform()); // two non-light
+        //         models
+        //     lights[i]->SetPower(lightSliders[i].GetPower());
+        //     lights[i]->SetRadius(lightSliders[i].GetRadius());
+        //     // lightInfo[i] = lights[i]->GetLightData();
+        // }
 
-        for (unsigned int i = 0; i < models.size(); i++) {
-            models[i]->SetTransform(transformSliders[i].GetTransform());
-        }
+        // for (unsigned int i = 0; i < models.size(); i++) {
+        //     models[i]->SetTransform(transformSliders[i].GetTransform());
+        // }
 
         // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);
@@ -224,27 +241,37 @@ int main(int argc, char **argv) {
         ImGui::End();
 
         auto object = scene.GetActiveSceneObject();
+
         if (object) {
             glm::vec3 position = object->GetTransform().GetPosition();
             glm::vec3 rotation = object->GetTransform().GetRotation();
             glm::vec3 scale = object->GetTransform().GetScale();
             ImGui::Begin("Transform");
             ImGui::SetWindowSize({270, 100});
-            ImGui::SetWindowPos({10, 600});
+            ImGui::SetWindowPos({10, 10});
             ImGui::SliderFloat3("Position", &position[0], -300, 300);
             ImGui::SliderFloat3("Rotation", &rotation[0], 0, 360);
             ImGui::SliderFloat3("Scale", &scale[0], 0.1f, 5.0f);
             ImGui::End();
+
+            if (object->GetObjectType() == SceneObject::LIGHT) {
+                auto light = std::dynamic_pointer_cast<Light>(object);
+                auto power = light->GetPower();
+                auto radius = light->GetRadius();
+
+                ImGui::Begin("Light Attributes");
+                ImGui::SetWindowSize({270, 85});
+                ImGui::SetWindowPos({10, 115});
+                ImGui::SliderFloat("Power", &power, 0.1f, 10.0f);
+                ImGui::SliderFloat("Radius", &radius, 1.0f, 1000.0f);
+                ImGui::End();
+
+                light->SetPower(power);
+                light->SetRadius(radius);
+            }
+
+            object->SetTransform(Transform(position, rotation, scale));
         }
-
-        transformSliders[0].Update();
-        transformSliders[1].Update();
-
-        transformSliders[2].Update();
-        lightSliders[0].Update();
-
-        transformSliders[3].Update();
-        lightSliders[1].Update();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
