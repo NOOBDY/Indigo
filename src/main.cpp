@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
             1, 1000, glm::vec3(1.0f));
+        light1->SetShadowSize(2048);
         scene.AddLight(light1);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
@@ -120,7 +121,7 @@ int main(int argc, char **argv) {
         model->SetAlbedoTexture(texMainColor);
         // model->SetNormalTexture(wallNormalMap);
         model->SetUseAlbedoTexture(true);
-        // model->SetNormalTexture(wallNormalMap);
+        model->SetNormalTexture(wallNormalMap);
         // model->SetUseNormalTexture(true);
         // model->SetVisible(false);
         // model->SetCastShadows(false);

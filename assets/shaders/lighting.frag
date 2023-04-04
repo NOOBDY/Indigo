@@ -167,11 +167,10 @@ float directionShadow(vec3 position, vec3 normal,LightData light) {
     float currentDepth = projCoords.z;
     vec3 lightDir = normalize(light.transform.position - position);
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    // bias=1.05;
     // bias=-0.01;
-    bias=0.001;
     float shadow = 0.0;
-    // shadow += currentDepth - bias > closestDepth? 1.0 : 0.0;        
+    shadow += currentDepth - bias > closestDepth? 1.0 : 0.0;        
+    return shadow;
     // PCF
     vec2 texelSize = 1.0 / textureSize(directionShadowMap, 0);
     for(int x = -1; x <= 1; ++x)
@@ -179,7 +178,6 @@ float directionShadow(vec3 position, vec3 normal,LightData light) {
         for(int y = -1; y <= 1; ++y)
         {
             float pcfDepth = texture(directionShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
-            // shadow += (currentDepth*light.farPlane - bias) > (pcfDepth*light.farPlane)  ? 1.0 : 0.0;        
             shadow += (currentDepth - bias) > (pcfDepth)  ? 1.0 : 0.0;        
         }    
     }
@@ -222,8 +220,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     // diffuse lighting
     float dotLN = max(dot(halfwayVec, n), 0.0);
-    // vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
-    vec3 diffuse = deferredInfo.albedo ;
+    vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
@@ -245,9 +242,6 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
     outScreenVolume += vec4(abs(specular) * light.power, 1.0);
-    // return vec4(diffuse,1.0);
-
-    // return vec4(shadow);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -272,7 +266,6 @@ vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
 void main() {
     vec3 col = vec3(1.0);
 
-    // vec2 uv=UV;
     DeferredData baseInfo;
     baseInfo.albedo = texture(screenAlbedo, UV).rgb;
     baseInfo.normal = texture(screenNormal, UV).rgb;
@@ -283,10 +276,5 @@ void main() {
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo.projection,cameraInfo.view);
 
     outScreenVolume = texture(screenVolume, UV);
-    outScreenLight =
-        texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);
-    // outScreenVolume = texture(directionShadowMap, UV);
-    // PhongLight(baseInfo, cameraInfo, lights);
-    // outScreenLight.xyz =
-    //     vec3(texture(directionShadowMap,UV).r);
+    outScreenLight =texture(screenLight,UV)+ PhongLight(baseInfo, cameraInfo, lights);
 }
