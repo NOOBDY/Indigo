@@ -173,20 +173,32 @@ int main(int argc, char **argv) {
                     (int)window.GetScrollOffset().y);
         ImGui::End();
 
-        auto object = scene.GetActiveSceneObject();
+        ImGui::Begin("Objects");
+        ImGui::SetWindowPos({1140, 100});
+        ImGui::SetWindowSize({130, 200});
+        for (const auto &object : scene.GetSceneObjects()) {
+            auto id = scene.GetActiveSceneObjectID();
+            if (ImGui::Selectable(object->GetLabel().c_str(),
+                                  object->GetID() == id)) {
+                scene.SetActiveSceneObject(object->GetID());
+            }
+        }
+        ImGui::End();
 
-        if (object) {
-            Controller::TransformGUI(object);
+        auto activeObject = scene.GetActiveSceneObject();
 
-            switch (object->GetObjectType()) {
+        if (activeObject) {
+            Controller::TransformGUI(activeObject);
+
+            switch (activeObject->GetObjectType()) {
             case SceneObject::MODEL:
                 Controller::ModelAttributeGUI(
-                    std::dynamic_pointer_cast<Model>(object));
+                    std::dynamic_pointer_cast<Model>(activeObject));
                 break;
 
             case SceneObject::LIGHT: {
                 Controller::LightAttributeGUI(
-                    std::dynamic_pointer_cast<Light>(object));
+                    std::dynamic_pointer_cast<Light>(activeObject));
                 break;
             }
             }

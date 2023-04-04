@@ -90,8 +90,8 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
 
     model->SetUseAlbedoTexture(useAlbedo);
     model->SetUseNormalTexture(useNormal);
-    // model->SetUseEmissionTexture(useEmission);
-    // model->SetUseARMTexture(useARM);
+    model->SetUseEmissionTexture(useEmission);
+    model->SetUseARMTexture(useARM);
     model->SetCastShadows(castShadow);
     model->SetVisible(visible);
 }
