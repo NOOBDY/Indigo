@@ -157,34 +157,38 @@ float pointShadow(vec3 position, LightData light) {
     return (shadow);
 }
 float directionShadow(vec3 position, vec3 normal,LightData light) {
-    vec3 dir = position - light.transform.position;
-    vec4 tem=(light.lightProjections[0] *vec4(position,1.0));
-    vec2 projectPosition=tem.xy/tem.w;
-    projectPosition=projectPosition*0.5+0.5;
-    float lightDepth = texture(directionShadowMap, projectPosition).x;
-    lightDepth *= light.farPlane;
-    float currentDepth = length(dir);
+    vec4 lightSpace=light.lightProjections[0]*vec4(position,1.0);
+    vec3 projCoords = lightSpace.xyz / lightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
+    float closestDepth = texture(directionShadowMap, projCoords.xy).r; 
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    vec3 lightDir = normalize(light.transform.position - position);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    // bias=1.05;
+    // bias=-0.01;
+    bias=0.001;
     float shadow = 0.0;
-    float bias = max(0.1 * (1.0 - dot(normal, -normalize(dir))), 0.005);
-    bias=1.5;
-    int samples = 9;
+    // shadow += currentDepth - bias > closestDepth? 1.0 : 0.0;        
+    // PCF
     vec2 texelSize = 1.0 / textureSize(directionShadowMap, 0);
     for(int x = -1; x <= 1; ++x)
     {
         for(int y = -1; y <= 1; ++y)
         {
-            vec2 newSample= projectPosition+vec2(x,y)*texelSize;
-            float closestDepth =
-                texture(directionShadowMap,newSample).r;
-            closestDepth *= light.farPlane; // undo mapping [0;1]
-            if (currentDepth - bias > closestDepth)
-                shadow += 1.0;
-        }
+            float pcfDepth = texture(directionShadowMap, projCoords.xy + vec2(x, y) * texelSize).r; 
+            // shadow += (currentDepth*light.farPlane - bias) > (pcfDepth*light.farPlane)  ? 1.0 : 0.0;        
+            shadow += (currentDepth - bias) > (pcfDepth)  ? 1.0 : 0.0;        
+        }    
     }
-    // outScreenLight.xyz=position;
-    // outScreenLight= texture(directionShadowMap, projectPosition);
-    shadow /= float(samples);
-    return (shadow);
+    shadow /= 9.0;
+    // keep the shadow at 0.0 when outside the far_plane region of the light's frustum.
+    if(projCoords.z > 1.0)
+        shadow = 0.0;
+        
+    return shadow;
 }
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
@@ -241,6 +245,8 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
     outScreenVolume += vec4(abs(specular) * light.power, 1.0);
+    // return vec4(diffuse,1.0);
+
     // return vec4(shadow);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
@@ -279,7 +285,7 @@ void main() {
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
         texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);
-    // outScreenVolume = texture(directionShadowMap, UV);
+    outScreenVolume = texture(directionShadowMap, UV);
     // PhongLight(baseInfo, cameraInfo, lights);
     // outScreenLight.xyz =
     //     vec3(texture(directionShadowMap,UV).r);

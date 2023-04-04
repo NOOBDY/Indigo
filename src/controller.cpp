@@ -26,7 +26,7 @@ TransformSlider::TransformSlider(const std::string label,
 
 void TransformSlider::Update() {
     ImGui::Begin(m_Label.c_str());
-    ImGui::SliderFloat3("Position", &m_Position[0], -300, 300);
+    ImGui::SliderFloat3("Position", &m_Position[0], -300, 500);
     ImGui::SliderFloat3("Rotation", &m_Rotation[0], 0, 360);
     ImGui::SliderFloat3("Scale", &m_Scale[0], 0.1f, 5.0f);
     ImGui::End();

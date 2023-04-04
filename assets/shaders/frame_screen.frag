@@ -56,8 +56,8 @@ vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
 void main() {
     vec4 col = texture(screenLight, UV).rgba;
     // col+=gaussianBlur(screenEmission,0.5, UV);
-    // if(UV.x>0.5)
-    //     col=texture(screenVolume,(UV-vec2(0.5,0)));
+    // if(UV.x<0.5)
+    //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));
 
     // col=texture(screen,UV).rgba;
     // col.xyz += gaussianBlur(screenVolume, 0.5, UV);

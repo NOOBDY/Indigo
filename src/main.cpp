@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
         std::make_shared<Light>(Light::POINT, glm::vec3(1.0f));
 
     Scene scene(mainCamera);
+    light1Test->SetShadowSize(2048);
 
     scene.AddLight(light1Test);
     // scene.AddLight(light2Test);
