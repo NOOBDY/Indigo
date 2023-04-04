@@ -3,13 +3,15 @@
 
 #include "pch.hpp"
 
+#include "scene_object.hpp"
+#include "model.hpp"
+#include "vertex_array.hpp"
 #include "transform.hpp"
 #include "texture.hpp"
-// #include "id_generator.hpp"
 
 struct LightData;
 
-class Light {
+class Light final : public SceneObject {
 public:
     enum Type {
         NONE,
@@ -19,8 +21,12 @@ public:
         AMBIENT,
     };
 
-    Light(Type type, glm::vec3 lightColor = glm::vec3(1.0f),
-          float radius = 1.0f, float power = 1.0f);
+    Light(std::string label, Type type, Transform transform, float power = 1.0f,
+          float radius = 1.0f, glm::vec3 lightColor = glm::vec3(1.0f),
+          bool castShadow = true);
+
+    // Draws the sphere representing the light position
+    void Draw() const;
 
     void SetLightColor(glm::vec3 color) { m_Color = color; }
     void SetRadius(float radius) { m_Radius = radius; }
@@ -58,29 +64,26 @@ public:
     LightData GetLightData();
     Texture::Target GetShadowTarget();
 
-    Transform &GetTransform() { return m_Transform; }
-    const Transform &GetTransform() const { return m_Transform; }
-
-    void SetTransform(Transform transform) { m_Transform = transform; }
+    ModelData GetModelData();
 
 private:
+    std::shared_ptr<VertexArray> m_VAO;
     Type m_Type;
 
     glm::vec3 m_Color;
 
-    float m_Radius = 200.0f;
-    float m_Power = 0.5f;
+    float m_Radius;
+    float m_Power;
 
-    float m_InnerCone = 20.0f;
-    float m_OuterCone = 30.0f;
+    float m_InnerCone;
+    float m_OuterCone;
 
-    float m_NearPlane = 1;
-    float m_FarPlane = 1000.0f;
+    float m_NearPlane;
+    float m_FarPlane;
 
-    Transform m_Transform;
-    bool m_CastShadow = true;
-    int m_ShadowSize = 1024;
-    std::shared_ptr<Texture> m_ShadowTexture = nullptr;
+    bool m_CastShadow;
+    int m_ShadowSize;
+    std::shared_ptr<Texture> m_ShadowTexture;
 };
 
 struct LightData {

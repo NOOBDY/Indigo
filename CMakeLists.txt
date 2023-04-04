@@ -38,6 +38,7 @@ add_executable(Indigo
     src/transform.cpp
     src/pipeline.cpp
     src/scene.cpp
+    src/scene_object.cpp
     src/model.cpp
     src/light.cpp
 
@@ -58,9 +59,9 @@ add_executable(Indigo
     include/transform.hpp
     include/pipeline.hpp
     include/scene.hpp
+    include/scene_object.hpp
     include/model.hpp
     include/light.hpp
-    include/id_generator.hpp
 )
 target_link_libraries(Indigo ${LIB})
 target_include_directories(Indigo SYSTEM PRIVATE

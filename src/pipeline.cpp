@@ -4,14 +4,14 @@
 
 Pipeline::Pipeline(int width, int height)
     : m_PointLightShadow("../assets/shaders/shadow.vert",
-                         "../assets/shaders/shadow.geom",
+                         "../assets/shaders/shadow_point.geom",
                          "../assets/shaders/shadow.frag"),
-      m_Basic("../assets/shaders/phong.vert",
-              "../assets/shaders/deferred_pass.frag"),
-      m_Light("../assets/shaders/frame_deferred.vert",
-              "../assets/shaders/pipeline_light.frag"),
+      m_Basic("../assets/shaders/base_pass.vert",
+              "../assets/shaders/base_pass.frag"),
+      m_Light("../assets/shaders/frame_screen.vert",
+              "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
-                   "../assets/shaders/frame_screen.frag"),
+                   "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height) {
 
     m_Basic.Bind();
@@ -156,20 +156,13 @@ void Pipeline::Render(Scene scene) {
 void Pipeline::ShadowPass(Scene scene) {
     MVP lightMVP;
     ModelData modelInfo;
-
-    std::vector<LightData> lightInfos;
-
-    for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
-        std::shared_ptr<Light> light = scene.GetLights()[i];
-        lightInfos.push_back(light->GetLightData());
-    }
+    LightData lightInfo;
 
     Renderer::EnableDepthTest();
     Renderer::DisableCullFace();
 
     // every light
-    for (unsigned int i = 0; i < scene.GetLights().size(); i++) {
-        std::shared_ptr<Light> light = scene.GetLights()[i];
+    for (const auto &light : scene.GetLights()) {
         if (!light->GetCastShadow())
             continue;
 
@@ -177,6 +170,8 @@ void Pipeline::ShadowPass(Scene scene) {
             m_PointLightShadow.Bind();
         if (light->GetType() == Light::DIRECTION)
             m_PointLightShadow.Bind();
+
+        lightInfo = light->GetLightData();
 
         glViewport(0, 0, light->GetTextureSize(), light->GetTextureSize());
         m_ShadowFBO.AttachTexture(light->GetShadowTexture()->GetTextureID(),
@@ -187,8 +182,7 @@ void Pipeline::ShadowPass(Scene scene) {
         m_PointLightShadow.Validate();
 
         // not render light ball
-        for (unsigned int j = 0; j < scene.GetModels().size() - 2; j++) {
-            std::shared_ptr<Model> model = scene.GetModels()[j];
+        for (const auto &model : scene.GetModels()) {
             if (!model->GetCastShadows())
                 continue;
 
@@ -197,7 +191,7 @@ void Pipeline::ShadowPass(Scene scene) {
             m_UBOs[0]->SetData(0, sizeof(MVP), &lightMVP);
             m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
             // use first one to render shadow
-            m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfos[i]);
+            m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
 
             model->Draw();
         }
@@ -220,21 +214,18 @@ void Pipeline::BasePass(Scene scene) {
 
     MVP modelMVP;
     ModelData modelInfo;
-    std::vector<LightData> lightInfos;
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
 
     m_Basic.Validate();
 
-    for (unsigned int i = 0; i < scene.GetModels().size(); i++) {
-        std::shared_ptr<Model> model = scene.GetModels()[i];
-
+    for (const auto &model : scene.GetModels()) {
         if (!model->GetVisible())
             continue;
         if (model->GetUseAlbedoTexture() && model->GetAlbedoTexture())
             model->GetAlbedoTexture()->Bind(ALBEDO);
         if (model->GetUseEmissionTexture() && model->GetEmissionTexture())
             model->GetEmissionTexture()->Bind(EMISSION);
-        if (model->GetUseNormalTexture() && model->GetUseNormalTexture())
+        if (model->GetUseNormalTexture() && model->GetNormalTexture())
             model->GetNormalTexture()->Bind(NORMAL);
         if (model->GetUseARMTexture() && model->GetARMTexture())
             model->GetARMTexture()->Bind(ARM);
@@ -249,6 +240,17 @@ void Pipeline::BasePass(Scene scene) {
         // &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         model->Draw();
+    }
+
+    for (const auto &light : scene.GetLights()) {
+        modelMVP.model = light->GetTransform().GetTransformMatrix();
+        modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
+
+        modelInfo = light->GetModelData();
+        m_UBOs[0]->SetData(0, sizeof(MVP), &modelMVP);
+        m_UBOs[1]->SetData(0, sizeof(ModelData), &modelInfo);
+        m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        light->Draw();
     }
 
     m_Basic.Unbind();
@@ -282,15 +284,15 @@ void Pipeline::LightPass(Scene scene) {
 
     m_Light.Validate();
 
-    for (unsigned int i = 0; i < lights.size(); i++) {
-        std::shared_ptr<Light> light = lights[i];
-
+    for (const auto &light : lights) {
         if (!light->GetCastShadow())
             continue;
 
-        if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
+        if (light->GetType() == Light::POINT ||
+            light->GetType() == Light::SPOT) {
             light->GetShadowTexture()->Bind(POINT_SHADOW);
-        else if (light->GetType() == Light::DIRECTION)
+
+        } else if (light->GetType() == Light::DIRECTION)
             light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
 
         LightData lightInfo = light->GetLightData();
@@ -345,4 +347,17 @@ void Pipeline::UpdatePass() {
         pass.second->SetWidth(m_Width);
         pass.second->SetHeight(m_Height);
     }
+}
+void Pipeline::SavePass(Pass targetPass, std::string path) {
+    if (m_Passes.find(targetPass) == m_Passes.end())
+        throw std::runtime_error("not support texture to save as image");
+    m_Passes[targetPass]->SaveTexture(path);
+}
+
+unsigned int Pipeline::GetIdByPosition(glm::vec2 pos) {
+
+    GLubyte id = m_Passes[ID]->GetPixelColorByPosition(glm::vec2{
+        pos.x, m_Height - pos.y})[3]; // OpenGL and GLFW have different Y axis
+                                      // direction id is stored in alpha channel
+    return static_cast<unsigned int>(id);
 }

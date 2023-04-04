@@ -78,6 +78,14 @@ bool Window::GetMouseButton(int button) const {
     return glfwGetMouseButton(m_Window, button);
 }
 
+glm::vec2 Window::GetCursorPos() const {
+    double xPos, yPos;
+
+    glfwGetCursorPos(m_Window, &xPos, &yPos);
+
+    return glm::vec2{xPos, yPos};
+}
+
 glm::vec2 Window::GetCursorDelta() const {
     double xPos, yPos;
 

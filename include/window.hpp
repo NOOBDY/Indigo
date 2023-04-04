@@ -29,6 +29,7 @@ public:
 
     bool GetKey(int key) const;
     bool GetMouseButton(int button) const;
+    glm::vec2 GetCursorPos() const;
     glm::vec2 GetCursorDelta() const;
     glm::vec2 GetScrollOffset() const { return m_ScrollOffset; }
 

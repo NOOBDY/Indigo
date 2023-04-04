@@ -1,7 +1,7 @@
 #version 450 core
-// layout(location = 0) in vec2 UV;
+layout(location = 0) in vec2 UV;
 // layout(location = 0) out vec4 FragColor;
-in vec2 UV;
+// in vec2 UV;
 out vec4 FragColor;
 
 uniform sampler2D screenAlbedo;

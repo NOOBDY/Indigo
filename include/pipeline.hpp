@@ -45,6 +45,8 @@ public:
     void Render(Scene scene);
     void SetWidth(int width);
     void SetHeight(int height);
+    void SavePass(Pass targetPass, std::string path);
+    unsigned int GetIdByPosition(glm::vec2 pos);
     void Init();
 
 private:
