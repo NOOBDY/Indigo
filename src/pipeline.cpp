@@ -184,7 +184,6 @@ void Pipeline::ShadowPass(Scene scene) {
         m_ShadowFBO.Bind();
         Renderer::Clear();
 
-        // not render light ball
         for (const auto &model : scene.GetModels()) {
             if (!model->GetCastShadows())
                 continue;
@@ -245,6 +244,7 @@ void Pipeline::BasePass(Scene scene) {
         model->Draw();
     }
 
+    // mesh of light
     for (const auto &light : scene.GetLights()) {
         modelMVP.model = light->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();

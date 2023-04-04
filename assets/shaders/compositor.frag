@@ -60,7 +60,7 @@ void main() {
     //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));
 
     // col=texture(screen,UV).rgba;
-    // col.xyz += gaussianBlur(screenVolume, 0.5, UV);
+    col.xyz += gaussianBlur(screenVolume, 0.5, UV);
 
     // screenID.a = model id ;model start from 1 and need to
     // col = texture(screenID, UV);
