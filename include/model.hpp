@@ -3,6 +3,7 @@
 
 #include "pch.hpp"
 
+#include "scene_object.hpp"
 #include "texture.hpp"
 #include "transform.hpp"
 #include "vertex_array.hpp"
@@ -25,7 +26,7 @@ struct ModelData {
     int visible;
 };
 
-class Model {
+class Model final : public SceneObject {
 public:
     enum TextureTypes {
         ALBEDO,
@@ -33,7 +34,8 @@ public:
         ROUGHNESS,
         SHADOW, // first non-shadow texture index
     };
-    Model(std::shared_ptr<VertexArray> vao, Transform transform = Transform());
+    Model(std::string label, std::shared_ptr<VertexArray> vao,
+          Transform transform = Transform());
     ~Model();
 
     void Draw() const;
@@ -74,42 +76,41 @@ public:
     void SetCastShadows(bool castShadows) { m_CastShadows = castShadows; }
     void SetVisible(bool visible) { m_Visible = visible; }
 
-    std::shared_ptr<Texture> GetAlbedoTexture() { return m_AlbedoTexture; }
-    std::shared_ptr<Texture> GetEmissionTexture() { return m_EmissionTexture; }
-    std::shared_ptr<Texture> GetNormalTexture() { return m_NormalTexture; }
-    std::shared_ptr<Texture> GetARMTexture() { return m_ARMTexture; }
+    std::shared_ptr<Texture> GetAlbedoTexture() const {
+        return m_AlbedoTexture;
+    }
+    std::shared_ptr<Texture> GetEmissionTexture() const {
+        return m_EmissionTexture;
+    }
+    std::shared_ptr<Texture> GetNormalTexture() const {
+        return m_NormalTexture;
+    }
+    std::shared_ptr<Texture> GetARMTexture() const { return m_ARMTexture; }
 
-    glm::vec3 GetAlbedoColor() { return m_AlbedoColor; }
-    glm::vec3 GetEmissionColor() { return m_EmissionColor; }
+    glm::vec3 GetAlbedoColor() const { return m_AlbedoColor; }
+    glm::vec3 GetEmissionColor() const { return m_EmissionColor; }
 
-    float GetAO() { return m_ARM.x; }
-    float GetRoughness() { return m_ARM.y; }
-    float GetMetallic() { return m_ARM.z; }
-    unsigned int GetID() { return m_ID; }
+    float GetAO() const { return m_ARM.x; }
+    float GetRoughness() const { return m_ARM.y; }
+    float GetMetallic() const { return m_ARM.z; }
 
-    bool GetUseAlbedoTexture() { return m_UseAlbedoTexture; }
-    bool GetUseEmissionTexture() { return m_UseEmissionTexture; }
-    bool GetUseNormalTexture() { return m_UseNormalTexture; }
-    bool GetUseARMTexture() { return m_UseARMTexture; }
-    bool GetCastShadows() { return m_CastShadows; }
-    bool GetVisible() { return m_Visible; }
+    bool GetUseAlbedoTexture() const { return m_UseAlbedoTexture; }
+    bool GetUseEmissionTexture() const { return m_UseEmissionTexture; }
+    bool GetUseNormalTexture() const { return m_UseNormalTexture; }
+    bool GetUseARMTexture() const { return m_UseARMTexture; }
+    bool GetCastShadows() const { return m_CastShadows; }
+    bool GetVisible() const { return m_Visible; }
 
-    Transform &GetTransform() { return m_Transform; }
-    const Transform &GetTransform() const { return m_Transform; }
-
-    void SetTransform(Transform transform) { m_Transform = transform; }
     /// not const for transform class issues
     ModelData GetModelData();
 
 private:
     std::shared_ptr<VertexArray> m_VAO;
-    Transform m_Transform;
 
     std::shared_ptr<Texture> m_AlbedoTexture;
     std::shared_ptr<Texture> m_EmissionTexture;
     std::shared_ptr<Texture> m_NormalTexture;
     std::shared_ptr<Texture> m_ARMTexture;
-    const unsigned int m_ID;
 
     bool m_UseAlbedoTexture;
     bool m_UseEmissionTexture;

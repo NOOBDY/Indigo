@@ -1,12 +1,31 @@
 #include "light.hpp"
 
-Light::Light(Type type, glm::vec3 lightColor, float radius, float power)
-    : m_Type(type), m_Color(lightColor), m_Radius(radius), m_Power(power) {
+#include "importer.hpp"
+#include "renderer.hpp"
+
+Light::Light(std::string label, Type type, Transform transform, float power,
+             float radius, glm::vec3 lightColor, bool castShadow)
+    : SceneObject(SceneObject::LIGHT, label, transform),
+      m_VAO(Importer::LoadFile("../assets/models/sphere.obj")), //
+      m_Type(type), m_Color(lightColor),                        //
+      m_Radius(radius), m_Power(power),                         //
+      m_InnerCone(20.0f), m_OuterCone(30.0f),                   //
+      m_NearPlane(1.0f), m_FarPlane(1000.0f),                   //
+      m_CastShadow(castShadow),                                 //
+      m_ShadowSize(1024),                                       //
+      m_ShadowTexture(nullptr) {
+
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(
             m_ShadowSize, m_ShadowSize, Texture::DEPTH, GetShadowTarget());
         // LOG_INFO(m_ShadowTexture->GetTextureFormat());
     }
+}
+
+void Light::Draw() const {
+    m_VAO->Bind();
+
+    Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
 }
 
 void Light::SetLightType(Type lightType) {
@@ -91,6 +110,7 @@ LightData Light::GetLightData() {
 
     return data;
 }
+
 Texture::Target Light::GetShadowTarget() {
     switch (m_Type) {
     case Light::NONE:
@@ -106,4 +126,25 @@ Texture::Target Light::GetShadowTarget() {
     default:
         throw std::invalid_argument("invalid light type for shadow");
     }
-};
+}
+
+ModelData Light::GetModelData() {
+    /**
+     * ! This code is lying
+     * ! Turning R from ARM to 0 breaks light sphere shading
+     * ! even when the flag is turned off
+     */
+    return ModelData{
+        m_Transform.GetTransformData(), //
+        {1, 1, 1},                      // Albedo
+        static_cast<int>(false),        //
+        {0, 0, 0},                      // Emission
+        static_cast<int>(false),        //
+        {0, 1, 0},                      // ARM
+        static_cast<int>(false),        //
+        static_cast<int>(false),        // Normal
+        m_ID,                           //
+        static_cast<int>(false),        // CastShadow
+        static_cast<int>(true),         // Visible
+    };
+}
