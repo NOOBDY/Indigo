@@ -13,7 +13,7 @@ uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
 uniform sampler2D directionShadowMap;
-uniform samplerCube pointShadowMap;  
+uniform samplerCube pointShadowMap;
 
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
