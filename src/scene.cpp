@@ -5,12 +5,6 @@ Scene::Scene(const std::shared_ptr<Camera> defaultCamera)
     m_Cameras.push_back(defaultCamera);
 }
 
-void Scene::Draw() const {
-    for (const auto &model : GetModels()) {
-        model->Draw();
-    }
-}
-
 void Scene::AddCamera(const std::shared_ptr<Camera> camera) {
     m_Cameras.push_back(camera);
 }

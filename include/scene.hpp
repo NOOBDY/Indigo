@@ -13,8 +13,6 @@ class Scene {
 public:
     Scene(const std::shared_ptr<Camera> defaultCamera);
 
-    void Draw() const;
-
     void AddCamera(const std::shared_ptr<Camera> camera);
     void AddModel(const std::shared_ptr<Model> model);
     void AddLight(const std::shared_ptr<Light> light);
