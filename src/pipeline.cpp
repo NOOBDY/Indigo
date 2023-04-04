@@ -5,9 +5,9 @@
 Pipeline::Pipeline(int width, int height)
     : m_PointLightShadow("../assets/shaders/shadow_point.vert",
                          "../assets/shaders/shadow_point.geom",
-                         "../assets/shaders/shadow.frag"),
+                         "../assets/shaders/shadow_point.frag"),
       m_DirectionLightShadow("../assets/shaders/phong.vert",
-                             "../assets/shaders/shadow.frag"),
+                             "../assets/shaders/shadow_direction.frag"),
       m_Basic("../assets/shaders/phong.vert",
               "../assets/shaders/deferred_pass.frag"),
       m_Light("../assets/shaders/frame_deferred.vert",

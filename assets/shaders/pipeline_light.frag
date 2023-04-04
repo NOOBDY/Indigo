@@ -285,7 +285,7 @@ void main() {
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
         texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);
-    outScreenVolume = texture(directionShadowMap, UV);
+    // outScreenVolume = texture(directionShadowMap, UV);
     // PhongLight(baseInfo, cameraInfo, lights);
     // outScreenLight.xyz =
     //     vec3(texture(directionShadowMap,UV).r);

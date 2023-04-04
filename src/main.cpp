@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
     light1Test->SetShadowSize(2048);
 
     scene.AddLight(light1Test);
-    // scene.AddLight(light2Test);
+    scene.AddLight(light2Test);
 
     // begin model 1
 
