@@ -183,6 +183,7 @@ void Pipeline::ShadowPass(Scene scene) {
                                   GL_DEPTH_ATTACHMENT);
         m_ShadowFBO.Bind();
         Renderer::Clear();
+        m_PointLightShadow.Validate();
 
         for (const auto &model : scene.GetModels()) {
             if (!model->GetCastShadows())
