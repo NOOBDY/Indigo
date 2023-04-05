@@ -92,11 +92,13 @@ int main(int argc, char **argv) {
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
             "Light 1",                                           //
-            Light::POINT,                                        //
+            Light::DIRECTION,                                    //
             Transform({50, 100, 200},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
             1, 1000, glm::vec3(1.0f));
+        // biger texture size for direaction shadow
+        light1->SetShadowSize(2048);
         scene.AddLight(light1);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
@@ -120,7 +122,7 @@ int main(int argc, char **argv) {
         model->SetAlbedoTexture(texMainColor);
         // model->SetNormalTexture(wallNormalMap);
         model->SetUseAlbedoTexture(true);
-        // model->SetNormalTexture(wallNormalMap);
+        model->SetNormalTexture(wallNormalMap);
         // model->SetUseNormalTexture(true);
         // model->SetVisible(false);
         // model->SetCastShadows(false);

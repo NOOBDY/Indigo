@@ -58,6 +58,7 @@ private:
 private:
     void UpdatePass();
     Program m_PointLightShadow;
+    Program m_DirectionLightShadow;
     Program m_Basic;
     Program m_Light;
     Program m_Compositor;

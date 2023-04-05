@@ -3,10 +3,11 @@
 layout(triangles) in;
 layout(triangle_strip, max_vertices = 18) out;
 
-out vec3 normal;
-out vec3 worldPosition;
-out vec3 geoPosition;
-out vec2 UV;
+layout(location = 0) out vec3 geoPosition;
+layout(location = 1) out vec3 worldPosition;
+layout(location = 2) out vec3 normal;
+layout(location = 3) out vec2 UV;
+layout(location = 4) out mat3 TBN;
 
 in pointData {
     vec3 normal;

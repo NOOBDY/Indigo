@@ -106,10 +106,8 @@ uniform sampler2D directionShadowMap; // frame buffer texture
 uniform samplerCube pointShadowMap;   // frame buffer texture
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 
-vec3 depth2position(highp float depth, CameraData info) {
-    mat4 viewMatrixInv = inverse(info.view);
-    mat4 projectionMatrixInv = inverse(info.projection);
-    mat4 invert_view_projection = inverse(info.projection * info.view);
+vec3 depth2position(highp float depth, mat4 projection, mat4 view) {
+    mat4 invert_view_projection = inverse(projection * view);
 
     float ViewZ;
     ViewZ = depth * 2.0 - 1.0;
@@ -138,7 +136,7 @@ vec3 gridSamplingDisk[20] =
            vec3(1, 1, 0), vec3(1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
            vec3(1, 0, 1), vec3(-1, 0, 1), vec3(1, 0, -1), vec3(-1, 0, -1),
            vec3(0, 1, 1), vec3(0, -1, 1), vec3(0, -1, -1), vec3(0, 1, -1));
-float shadow(vec3 position, LightData light, int index) {
+float pointShadow(vec3 position, LightData light) {
     vec3 dir = position - light.transform.position;
     float lightDepth = texture(pointShadowMap, dir).x;
     lightDepth *= light.farPlane;
@@ -157,6 +155,39 @@ float shadow(vec3 position, LightData light, int index) {
     }
     shadow /= float(samples);
     return (shadow);
+}
+float directionShadow(vec3 position, vec3 normal, LightData light) {
+    vec4 lightSpace = light.lightProjections[0] * vec4(position, 1.0);
+    vec3 projCoords = lightSpace.xyz / lightSpace.w;
+    // transform to [0,1] range
+    projCoords = projCoords * 0.5 + 0.5;
+    // get closest depth value from light's perspective (using [0,1] range
+    // fragPosLight as coords)
+    float closestDepth = texture(directionShadowMap, projCoords.xy).r;
+    // get depth of current fragment from light's perspective
+    float currentDepth = projCoords.z;
+    vec3 lightDir = normalize(light.transform.position - position);
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.003);
+    float shadow = 0.0;
+    shadow += currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    return shadow;
+    // PCF
+    vec2 texelSize = 1.0 / textureSize(directionShadowMap, 0);
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(directionShadowMap,
+                                     projCoords.xy + vec2(x, y) * texelSize)
+                                 .r;
+            shadow += (currentDepth - bias) > (pcfDepth) ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+    // keep the shadow at 0.0 when outside the far_plane region of the light's
+    // frustum.
+    // if (projCoords.z > 1.0)
+    //     shadow = 0.0;
+
+    return shadow;
 }
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
@@ -203,8 +234,11 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                        ? 0.0
                        : pow(dotRV, deferredInfo.ARM.y * 100));
 
-    float shadow = shadow(position, light, index);
-    // return vec4(shadow)/LIGHT_NUMBER;
+    float shadow = 0;
+    if (light.lightType == POINT || light.lightType == SPOT)
+        shadow = pointShadow(position, light);
+    else if (light.lightType == DIRECTION)
+        shadow = directionShadow(position, n, light);
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
@@ -233,7 +267,6 @@ vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
 void main() {
     vec3 col = vec3(1.0);
 
-    // vec2 uv=UV;
     DeferredData baseInfo;
     baseInfo.albedo = texture(screenAlbedo, UV).rgb;
     baseInfo.normal = texture(screenNormal, UV).rgb;
@@ -241,7 +274,8 @@ void main() {
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
     baseInfo.ID = texture(screenID, UV).rgb;
-    baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo);
+    baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo.projection,
+                                       cameraInfo.view);
 
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
