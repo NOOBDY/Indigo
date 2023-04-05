@@ -20,7 +20,8 @@
  */
 namespace Importer {
 // Returns `std::shared_ptr` due to some C++ optimization dark magic
-std::shared_ptr<VertexArray> LoadFile(const std::string &filepath);
+std::shared_ptr<VertexArray> LoadFile(const std::string &filepath,
+                                      unsigned int index = 0);
 }; // namespace Importer
 
 #endif

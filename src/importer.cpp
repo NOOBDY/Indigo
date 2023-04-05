@@ -7,7 +7,8 @@
 #include "log.hpp"
 #include "exception.hpp"
 
-std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath) {
+std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath,
+                                                unsigned int index) {
     LOG_TRACE("Loading File: '{}'", filepath);
 
     std::shared_ptr<VertexArray> va = std::make_shared<VertexArray>();
@@ -41,7 +42,7 @@ std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath) {
      */
 
     // ! hard-coded to read only the first mesh
-    const aiMesh *mesh = scene->mMeshes[0];
+    const aiMesh *mesh = scene->mMeshes[index];
 
     sharedBuffer.reserve(sizeof(float) * 3 * mesh->mNumVertices);
     indexBuffer.reserve(sizeof(float) * mesh->mFaces[0].mNumIndices *

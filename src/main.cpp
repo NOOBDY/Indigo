@@ -45,17 +45,56 @@ int main(int argc, char **argv) {
     Scene scene(mainCamera);
 
     // begin model 1
-    std::shared_ptr<Model> main;
-
     try {
-        main = std::make_shared<Model>(
-            "Model 1",
-            Importer::LoadFile("../assets/models/little_city/main.glb"),
+        auto mesh0 = std::make_shared<Model>(
+            "Model 1 Mesh 0",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 0),
             Transform({0, 0, 0},       //
                       {180, 180, 180}, //
                       {1, 1, 1}));
 
-        scene.AddModel(main);
+        auto mesh1 = std::make_shared<Model>(
+            "Model 1 Mesh 1",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 1),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        auto mesh3 = std::make_shared<Model>(
+            "Model 1 Mesh 3",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 3),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        auto mesh4 = std::make_shared<Model>(
+            "Model 1 Mesh 4",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 4),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        auto mesh5 = std::make_shared<Model>(
+            "Model 1 Mesh 5",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 5),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        auto mesh6 = std::make_shared<Model>(
+            "Model 1 Mesh 6",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 6),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
+        // mesh 2 and 7 causes a segfault for some reason
+        scene.AddModel(mesh0);
+        scene.AddModel(mesh1);
+        scene.AddModel(mesh3);
+        scene.AddModel(mesh4);
+        scene.AddModel(mesh5);
+        scene.AddModel(mesh6);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
