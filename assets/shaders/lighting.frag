@@ -167,8 +167,7 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
     vec3 lightDir = normalize(light.transform.position - position);
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    // bias=-0.01;
+    float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.003);
     float shadow = 0.0;
     shadow += currentDepth - bias > closestDepth ? 1.0 : 0.0;
     return shadow;
@@ -185,8 +184,8 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     shadow /= 9.0;
     // keep the shadow at 0.0 when outside the far_plane region of the light's
     // frustum.
-    if (projCoords.z > 1.0)
-        shadow = 0.0;
+    // if (projCoords.z > 1.0)
+    //     shadow = 0.0;
 
     return shadow;
 }

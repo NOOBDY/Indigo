@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
             1, 1000, glm::vec3(1.0f));
+        // biger texture size for direaction shadow
         light1->SetShadowSize(2048);
         scene.AddLight(light1);
     } catch (std::exception &e) {
