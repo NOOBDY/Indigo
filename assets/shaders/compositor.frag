@@ -22,7 +22,7 @@ uniform sampler2D screenVolume;
 #define PI 3.1415926
 vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
 #define MAX_LENGTH 8
-#define MAX_ROUND 8
+#define MAX_ROUND 4
     float blurWidth = blurStrength;
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
@@ -43,6 +43,34 @@ vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
     }
     return blurColor.xyz / blurColor.w;
 }
+float idBorder(sampler2D idPass,int id) {
+    const vec2 offset = 1.0 / vec2(textureSize(idPass,0));
+        // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
+
+    vec2 offsets[9] = vec2[](vec2(-offset.x, offset.y), // 左上
+    vec2(0.0f, offset.y),     // 正上
+    vec2(offset.x, offset.y),   // 右上
+    vec2(-offset.x, 0.0f),    // 左
+    vec2(0.0f, 0.0f),       // 中
+    vec2(offset.x, 0.0f),     // 右
+    vec2(-offset.x, -offset.y), // 左下
+    vec2(0.0f, -offset.y),    // 正下
+    vec2(offset.x, -offset.y)   // 右下
+    );
+
+        // edge detction
+    float kernel[9] = float[](-1, -1, -1, -1, 8, -1, -1, -1, -1);
+        // blur
+        // float kernel[9] = float[](1.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 4.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 1.0 / 16);
+
+    float sampleTex[9];
+    float v=0;
+    for(int i = 0; i < 9; i++) {
+        sampleTex[i] = float(texture(idPass, UV + offsets[i]).a*255==id);
+        v+= sampleTex[i] * kernel[i];
+    }
+    return abs(v);
+}
 vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
     vec3 nuv = vec3(0.0);
     uv = (uv - vec2(0.5)) * 2 * PI;
@@ -57,10 +85,11 @@ void main() {
     vec4 col = texture(screenLight, UV).rgba;
     // col+=gaussianBlur(screenEmission,0.5, UV);
     // if(UV.x<0.5)
-    //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));
+    //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));    for(int i = 0; i < 9; i++) color +=;
 
-    // col=texture(screen,UV).rgba;
-    col.xyz += gaussianBlur(screenVolume, 0.5, UV);
+    col.xyz=mix(col.xyz,vec3(1.0, 0.0, 0.0),idBorder(screenID,0));
+    // col.xyz += gaussianBlur(screenVolume, 1.0, UV);
+    // col-=texture(screenVolume,UV).rgba;
 
     // screenID.a = model id ;model start from 1 and need to
     // col = texture(screenID, UV);
