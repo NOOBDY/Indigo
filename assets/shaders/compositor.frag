@@ -88,23 +88,40 @@ vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
     nuv.y = cos(uv.y);
     return texture(sampleTexture, normalize(nuv)).rgb;
 }
+vec4 displayPass(int i){
+    switch (i) {
+    case 0:
+        return texture(screenAlbedo, UV);
+    case 1:
+        return texture(screenEmission, UV);
+    case 2:
+        return texture(screenNormal, UV);
+    case 3:
+        return texture(screenARM, UV);
+    case 4:
+        return texture(screenPosition, UV);
+    case 5:
+        return texture(screenID, UV);
+    case 6:
+        return texture(screenDepth, UV);
+    case 8:
+        return texture(screenLight, UV);
+    case 9:
+        return texture(screenVolume, UV);
+    case 12:
+        return texture(screenLight, UV)+vec4(gaussianBlur(screenVolume, 1.0, UV),0.0);
+    default:
+        return vec4(1);
+    }
+}
 
 void main() {
-    vec4 col = texture(screenLight, UV).rgba;
-    // col+=gaussianBlur(screenEmission,0.5, UV);
+    vec4 col = displayPass(pipelineInfo.selectPass);
     // if(UV.x<0.5)
     //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));    for(int i = 0; i < 9; i++) color +=;
 
     col.xyz=mix(col.xyz,vec3(0,1,0),idBorder(screenID,pipelineInfo.ID));
-    // if(pipelineInfo.selectPass==12)
-    // col=vec4(1);
-    // col.xyz=pipelineInfo.borderColor;
-    // col.xyz += gaussianBlur(screenVolume, 1.0, UV);
-    // col-=texture(screenVolume,UV).rgba;
 
-    // screenID.a = model id ;model start from 1 and need to
-    // col = texture(screenID, UV);
-    // col.xyz = vec3(col.a * 255 == 2);
 
     // col = cube_uv(UV);
     FragColor = vec4(col.xyz, 1.0);

@@ -333,7 +333,6 @@ void Pipeline::CompositorPass(Scene scene) {
     PipelineData pipelineInfo =
         PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};
 
-    // m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
