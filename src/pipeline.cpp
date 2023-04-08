@@ -14,7 +14,7 @@ Pipeline::Pipeline(int width, int height)
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height) {
+      m_Width(width), m_Height(height), m_ActivePass(SCREEN) {
 
     m_Basic.Bind();
     m_Basic.SetInt("albedoMap", ALBEDO);
@@ -57,6 +57,7 @@ Pipeline::Pipeline(int width, int height)
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
+    m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(PipelineData), 4));
 
     // vertices
     m_Screen.AddVertexBuffer(std::make_shared<VertexBuffer>(
@@ -152,7 +153,7 @@ void Pipeline::Render(Scene scene) {
     ShadowPass(scene);
     BasePass(scene);
     LightPass(scene);
-    CompositorPass();
+    CompositorPass(scene);
 }
 
 void Pipeline::ShadowPass(Scene scene) {
@@ -313,7 +314,7 @@ void Pipeline::LightPass(Scene scene) {
     m_LightPassFBO.Unbind();
 }
 
-void Pipeline::CompositorPass() {
+void Pipeline::CompositorPass(Scene scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     m_Compositor.Bind();
 
@@ -329,6 +330,11 @@ void Pipeline::CompositorPass() {
     m_Passes[VOLUME]->Bind(VOLUME);
 
     m_Screen.Bind();
+    PipelineData pipelineInfo =
+        PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};
+
+    // m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+    m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
     m_Compositor.Unbind();

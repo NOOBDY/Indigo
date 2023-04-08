@@ -49,7 +49,7 @@ struct ModelData {
     int useARMTexture;
 
     int useNormalTexture;
-    uint id;
+    int id;
     int castShadows;
     int visible;
 };

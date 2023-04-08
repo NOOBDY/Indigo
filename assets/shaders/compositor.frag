@@ -1,8 +1,7 @@
 #version 450 core
 layout(location = 0) in vec2 UV;
-// layout(location = 0) out vec4 FragColor;
-// in vec2 UV;
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+// out vec4 FragColor;
 
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
@@ -18,7 +17,15 @@ uniform samplerCube pointShadowMap;
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
 
-// uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+struct PipelineData {
+    int ID;
+    float time;
+    float detiaTime;
+    int selectPass;
+};
+layout(std140, binding = 4) uniform PipelineUniform{
+    PipelineData pipelineInfo;
+};
 #define PI 3.1415926
 vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
 #define MAX_LENGTH 8
@@ -44,6 +51,7 @@ vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
     return blurColor.xyz / blurColor.w;
 }
 float idBorder(sampler2D idPass,int id) {
+    if(id==-1)return 0.0;
     const vec2 offset = 1.0 / vec2(textureSize(idPass,0));
         // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
 
@@ -87,7 +95,10 @@ void main() {
     // if(UV.x<0.5)
     //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));    for(int i = 0; i < 9; i++) color +=;
 
-    col.xyz=mix(col.xyz,vec3(1.0, 0.0, 0.0),idBorder(screenID,0));
+    col.xyz=mix(col.xyz,vec3(0,1,0),idBorder(screenID,pipelineInfo.ID));
+    // if(pipelineInfo.selectPass==12)
+    // col=vec4(1);
+    // col.xyz=pipelineInfo.borderColor;
     // col.xyz += gaussianBlur(screenVolume, 1.0, UV);
     // col-=texture(screenVolume,UV).rgba;
 
