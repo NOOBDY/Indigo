@@ -332,7 +332,6 @@ void Pipeline::CompositorPass(Scene scene) {
     m_Screen.Bind();
     PipelineData pipelineInfo =
         PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};
-    pipelineInfo.selectPass = NORMAL;
 
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());

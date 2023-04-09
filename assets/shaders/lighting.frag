@@ -161,6 +161,10 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     vec3 projCoords = lightSpace.xyz / lightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+    // keep the shadow at 0.0 when outside the far_plane region of the light's
+    // frustum.
+    if (projCoords.z > 1.0)
+        return  0.0;
     // get closest depth value from light's perspective (using [0,1] range
     // fragPosLight as coords)
     float closestDepth = texture(directionShadowMap, projCoords.xy).r;
@@ -182,10 +186,6 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
         }
     }
     shadow /= 9.0;
-    // keep the shadow at 0.0 when outside the far_plane region of the light's
-    // frustum.
-    // if (projCoords.z > 1.0)
-    //     shadow = 0.0;
 
     return shadow;
 }

@@ -84,6 +84,5 @@ private:
     int m_Width;
     int m_Height;
     int m_ActivePass;
-    glm::vec3 m_BorderColor;
 };
 #endif
