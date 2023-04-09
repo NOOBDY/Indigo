@@ -129,7 +129,7 @@ void main() {
     screenARM.xyz = (modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz
                                                    : modelInfo.ARM;
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
-    screenNormal.xyz = normalize(normal);
+    screenNormal.xyz = normalize(normal)*0.5+0.5;
     screenID.xyz = unpackColor(Hash32(modelInfo.id));
     screenID.a = modelInfo.id / 255.0;
     // screenID.xyz=vec3(screenID.z);

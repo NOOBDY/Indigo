@@ -269,7 +269,7 @@ void main() {
 
     DeferredData baseInfo;
     baseInfo.albedo = texture(screenAlbedo, UV).rgb;
-    baseInfo.normal = texture(screenNormal, UV).rgb;
+    baseInfo.normal = texture(screenNormal, UV).rgb*2.0-1.0;
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
