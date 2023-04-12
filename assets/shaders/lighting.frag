@@ -261,52 +261,34 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     float dotNL = max(dot(N, L), 0.0);
     float dotNV = max(dot(N, V), 0.0);
     float dotRV = max(dot(R, V), 0.0);
+    //shadow
     float shadow = 0;
     if (light.lightType == POINT || light.lightType == SPOT)
         shadow = pointShadow(position, light);
     else if (light.lightType == DIRECTION)
         shadow = directionShadow(position, N, light);
 
-    vec3 diffuse = deferredInfo.albedo * (dotNL + ambient);
-
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
 
-    // specular lighting
-    // ambient light not specular
-    vec3 specular =
-        vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0))
-                       ? 0.0
-                       : pow(dotRV, deferredInfo.ARM.y * 100));
+    // Cook-Torrance BRDF
 
-    diffuse *= 1 - shadow;
-    specular *= 1 - shadow;
-    outScreenVolume += vec4(specular * light.power, 1.0);
-
-
-        // Cook-Torrance BRDF
-
-        float roughness=deferredInfo.ARM.y;
-        float metallic=deferredInfo.ARM.z;
-        vec3 albedo=deferredInfo.albedo;
-        vec3  F0 = mix (vec3 (0.04), albedo, metallic);
-        float NDF = DistributionGGX(N, H, roughness);
-        float G   = GeometrySmith(N, V, L, roughness);
-        vec3  F   = fresnelSchlick(max(dot(H, V), 0.0), F0 );
-        vec3  kD  = vec3(1.0) - F;
-        kD *= 1.0 - metallic;	  
-        
-        vec3  numerator   = NDF * G * F;
-        float denominator = 4.0 * max(dotRV, 0.0) *dotNL;
-        // specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
-        // diffuse=kD * albedo / PI;
-        vec3 Lo=(diffuse + specular)* dotNL*light.lightColor*(1-shadow)*light.power*fadeOut*spot;
-        // return vec4(Lo,1);
-        // return vec4(spot*light.power);
-
-    return vec4((diffuse + specular) * light.lightColor * light.power *
-                    fadeOut * spot,
-                shadow);
+    float roughness=deferredInfo.ARM.y;
+    float metallic=deferredInfo.ARM.z;
+    vec3 albedo=deferredInfo.albedo;
+    vec3  F0 = mix (vec3 (0.04), albedo, metallic);
+    float NDF = DistributionGGX(N, H, roughness);
+    float G   = GeometrySmith(N, V, L, roughness);
+    vec3  F   = fresnelSchlick(max(dot(H, V), 0.0), F0 );
+    vec3  kD  = vec3(1.0) - F;
+    kD *= 1.0 - metallic;	  
+    
+    vec3  numerator   = NDF * G * F;
+    float denominator = 4.0 * max(dotNV, 0.0) *dotNL;
+    vec3 specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
+    vec3 diffuse=(kD+ambient) * albedo / PI;
+    vec3 Lo=(diffuse + specular)* dotNL*light.lightColor*(1-shadow)*light.power*fadeOut*spot;
+    return vec4(Lo,1);
 }
 vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
                 LightData lights[LIGHT_NUMBER]) {
