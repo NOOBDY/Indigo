@@ -62,7 +62,7 @@ struct DeferredData {
     vec3 normal;
     vec3 position;
     vec3 ARM;
-    vec3 ID;
+    vec4 ID;
     vec3 depth;
 };
 
@@ -245,7 +245,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // for Blinn-Phong lighting
     vec3 H = normalize(V + L);
 
-    float ambient = light.lightType == AMBIENT ? 1.0 : 0.1;
+    float ambient = light.lightType == AMBIENT ? 1.0 : 0.05;
     float fadeOut = light.lightType == POINT
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
@@ -258,14 +258,15 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                      : 1.0;
 
     // diffuse lighting
-    float dotLN = max(dot(H, N), 0.0);
+    float dotLN = max(dot(L, N), 0.0);
+    float dotRV = max(dot(R, V), 0.0);
+    float dotHV = max(dot(H, V), 0.0);
     vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
 
     // specular lighting
-    float dotRV = max(dot(R, V), 0.0);
     // ambient light not specular
     vec3 specular =
         vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0))
@@ -287,43 +288,23 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
         float roughness=deferredInfo.ARM.y;
         float metallic=deferredInfo.ARM.z;
-        metallic=0;
-        roughness=light.power;
+        // metallic=0;
+        // roughness=light.power;
         vec3 albedo=deferredInfo.albedo;
-        vec3 F0 = vec3(0.04); 
-        F0 = mix(F0, albedo, metallic);
-
-        // reflectance equation
-        vec3 Lo = vec3(0.0);
-        float NDF = DistributionGGX(N, L, roughness);   
-        float G   = GeometrySmith(N, V, L,roughness);      
-        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
-           
-        vec3 numerator    = NDF * G * F; 
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
-        // vec3 specular = numerator / denominator;
-        // specular = numerator / denominator;
-        specular = numerator;
-        
-        // kS is equal to Fresnel
-        vec3 kS = F;
-        // for energy conservation, the diffuse and specular light can't
-        // be above 1.0 (unless the surface emits light); to preserve this
-        // relationship the diffuse component (kD) should equal 1.0 - kS.
-        vec3 kD = vec3(1.0) - kS;
-        // multiply kD by the inverse metalness such that only non-metals 
-        // have diffuse lighting, or a linear blend if partly metal (pure metals
-        // have no diffuse light).
+        vec3  F0 = mix (vec3 (0.04), pow(albedo, vec3 (2.2)), metallic);
+        float NDF = DistributionGGX(N, H, roughness);
+        float G   = GeometrySmith(N, V, L, roughness);
+        vec3  F   = fresnelSchlick(max(dot(H, V), 0.0), F0 );
+        vec3  kD  = vec3(1.0) - F;
         kD *= 1.0 - metallic;	  
+        
+        vec3  numerator   = NDF * G * F;
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
+        specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
+        diffuse=kD * pow(albedo, vec3 (2.2)) / PI;
+        vec3 Lo=(diffuse + specular)* dotLN*light.lightColor*(1-shadow)*light.power*fadeOut;
 
-        // scale light by NdotL
-        float NdotL = max(dot(N, L), 0.0);        
-
-        // add to outgoing radiance Lo
-        float radiance=fadeOut;
-        Lo += (kD * albedo / PI + specular)*  NdotL;
-        // return vec4(N,1.0);
-        return vec4(Lo,shadow);
+        return vec4(Lo,1);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
@@ -354,7 +335,7 @@ void main() {
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
-    baseInfo.ID = texture(screenID, UV).rgb;
+    baseInfo.ID = texture(screenID, UV).rgba;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo.projection,
                                        cameraInfo.view);
 

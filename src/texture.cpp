@@ -51,15 +51,21 @@ void Texture::Unbind() {
 
 void Texture::SetWidth(int width) {
     m_Width = width;
-    if (m_Target == Texture::Target::CUBE)
+    if (m_Target == Texture::Target::CUBE) {
+        LOG_WARN("texture cubemap must have same height and width");
+        LOG_WARN("force same height and width");
         m_Height = width;
+    }
     Update(nullptr);
 }
 
 void Texture::SetHeight(int height) {
     m_Height = height;
-    if (m_Target == Texture::Target::CUBE)
+    if (m_Target == Texture::Target::CUBE) {
+        LOG_WARN("texture cubemap must have same height and width");
+        LOG_WARN("force same height and width");
         m_Width = height;
+    }
     Update(nullptr);
 }
 

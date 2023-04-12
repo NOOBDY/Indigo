@@ -137,7 +137,7 @@ void main() {
 
     // make sure the normalmap is in right format
     if (modelInfo.useNormalTexture == 1) {
-        screenNormal.xyz = TBN * (texture(normalMap, UV).xyz * 2 - 1);
+        screenNormal.xyz =( TBN * (texture(normalMap, UV).xyz * 2 - 1))*0.5+0.5;;
     }
 
     // color3 = ColorTransform(color3);
