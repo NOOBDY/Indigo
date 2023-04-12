@@ -250,18 +250,24 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
     // spotlight
-    float angle = clamp(dot(direction, L), 0.0, 1.0);
+    float theta     = dot(L, normalize(direction));
+    float epsilon   = cos(radians(light.innerCone))- cos(radians(light.outerCone));
+    float intensity = clamp((theta - cos(radians(light.outerCone))) / epsilon, 0.0, 1.0);    
     float spot = light.lightType == SPOT
-                     ? clamp((angle - light.outerCone) /
-                                 (light.innerCone - light.outerCone),
-                             0.0, 1.0)
+                     ? intensity
                      : 1.0;
 
     // diffuse lighting
-    float dotLN = max(dot(L, N), 0.0);
+    float dotNL = max(dot(N, L), 0.0);
+    float dotNV = max(dot(N, V), 0.0);
     float dotRV = max(dot(R, V), 0.0);
-    float dotHV = max(dot(H, V), 0.0);
-    vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
+    float shadow = 0;
+    if (light.lightType == POINT || light.lightType == SPOT)
+        shadow = pointShadow(position, light);
+    else if (light.lightType == DIRECTION)
+        shadow = directionShadow(position, N, light);
+
+    vec3 diffuse = deferredInfo.albedo * (dotNL + ambient);
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
@@ -273,12 +279,6 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                        ? 0.0
                        : pow(dotRV, deferredInfo.ARM.y * 100));
 
-    float shadow = 0;
-    if (light.lightType == POINT || light.lightType == SPOT)
-        shadow = pointShadow(position, light);
-    else if (light.lightType == DIRECTION)
-        shadow = directionShadow(position, N, light);
-
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
     outScreenVolume += vec4(specular * light.power, 1.0);
@@ -288,10 +288,8 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
         float roughness=deferredInfo.ARM.y;
         float metallic=deferredInfo.ARM.z;
-        // metallic=0;
-        // roughness=light.power;
         vec3 albedo=deferredInfo.albedo;
-        vec3  F0 = mix (vec3 (0.04), pow(albedo, vec3 (2.2)), metallic);
+        vec3  F0 = mix (vec3 (0.04), albedo, metallic);
         float NDF = DistributionGGX(N, H, roughness);
         float G   = GeometrySmith(N, V, L, roughness);
         vec3  F   = fresnelSchlick(max(dot(H, V), 0.0), F0 );
@@ -299,12 +297,12 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         kD *= 1.0 - metallic;	  
         
         vec3  numerator   = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
-        diffuse=kD * pow(albedo, vec3 (2.2)) / PI;
-        vec3 Lo=(diffuse + specular)* dotLN*light.lightColor*(1-shadow)*light.power*fadeOut;
-
-        return vec4(Lo,1);
+        float denominator = 4.0 * max(dotRV, 0.0) *dotNL;
+        // specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
+        // diffuse=kD * albedo / PI;
+        vec3 Lo=(diffuse + specular)* dotNL*light.lightColor*(1-shadow)*light.power*fadeOut*spot;
+        // return vec4(Lo,1);
+        // return vec4(spot*light.power);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,

@@ -107,13 +107,13 @@ int main(int argc, char **argv) {
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
             "Light 2",                                           //
-            Light::POINT,                                        //
+            Light::SPOT,                                         //
             Transform({-300, 300, 0},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
             2, 1000, glm::vec3(1.0f));
 
-        // scene.AddLight(light2);
+        scene.AddLight(light2);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }

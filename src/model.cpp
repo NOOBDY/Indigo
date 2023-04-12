@@ -18,7 +18,7 @@ Model::Model(std::string label, std::shared_ptr<VertexArray> vao,
 
     m_AlbedoColor = glm::vec3(1, 1, 1);
     m_EmissionColor = glm::vec3(0, 1, 0);
-    m_ARM = glm::vec3(1, 0.25, 0.5);
+    m_ARM = glm::vec3(1, 0.25, 0.1);
 }
 
 Model::~Model() {
