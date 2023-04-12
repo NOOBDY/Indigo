@@ -60,6 +60,13 @@ int main(int argc, char **argv) {
                       {180, 180, 180}, //
                       {1, 1, 1}));
 
+        auto mesh2 = std::make_shared<Model>(
+            "Model 1 Mesh 2",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 2),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
         auto mesh3 = std::make_shared<Model>(
             "Model 1 Mesh 3",
             Importer::LoadFile("../assets/models/little_city/main.glb", 3),
@@ -88,13 +95,21 @@ int main(int argc, char **argv) {
                       {180, 180, 180}, //
                       {1, 1, 1}));
 
-        // mesh 2 and 7 causes a segfault for some reason
+        auto mesh7 = std::make_shared<Model>(
+            "Model 1 Mesh 7",
+            Importer::LoadFile("../assets/models/little_city/main.glb", 7),
+            Transform({0, 0, 0},       //
+                      {180, 180, 180}, //
+                      {1, 1, 1}));
+
         scene.AddModel(mesh0);
         scene.AddModel(mesh1);
+        scene.AddModel(mesh2);
         scene.AddModel(mesh3);
         scene.AddModel(mesh4);
         scene.AddModel(mesh5);
         scene.AddModel(mesh6);
+        scene.AddModel(mesh7);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }

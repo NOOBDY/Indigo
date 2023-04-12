@@ -14,7 +14,6 @@ std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath,
     std::shared_ptr<VertexArray> va = std::make_shared<VertexArray>();
     Assimp::Importer importer;
 
-    std::vector<float> sharedBuffer;
     std::vector<unsigned int> indexBuffer;
 
     const aiScene *scene =
@@ -32,70 +31,43 @@ std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath,
      * // Update 1: changed from `push_back()` to `insert()` for some elements,
      * // but IDK if there are more optimizing space
      *
-     * Update 2: Currently loads only the first mesh and uses a shared buffer to
-     * load mesh data into the GPU. This probably breaks OOP principles but the
-     * extra memory saved is pretty substantial(~2/3 less but unverified)
-     * especially on large files.
-     * Another index buffer vector has to be used due to type differences. If
-     * this problem can solved, the memory usage can be cut down to ~5/6 less
-     * than the original implementation.
+     * // Update 2: Currently loads only the first mesh and uses a shared buffer
+     * // to load mesh data into the GPU. This probably breaks OOP principles
+     * // but the extra memory saved is pretty substantial(~2/3 less but
+     * // unverified) especially on large files.
+     * // Another index buffer vector has to be used due to type differences. If
+     * // this problem can solved, the memory usage can be cut down to ~5/6 less
+     * // than the original implementation.
+     *
+     * Update 3: Now `Assimp` data is directly put into
+     * `glNamedBufferData()` except for index buffers, reasons are listed below
      */
 
     // ! hard-coded to read only the first mesh
     const aiMesh *mesh = scene->mMeshes[index];
 
-    sharedBuffer.reserve(sizeof(float) * 3 * mesh->mNumVertices);
-    indexBuffer.reserve(sizeof(float) * mesh->mFaces[0].mNumIndices *
-                        mesh->mNumFaces);
+    indexBuffer.resize(sizeof(float) * 3 * mesh->mNumFaces);
 
     // Vertices
-    sharedBuffer.insert(                               //
-        sharedBuffer.begin(),                          //
-        &mesh->mVertices[0].x,                         //
-        &mesh->mVertices[0].x + 3 * mesh->mNumVertices //
-    );
-    va->AddVertexBuffer(
-        std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
+    va->AddVertexBuffer(std::make_shared<VertexBuffer>(
+        &mesh->mVertices[0].x, 3 * mesh->mNumVertices, 3 * sizeof(float)));
 
     // UVs
-    sharedBuffer.clear();
-    for (unsigned int i = 0; i < mesh->mNumVertices; ++i) {
-        // hardcoded to read the first 2D UV
-        sharedBuffer.insert(                  //
-            sharedBuffer.end(),               //
-            &mesh->mTextureCoords[0][i].x,    //
-            &mesh->mTextureCoords[0][i].x + 2 //
-        );
-    }
-    va->AddVertexBuffer(
-        std::make_shared<VertexBuffer>(sharedBuffer, 2 * sizeof(float)));
+    va->AddVertexBuffer(std::make_shared<VertexBuffer>(
+        &mesh->mTextureCoords[0][0].x, 3 * mesh->mNumVertices,
+        3 * sizeof(float)));
 
     // Normals
-    sharedBuffer.insert(                              //
-        sharedBuffer.begin(),                         //
-        &mesh->mNormals[0].x,                         //
-        &mesh->mNormals[0].x + 3 * mesh->mNumVertices //
-    );
-    va->AddVertexBuffer(
-        std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
+    va->AddVertexBuffer(std::make_shared<VertexBuffer>(
+        &mesh->mNormals[0].x, 3 * mesh->mNumVertices, 3 * sizeof(float)));
 
     // Tangents
-    sharedBuffer.insert(                               //
-        sharedBuffer.begin(),                          //
-        &mesh->mTangents[0].x,                         //
-        &mesh->mTangents[0].x + 3 * mesh->mNumVertices //
-    );
-    va->AddVertexBuffer(
-        std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
+    va->AddVertexBuffer(std::make_shared<VertexBuffer>(
+        &mesh->mTangents[0].x, 3 * mesh->mNumVertices, 3 * sizeof(float)));
 
     // Bitangents
-    sharedBuffer.insert(                                 //
-        sharedBuffer.begin(),                            //
-        &mesh->mBitangents[0].x,                         //
-        &mesh->mBitangents[0].x + 3 * mesh->mNumVertices //
-    );
-    va->AddVertexBuffer(
-        std::make_shared<VertexBuffer>(sharedBuffer, 3 * sizeof(float)));
+    va->AddVertexBuffer(std::make_shared<VertexBuffer>(
+        &mesh->mBitangents[0].x, 3 * mesh->mNumVertices, 3 * sizeof(float)));
 
     // Indices
     indexBuffer.clear();
@@ -108,10 +80,10 @@ std::shared_ptr<VertexArray> Importer::LoadFile(const std::string &filepath,
          * So inserting an entire block of memory into the vector is not
          * possible, at least not that I know of.
          */
-        indexBuffer.insert(                                            //
-            indexBuffer.end(),                                         //
-            &mesh->mFaces[i].mIndices[0],                              //
-            &mesh->mFaces[i].mIndices[0] + mesh->mFaces[i].mNumIndices //
+        indexBuffer.insert(               //
+            indexBuffer.end(),            //
+            &mesh->mFaces[i].mIndices[0], //
+            &mesh->mFaces[i].mIndices[3]  //
         );
     }
     va->SetIndexBuffer(std::make_shared<IndexBuffer>(indexBuffer));
