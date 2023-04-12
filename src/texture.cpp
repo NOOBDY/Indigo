@@ -51,11 +51,15 @@ void Texture::Unbind() {
 
 void Texture::SetWidth(int width) {
     m_Width = width;
+    if (m_Target == Texture::Target::CUBE)
+        m_Height = width;
     Update(nullptr);
 }
 
 void Texture::SetHeight(int height) {
     m_Height = height;
+    if (m_Target == Texture::Target::CUBE)
+        m_Width = height;
     Update(nullptr);
 }
 

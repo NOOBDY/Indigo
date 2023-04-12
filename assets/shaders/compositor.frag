@@ -109,6 +109,7 @@ vec4 displayPass(int i){
     case 9:
         return texture(screenVolume, UV);
     case 12:
+        return texture(screenLight, UV);
         return texture(screenLight, UV)+vec4(gaussianBlur(screenVolume, 1.0, UV),0.0);
     default:
         return vec4(1);

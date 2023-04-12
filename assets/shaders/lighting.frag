@@ -105,6 +105,7 @@ uniform sampler2D reflectMap;
 uniform sampler2D directionShadowMap; // frame buffer texture
 uniform samplerCube pointShadowMap;   // frame buffer texture
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+#define PI 3.1415926
 
 vec3 depth2position(highp float depth, mat4 projection, mat4 view) {
     mat4 invert_view_projection = inverse(projection * view);
@@ -189,30 +190,67 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
 
     return shadow;
 }
+//diffuse
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a = roughness*roughness;
+    float a2 = a*a;
+    float NdotH = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
     vec3 position = deferredInfo.position;
     // mesh normal
-    vec3 n = deferredInfo.normal;
+    vec3 N = deferredInfo.normal;
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
-    vec3 direction = light.transform.direction;
+    vec3 direction =normalize( light.transform.direction);
     // direction :light to mesh
-    vec3 l = light.lightType == DIRECTION
-                 ? direction
+    vec3 L = light.lightType == DIRECTION
+                 ? direction  
                  : normalize(light.transform.position - position);
     // direction :cam to mesh
-    vec3 v = normalize(cameraPosition - position);
+    vec3 V = normalize(cameraPosition - position);
     // direction :reflection
-    vec3 r = normalize(reflect(-l, n));
+    vec3 R = normalize(reflect(-L, N));
     // for Blinn-Phong lighting
-    vec3 halfwayVec = normalize(v + l);
+    vec3 H = normalize(V + L);
 
     float ambient = light.lightType == AMBIENT ? 1.0 : 0.1;
     float fadeOut = light.lightType == POINT
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
     // spotlight
-    float angle = clamp(dot(direction, l), 0.0, 1.0);
+    float angle = clamp(dot(direction, L), 0.0, 1.0);
     float spot = light.lightType == SPOT
                      ? clamp((angle - light.outerCone) /
                                  (light.innerCone - light.outerCone),
@@ -220,14 +258,14 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                      : 1.0;
 
     // diffuse lighting
-    float dotLN = max(dot(halfwayVec, n), 0.0);
+    float dotLN = max(dot(H, N), 0.0);
     vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
 
     // specular lighting
-    float dotRV = max(dot(r, v), 0.0);
+    float dotRV = max(dot(R, V), 0.0);
     // ambient light not specular
     vec3 specular =
         vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0))
@@ -238,11 +276,54 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     if (light.lightType == POINT || light.lightType == SPOT)
         shadow = pointShadow(position, light);
     else if (light.lightType == DIRECTION)
-        shadow = directionShadow(position, n, light);
+        shadow = directionShadow(position, N, light);
 
     diffuse *= 1 - shadow;
     specular *= 1 - shadow;
     outScreenVolume += vec4(specular * light.power, 1.0);
+
+
+        // Cook-Torrance BRDF
+
+        float roughness=deferredInfo.ARM.y;
+        float metallic=deferredInfo.ARM.z;
+        metallic=0;
+        roughness=light.power;
+        vec3 albedo=deferredInfo.albedo;
+        vec3 F0 = vec3(0.04); 
+        F0 = mix(F0, albedo, metallic);
+
+        // reflectance equation
+        vec3 Lo = vec3(0.0);
+        float NDF = DistributionGGX(N, L, roughness);   
+        float G   = GeometrySmith(N, V, L,roughness);      
+        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
+           
+        vec3 numerator    = NDF * G * F; 
+        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001; // + 0.0001 to prevent divide by zero
+        // vec3 specular = numerator / denominator;
+        // specular = numerator / denominator;
+        specular = numerator;
+        
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metallic;	  
+
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);        
+
+        // add to outgoing radiance Lo
+        float radiance=fadeOut;
+        Lo += (kD * albedo / PI + specular)*  NdotL;
+        // return vec4(N,1.0);
+        return vec4(Lo,shadow);
 
     return vec4((diffuse + specular) * light.lightColor * light.power *
                     fadeOut * spot,
