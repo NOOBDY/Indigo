@@ -288,6 +288,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     vec3 specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
     vec3 diffuse=(kD+ambient) * albedo / PI;
     vec3 Lo=(diffuse + specular)* dotNL*light.lightColor*(1-shadow)*light.power*fadeOut*spot;
+    outScreenVolume.xyz+=specular;
     return vec4(Lo,1);
 }
 vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,

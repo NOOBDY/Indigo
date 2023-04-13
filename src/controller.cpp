@@ -45,13 +45,16 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
 
     auto hasARM = model->GetARMTexture() != nullptr;
     auto useARM = model->GetUseARMTexture() && hasARM;
+    float AO = model->GetAO();
+    float roughness = model->GetRoughness();
+    float metallic = model->GetMetallic();
 
     auto castShadow = model->GetCastShadows();
     auto visible = model->GetVisible();
 
     ImGui::Begin("Model Attributes");
     ImGui::SetWindowPos({10, 115});
-    ImGui::SetWindowSize({270, 170});
+    ImGui::SetWindowSize({270, 270});
 
     ImGui::BeginDisabled(!hasAlbedo);
     ImGui::Checkbox("Albedo", &useAlbedo);
@@ -80,6 +83,9 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
     ImGui::BeginDisabled(model->GetARMTexture() == nullptr);
     ImGui::Checkbox("ARM", &useARM);
     ImGui::EndDisabled();
+    ImGui::DragFloat("AO", &AO, 0.01, 0, 1, "%.1f");
+    ImGui::DragFloat("roughness", &roughness, 0.01, 0, 1, "%.1f");
+    ImGui::DragFloat("metallic", &metallic, 0.01, 0, 1, "%.1f");
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !hasARM) {
         ImGui::SetTooltip("No ARM texture set");
     }
@@ -92,6 +98,9 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
     model->SetUseNormalTexture(useNormal);
     model->SetUseEmissionTexture(useEmission);
     model->SetUseARMTexture(useARM);
+    model->SetAO(AO);
+    model->SetRoughness(roughness);
+    model->SetMetallic(metallic);
     model->SetCastShadows(castShadow);
     model->SetVisible(visible);
 }
