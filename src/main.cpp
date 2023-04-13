@@ -46,70 +46,30 @@ int main(int argc, char **argv) {
 
     // begin model 1
     try {
-        auto mesh0 = std::make_shared<Model>(
-            "Model 1 Mesh 0",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 0),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
+        Mesh mesh;
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 0));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 1));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 2));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 3));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 4));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 5));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 6));
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/main.glb", 7));
 
-        auto mesh1 = std::make_shared<Model>(
-            "Model 1 Mesh 1",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 1),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        auto mesh2 = std::make_shared<Model>(
-            "Model 1 Mesh 2",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 2),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        auto mesh3 = std::make_shared<Model>(
-            "Model 1 Mesh 3",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 3),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        auto mesh4 = std::make_shared<Model>(
-            "Model 1 Mesh 4",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 4),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        auto mesh5 = std::make_shared<Model>(
-            "Model 1 Mesh 5",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 5),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        auto mesh6 = std::make_shared<Model>(
-            "Model 1 Mesh 6",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 6),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        auto mesh7 = std::make_shared<Model>(
-            "Model 1 Mesh 7",
-            Importer::LoadFile("../assets/models/little_city/main.glb", 7),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
-
-        scene.AddModel(mesh0);
-        scene.AddModel(mesh1);
-        scene.AddModel(mesh2);
-        scene.AddModel(mesh3);
-        scene.AddModel(mesh4);
-        scene.AddModel(mesh5);
-        scene.AddModel(mesh6);
-        scene.AddModel(mesh7);
+        scene.AddModel(std::make_shared<Model>( //
+            "Model 1",                          //
+            mesh,                               //
+            Transform({0, 0, 0},                //
+                      {180, 180, 180},          //
+                      {1, 1, 1})));
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -119,14 +79,16 @@ int main(int argc, char **argv) {
     std::shared_ptr<Model> interior;
 
     try {
-        interior = std::make_shared<Model>(
-            "Model 2",
-            Importer::LoadFile("../assets/models/little_city/interior.glb"),
-            Transform({0, 0, 0},       //
-                      {180, 180, 180}, //
-                      {1, 1, 1}));
+        Mesh mesh;
+        mesh.push_back(
+            Importer::LoadFile("../assets/models/little_city/interior.glb"));
 
-        scene.AddModel(interior);
+        scene.AddModel(std::make_shared<Model>( //
+            "Model 2",                          //
+            mesh,                               //
+            Transform({0, 0, 0},                //
+                      {180, 180, 180},          //
+                      {1, 1, 1})));
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }

@@ -6,13 +6,13 @@
 Light::Light(std::string label, Type type, Transform transform, float power,
              float radius, glm::vec3 lightColor, bool castShadow)
     : SceneObject(SceneObject::LIGHT, label, transform),
-      m_VAO(Importer::LoadFile("../assets/models/sphere.obj")), //
-      m_Type(type), m_Color(lightColor),                        //
-      m_Radius(radius), m_Power(power),                         //
-      m_InnerCone(20.0f), m_OuterCone(30.0f),                   //
-      m_NearPlane(1.0f), m_FarPlane(1000.0f),                   //
-      m_CastShadow(castShadow),                                 //
-      m_ShadowSize(1024),                                       //
+      m_Mesh({Importer::LoadFile("../assets/models/sphere.obj")}), //
+      m_Type(type), m_Color(lightColor),                           //
+      m_Radius(radius), m_Power(power),                            //
+      m_InnerCone(20.0f), m_OuterCone(30.0f),                      //
+      m_NearPlane(1.0f), m_FarPlane(1000.0f),                      //
+      m_CastShadow(castShadow),                                    //
+      m_ShadowSize(1024),                                          //
       m_ShadowTexture(nullptr) {
 
     if (m_CastShadow) {
@@ -22,9 +22,9 @@ Light::Light(std::string label, Type type, Transform transform, float power,
 }
 
 void Light::Draw() const {
-    m_VAO->Bind();
+    m_Mesh[0]->Bind();
 
-    Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
+    Renderer::Draw(m_Mesh[0]->GetIndexBuffer()->GetCount());
 }
 
 void Light::SetLightType(Type lightType) {
