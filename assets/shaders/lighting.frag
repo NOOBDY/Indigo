@@ -38,8 +38,8 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
-    float pad1;
-    float pad2;
+    int castShadow;
+    int useColorTexture;
 };
 
 struct MaterialData {
@@ -190,7 +190,12 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
 
     return shadow;
 }
-//diffuse
+vec2 panoramaUV(vec3 nuv) {
+    vec2 uv = vec2(0.0);
+    uv.x = 0.5 + atan(nuv.x, nuv.z) / (2 * PI);
+    uv.y = 0.5 + asin(nuv.y) / (PI);
+    return uv;
+}
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness*roughness;

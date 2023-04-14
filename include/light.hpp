@@ -104,7 +104,7 @@ struct LightData {
     float farPlane;
     // lazy to fix padding issues
     int castShadow;
-    float pad1;
+    int useColorTexture;
 };
 
 #endif

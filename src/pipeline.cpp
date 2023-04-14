@@ -329,6 +329,8 @@ void Pipeline::CompositorPass(Scene scene) {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
+    scene.GetEnviomentMap()->Bind(REFLECT);
+
     m_Screen.Bind();
     PipelineData pipelineInfo =
         PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};

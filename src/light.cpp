@@ -106,7 +106,7 @@ LightData Light::GetLightData() {
     data.farPlane = m_FarPlane;
     // lazy to fix padding issues
     data.castShadow = int(m_CastShadow);
-    data.pad1 = 0.0;
+    data.useColorTexture = int(false);
 
     return data;
 }

@@ -127,6 +127,7 @@ int main(int argc, char **argv) {
         // model->SetVisible(false);
         // model->SetCastShadows(false);
     }
+    scene.SetEnvironmentMap(reflectMap);
 
     do {
         auto &io = ImGui::GetIO();

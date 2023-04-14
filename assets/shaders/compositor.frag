@@ -11,6 +11,8 @@ uniform sampler2D screenARM;
 uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
+uniform sampler2D reflectMap;
+
 uniform sampler2D directionShadowMap;
 uniform samplerCube pointShadowMap;
 
@@ -22,6 +24,33 @@ struct PipelineData {
     float time;
     float detiaTime;
     int selectPass;
+};
+struct TransformData {
+    mat4 transform;
+
+    vec3 position;
+    float pad1;
+
+    vec3 rotation;
+    float pad2;
+
+    vec3 scale;
+    float pad3;
+
+    vec3 direction;
+    float pad4;
+};
+struct CameraData {
+    TransformData transform;
+    mat4 projection;
+    mat4 view;
+    float nearPlane;
+    float farPlane;
+    float aspectRatio;
+    float FOV;
+};
+layout(std140, binding = 3) uniform Camera {
+    CameraData cameraInfo;
 };
 layout(std140, binding = 4) uniform PipelineUniform{
     PipelineData pipelineInfo;
@@ -79,6 +108,12 @@ float idBorder(sampler2D idPass,int id) {
     }
     return abs(v);
 }
+vec2 panoramaUV(vec3 nuv) {
+    vec2 uv = vec2(0.0);
+    uv.x = 0.5 + atan(nuv.x, nuv.z) / (2 * PI);
+    uv.y = 0.5 + asin(nuv.y) / (PI);
+    return uv;
+}
 vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
     vec3 nuv = vec3(0.0);
     uv = (uv - vec2(0.5)) * 2 * PI;
@@ -116,14 +151,23 @@ vec4 displayPass(int i){
     }
 }
 
+vec3 viewDirection(mat4 projection,mat4 view,vec2 uv) {
+    mat4 invert_view_projection = inverse(projection *view);
+    float ViewZ;
+    ViewZ = 0.5 * 2.0 - 1.0;
+    // way1
+    vec4 sPos = vec4(uv * 2.0 - 1.0, 1, 1.0);
+    vec4 worldPosition = invert_view_projection * sPos;
+    return normalize(worldPosition.xyz);
+}
 void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
-    // if(UV.x<0.5)
-    //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));    for(int i = 0; i < 9; i++) color +=;
+
+    vec3 dir=viewDirection(cameraInfo.projection,cameraInfo.view,UV);
+
+    col.xyz=mix(col.xyz,texture(reflectMap,panoramaUV(dir)).xyz,float(texture(screenID,UV).w==1.0));
 
     col.xyz=mix(col.xyz,vec3(0,1,0),idBorder(screenID,pipelineInfo.ID));
 
-
-    // col = cube_uv(UV);
     FragColor = vec4(col.xyz, 1.0);
 }
