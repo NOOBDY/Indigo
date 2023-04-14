@@ -71,6 +71,7 @@ public:
 
     float GetTextureSize() const { return m_ShadowSize; };
     bool GetCastShadow() const { return m_CastShadow; };
+    bool GetUseColorTexture() const { return m_useColorTexture; };
     std::shared_ptr<Texture> GetShadowTexture() const {
         return m_ShadowTexture;
     };
@@ -110,7 +111,7 @@ struct LightData {
     float radius;
 
     float power;
-    Light::Type type;
+    int type;
 
     float innerCone;
     float outerCone;

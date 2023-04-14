@@ -89,7 +89,7 @@ LightData Light::GetLightData() {
     data.radius = m_Radius;
 
     data.power = m_Power;
-    data.type = m_Type;
+    data.type = int(m_Type);
 
     data.innerCone = m_InnerCone;
     data.outerCone = m_OuterCone;

@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
             "Light 1",                                           //
-            Light::AMBIENT,                                      //
+            Light::POINT,                                        //
             Transform({50, 100, 200},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),

@@ -232,6 +232,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}  
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
     vec3 position = deferredInfo.position;
@@ -250,7 +254,8 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // for Blinn-Phong lighting
     vec3 H = normalize(V + L);
 
-    float ambient = light.lightType == AMBIENT ? 1.0 : 0.05;
+    vec3 lightColor=light.useColorTexture==1?texture(reflectMap,panoramaUV(-L)).rgb:light.lightColor;
+    vec3 ambient = light.lightType == AMBIENT ? texture(reflectMap,panoramaUV(R)).rgb : vec3(0.05);
     float fadeOut = light.lightType == POINT
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
@@ -266,6 +271,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     float dotNL = max(dot(N, L), 0.0);
     float dotNV = max(dot(N, V), 0.0);
     float dotRV = max(dot(R, V), 0.0);
+    float dotHV = max(dot(H, V), 0.0);
     //shadow
     float shadow = 0;
     if (light.lightType == POINT || light.lightType == SPOT)
@@ -278,22 +284,39 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     // Cook-Torrance BRDF
 
+    vec3 albedo=deferredInfo.albedo;
+    float ao=deferredInfo.ARM.x;
     float roughness=deferredInfo.ARM.y;
     float metallic=deferredInfo.ARM.z;
-    vec3 albedo=deferredInfo.albedo;
+
+
     vec3  F0 = mix (vec3 (0.04), albedo, metallic);
     float NDF = DistributionGGX(N, H, roughness);
     float G   = GeometrySmith(N, V, L, roughness);
-    vec3  F   = fresnelSchlick(max(dot(H, V), 0.0), F0 );
+    vec3  F   = fresnelSchlick( dotHV, F0 );
     vec3  kD  = vec3(1.0) - F;
     kD *= 1.0 - metallic;	  
     
     vec3  numerator   = NDF * G * F;
     float denominator = 4.0 * max(dotNV, 0.0) *dotNL;
     vec3 specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
-    vec3 diffuse=(kD+ambient) * albedo / PI;
-    vec3 Lo=(diffuse + specular)* dotNL*light.lightColor*(1-shadow)*light.power*fadeOut*spot;
+    vec3 diffuse= albedo;
+    vec3 Lo;
+    if(light.lightType==AMBIENT)
+        Lo=(kD*ambient)*ao*light.power*fadeOut;
+    else
+        Lo=(kD *diffuse / PI + specular)* dotNL*lightColor*(1-shadow)*light.power*fadeOut*spot;
     outScreenVolume.xyz+=specular;
+
+    // vec3 F = fresnelSchlickRoughness(dotNV, F0, roughness);
+    // vec3 kD = vec3(1.0) - F;
+    // kD *= 1.0 - metallic;	
+    // const float MAX_REFLECTION_LOD = 4.0;
+    // vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
+    // vec2 brdf  = texture(brdfLUT, vec2(dotNV, roughness)).rg;
+    // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
+
+    // vec3 ambient = (kD * diffuse + specular) * ao;
     return vec4(Lo,1);
 }
 vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,

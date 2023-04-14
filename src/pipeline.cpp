@@ -290,15 +290,18 @@ void Pipeline::LightPass(Scene scene) {
     m_Light.Validate();
 
     for (const auto &light : lights) {
-        if (!light->GetCastShadow())
-            continue;
 
-        if (light->GetType() == Light::POINT ||
-            light->GetType() == Light::SPOT) {
-            light->GetShadowTexture()->Bind(POINT_SHADOW);
+        if (light->GetCastShadow()) {
+            if (light->GetType() == Light::POINT ||
+                light->GetType() == Light::SPOT) {
+                light->GetShadowTexture()->Bind(POINT_SHADOW);
 
-        } else if (light->GetType() == Light::DIRECTION)
-            light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
+            } else if (light->GetType() == Light::DIRECTION)
+                light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
+        }
+
+        if (light->GetUseColorTexture() && light->GetColorTexture())
+            light->GetColorTexture()->Bind(REFLECT);
 
         LightData lightInfo = light->GetLightData();
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
