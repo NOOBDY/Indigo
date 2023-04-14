@@ -6,14 +6,14 @@
 Light::Light(std::string label, Type type, Transform transform, float power,
              float radius, glm::vec3 lightColor, bool castShadow)
     : SceneObject(SceneObject::LIGHT, label, transform),
-      m_VAO(Importer::LoadFile("../assets/models/sphere.obj")), //
-      m_Type(type), m_Color(lightColor),                        //
-      m_Radius(radius), m_Power(power),                         //
-      m_InnerCone(20.0f), m_OuterCone(30.0f),                   //
-      m_NearPlane(1.0f), m_FarPlane(1000.0f),                   //
-      m_CastShadow(castShadow),                                 //
-      m_ShadowSize(1024),                                       //
-      m_ShadowTexture(nullptr) {
+      m_VAO(Importer::LoadFile("../assets/models/sphere.obj")),        //
+      m_ShadowTexture(nullptr), m_ColorTexture(nullptr), m_Type(type), //
+      m_Color(lightColor), m_Radius(radius),                           //
+      m_Power(power), m_InnerCone(20.0f),                              //
+      m_OuterCone(30.0f), m_NearPlane(1.0f),                           //
+      m_FarPlane(1000.0f),                                             //
+      m_CastShadow(castShadow),                                        //
+      m_ShadowSize(1024), m_useColorTexture(false) {
 
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(
@@ -106,7 +106,7 @@ LightData Light::GetLightData() {
     data.farPlane = m_FarPlane;
     // lazy to fix padding issues
     data.castShadow = int(m_CastShadow);
-    data.useColorTexture = int(false);
+    data.useColorTexture = int(m_useColorTexture);
 
     return data;
 }

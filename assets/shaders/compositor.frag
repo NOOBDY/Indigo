@@ -114,7 +114,7 @@ vec2 panoramaUV(vec3 nuv) {
     uv.y = 0.5 + asin(nuv.y) / (PI);
     return uv;
 }
-vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
+vec3 cubeUV(samplerCube sampleTexture, vec2 uv) {
     vec3 nuv = vec3(0.0);
     uv = (uv - vec2(0.5)) * 2 * PI;
 
