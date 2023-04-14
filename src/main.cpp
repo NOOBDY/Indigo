@@ -39,71 +39,82 @@ int main(int argc, char **argv) {
 
     pipeline.Init();
 
-    std::shared_ptr<Camera> mainCamera =
-        std::make_shared<Camera>(45.0f, window.GetAspectRatio());
-
-    Scene scene(mainCamera);
-
-    // begin model 1
-    try {
-        Mesh mesh;
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 0));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 1));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 2));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 3));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 4));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 5));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 6));
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/main.glb", 7));
-
-        scene.AddModel(std::make_shared<Model>( //
-            "Model 1",                          //
-            mesh,                               //
-            Transform({0, 0, 0},                //
-                      {180, 180, 180},          //
-                      {1, 1, 1})));
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-    // end model 1
-
-    // begin model 2
-    std::shared_ptr<Model> interior;
-
-    try {
-        Mesh mesh;
-        mesh.push_back(
-            Importer::LoadFile("../assets/models/little_city/interior.glb"));
-
-        scene.AddModel(std::make_shared<Model>( //
-            "Model 2",                          //
-            mesh,                               //
-            Transform({0, 0, 0},                //
-                      {180, 180, 180},          //
-                      {1, 1, 1})));
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-    // end model 2
-
     std::shared_ptr<Texture> texMainColor = std::make_shared<Texture>(
         "../assets/textures/little_city/main_color.jpg");
     std::shared_ptr<Texture> texInterior = std::make_shared<Texture>(
         "../assets/textures/little_city/interior.jpg");
-    std::shared_ptr<Texture> reflectMap =
-        std::make_shared<Texture>("../assets/textures/vestibule_2k.hdr");
-    std::shared_ptr<Texture> wallNormalMap = std::make_shared<Texture>(
-        "../assets/textures/T_Wall_Damaged_2x1_A_N.png");
-    std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
-        "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
+    std::shared_ptr<Texture> texMisc =
+        std::make_shared<Texture>("../assets/textures/little_city/misc.png");
+
+    std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
+        45.0f, window.GetAspectRatio(), 100.0f, 1500.0f);
+
+    Scene scene(mainCamera);
+
+    try {
+        auto model = std::make_shared<Model>(                            //
+            "Main",                                                      //
+            Importer::LoadFile("../assets/models/little_city/main.glb"), //
+            Transform({0, 0, 0},                                         //
+                      {180, 180, 180},                                   //
+                      {1, 1, 1}));
+
+        model->SetAlbedoTexture(texMainColor);
+        model->SetUseAlbedoTexture(true);
+
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    try {
+        auto model = std::make_shared<Model>(                                //
+            "Interior",                                                      //
+            Importer::LoadFile("../assets/models/little_city/interior.glb"), //
+            Transform({0, 0, 0},                                             //
+                      {180, 180, 180},                                       //
+                      {1, 1, 1}));
+
+        model->SetAlbedoTexture(texInterior);
+        model->SetUseAlbedoTexture(true);
+
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    try {
+        auto model = std::make_shared<Model>(                            //
+            "Misc",                                                      //
+            Importer::LoadFile("../assets/models/little_city/misc.glb"), //
+            Transform({0, 0.1, 0},                                       //
+                      {180, 180, 180},                                   //
+                      {1, 1, 1}));
+
+        model->SetAlbedoTexture(texMisc);
+        model->SetUseAlbedoTexture(true);
+
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    try {
+        auto model = std::make_shared<Model>(                               //
+            "Outline",                                                      //
+            Importer::LoadFile("../assets/models/little_city/outline.glb"), //
+            Transform({0, 0, 0},                                            //
+                      {180, 180, 180},                                      //
+                      {1, 1, 1}));
+
+        model->SetAlbedoColor({0, 0, 0});
+        model->SetUseAlbedoTexture(false);
+        model->SetCastShadows(false);
+
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
 
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
@@ -130,16 +141,6 @@ int main(int argc, char **argv) {
         scene.AddLight(light2);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
-    }
-
-    for (const auto &model : scene.GetModels()) {
-        model->SetAlbedoTexture(texMainColor);
-        // model->SetNormalTexture(wallNormalMap);
-        model->SetUseAlbedoTexture(true);
-        // model->SetNormalTexture(wallNormalMap);
-        // model->SetUseNormalTexture(true);
-        // model->SetVisible(false);
-        // model->SetCastShadows(false);
     }
 
     do {
@@ -172,6 +173,7 @@ int main(int argc, char **argv) {
         }
 
         activeCamera->UpdateView();
+
 #pragma region GUI
         Renderer::DisableDepthTest();
         ImGui_ImplOpenGL3_NewFrame();
