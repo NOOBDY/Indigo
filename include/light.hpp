@@ -67,7 +67,7 @@ public:
     ModelData GetModelData();
 
 private:
-    std::shared_ptr<VertexArray> m_VAO;
+    Mesh m_Mesh;
     Type m_Type;
 
     glm::vec3 m_Color;

@@ -4,9 +4,8 @@
 
 #include "renderer.hpp"
 
-Model::Model(std::string label, std::shared_ptr<VertexArray> vao,
-             Transform transform)
-    : SceneObject(SceneObject::MODEL, label, transform), m_VAO(vao) {
+Model::Model(std::string label, Mesh mesh, Transform transform)
+    : SceneObject(SceneObject::MODEL, label, transform), m_Mesh(mesh) {
     LOG_TRACE("Creating Model");
 
     m_UseAlbedoTexture = false;
@@ -26,9 +25,10 @@ Model::~Model() {
 }
 
 void Model::Draw() const {
-    m_VAO->Bind();
-
-    Renderer::Draw(m_VAO->GetIndexBuffer()->GetCount());
+    for (const auto &vao : m_Mesh) {
+        vao->Bind();
+        Renderer::Draw(vao->GetIndexBuffer()->GetCount());
+    }
 }
 
 ModelData Model::GetModelData() {
