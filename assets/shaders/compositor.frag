@@ -12,6 +12,9 @@ uniform sampler2D screenARM;
 uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
+uniform sampler2D directionShadowMap;
+uniform samplerCube pointShadowMap;
+
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
 
@@ -53,7 +56,10 @@ vec3 cube_uv(samplerCube sampleTexture, vec2 uv) {
 void main() {
     vec4 col = texture(screenLight, UV).rgba;
     // col+=gaussianBlur(screenEmission,0.5, UV);
+    // if(UV.x<0.5)
+    //     col=texture(screenVolume,(UV*vec2(2.0,1.0)));
 
+    // col=texture(screen,UV).rgba;
     col.xyz += gaussianBlur(screenVolume, 0.5, UV);
 
     // screenID.a = model id ;model start from 1 and need to

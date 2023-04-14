@@ -3,9 +3,11 @@
 #include "renderer.hpp"
 
 Pipeline::Pipeline(int width, int height)
-    : m_PointLightShadow("../assets/shaders/shadow.vert",
+    : m_PointLightShadow("../assets/shaders/shadow_point.vert",
                          "../assets/shaders/shadow_point.geom",
-                         "../assets/shaders/shadow.frag"),
+                         "../assets/shaders/shadow_point.frag"),
+      m_DirectionLightShadow("../assets/shaders/base_pass.vert",
+                             "../assets/shaders/shadow_direction.frag"),
       m_Basic("../assets/shaders/base_pass.vert",
               "../assets/shaders/base_pass.frag"),
       m_Light("../assets/shaders/frame_screen.vert",
@@ -166,9 +168,12 @@ void Pipeline::ShadowPass(Scene scene) {
         if (!light->GetCastShadow())
             continue;
 
-        if (light->GetType() == Light::POINT || light->GetType() == Light::SPOT)
-            m_PointLightShadow.Bind();
-        if (light->GetType() == Light::DIRECTION)
+        if (light->GetType() == Light::DIRECTION) {
+            m_DirectionLightShadow.Bind();
+            lightMVP.viewProjection = light->GetLightOrth();
+
+        } else if (light->GetType() == Light::POINT ||
+                   light->GetType() == Light::SPOT)
             m_PointLightShadow.Bind();
 
         lightInfo = light->GetLightData();
@@ -178,10 +183,8 @@ void Pipeline::ShadowPass(Scene scene) {
                                   GL_DEPTH_ATTACHMENT);
         m_ShadowFBO.Bind();
         Renderer::Clear();
-
         m_PointLightShadow.Validate();
 
-        // not render light ball
         for (const auto &model : scene.GetModels()) {
             if (!model->GetCastShadows())
                 continue;
@@ -242,6 +245,7 @@ void Pipeline::BasePass(Scene scene) {
         model->Draw();
     }
 
+    // mesh of light
     for (const auto &light : scene.GetLights()) {
         modelMVP.model = light->GetTransform().GetTransformMatrix();
         modelMVP.viewProjection = scene.GetActiveCamera()->GetViewProjection();
@@ -300,6 +304,8 @@ void Pipeline::LightPass(Scene scene) {
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         // shader need to delete light type to select use cube for image 2d
         m_Screen.Bind();
+        // make sure the texture have write before next draw
+        glTextureBarrier();
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
 
