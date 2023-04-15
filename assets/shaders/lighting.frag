@@ -165,7 +165,7 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     // keep the shadow at 0.0 when outside the far_plane region of the light's
     // frustum.
     if (projCoords.z > 1.0)
-        return  0.0;
+        return 0.0;
     // get closest depth value from light's perspective (using [0,1] range
     // fragPosLight as coords)
     float closestDepth = texture(directionShadowMap, projCoords.xy).r;
@@ -196,51 +196,47 @@ vec2 panoramaUV(vec3 nuv) {
     uv.y = 0.5 + asin(nuv.y) / (PI);
     return uv;
 }
-float DistributionGGX(float dotNH, float roughness)
-{
-    float a = roughness*roughness;
-    float a2 = a*a;
-    float NdotH2 = pow(dotNH,2.0);
-    float nom   = a2;
+float DistributionGGX(float dotNH, float roughness) {
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH2 = pow(dotNH, 2.0);
+    float nom = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
     return nom / denom;
 }
-float GeometrySchlickGGX(float NdotV, float roughness)
-{
+float GeometrySchlickGGX(float NdotV, float roughness) {
     float r = (roughness + 1.0);
-    float k = (r*r) / 8.0;
+    float k = (r * r) / 8.0;
 
-    float nom   = NdotV;
+    float nom = NdotV;
     float denom = NdotV * (1.0 - k) + k;
 
     return nom / denom;
 }
-float GeometrySmith(float dotNV,float dotNL, float roughness)
-{
+float GeometrySmith(float dotNV, float dotNL, float roughness) {
     float ggx2 = GeometrySchlickGGX(dotNV, roughness);
     float ggx1 = GeometrySchlickGGX(dotNL, roughness);
     return ggx1 * ggx2;
 }
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
-{
+vec3 fresnelSchlick(float cosTheta, vec3 F0) {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
-vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
-{
-    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
-}  
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
+                    pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
     vec3 position = deferredInfo.position;
     // mesh normal
     vec3 N = deferredInfo.normal;
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
-    vec3 direction =normalize( light.transform.direction);
+    vec3 direction = normalize(light.transform.direction);
     // direction :light to mesh
     vec3 L = light.lightType == DIRECTION
-                 ? direction  
+                 ? direction
                  : normalize(light.transform.position - position);
     // direction :cam to mesh
     vec3 V = normalize(cameraPosition - position);
@@ -249,24 +245,26 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // for Blinn-Phong lighting
     vec3 H = normalize(V + L);
 
-    vec3 lightColor=light.useColorTexture==1?texture(reflectMap,panoramaUV(-L)).rgb:light.lightColor;
-    float fadeOut = light.lightType !=DIRECTION 
+    vec3 lightColor = light.useColorTexture == 1
+                          ? texture(reflectMap, panoramaUV(-L)).rgb
+                          : light.lightColor;
+    float fadeOut = light.lightType != DIRECTION
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
     // spotlight
-    float theta     = dot(L, normalize(direction));
-    float epsilon   = cos(radians(light.innerCone))- cos(radians(light.outerCone));
-    float intensity = clamp((theta - cos(radians(light.outerCone))) / epsilon, 0.0, 1.0);    
-    float spot = light.lightType == SPOT
-                     ? intensity
-                     : 1.0;
+    float theta = dot(L, normalize(direction));
+    float epsilon =
+        cos(radians(light.innerCone)) - cos(radians(light.outerCone));
+    float intensity =
+        clamp((theta - cos(radians(light.outerCone))) / epsilon, 0.0, 1.0);
+    float spot = light.lightType == SPOT ? intensity : 1.0;
 
     // diffuse lighting
     float dotNL = max(dot(N, L), 0.0);
     float dotNV = max(dot(N, V), 0.0);
     float dotNH = max(dot(N, H), 0.0);
     float dotHV = max(dot(H, V), 0.0);
-    //shadow
+    // shadow
     float shadow = 0;
     if (light.lightType == POINT || light.lightType == SPOT)
         shadow = pointShadow(position, light);
@@ -278,40 +276,42 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
     // Cook-Torrance BRDF
 
-    vec3 albedo=deferredInfo.albedo;
-    float ao=deferredInfo.ARM.x;
-    float roughness=deferredInfo.ARM.y;
-    float metallic=deferredInfo.ARM.z;
+    vec3 albedo = deferredInfo.albedo;
+    float ao = deferredInfo.ARM.x;
+    float roughness = deferredInfo.ARM.y;
+    float metallic = deferredInfo.ARM.z;
 
-
-    vec3  F0 = mix (vec3 (0.04), albedo, metallic);
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
     float NDF = DistributionGGX(dotNH, roughness);
-    float G   = GeometrySmith(dotNV,dotNL, roughness);
-    vec3  F   = light.lightType==AMBIENT ?fresnelSchlickRoughness(dotNV, F0, roughness):fresnelSchlick( dotHV, F0 );
-    vec3  kD  = vec3(1.0) - F;
-    kD *= 1.0 - metallic;	  
-    
+    float G = GeometrySmith(dotNV, dotNL, roughness);
+    vec3 F = light.lightType == AMBIENT
+                 ? fresnelSchlickRoughness(dotNV, F0, roughness)
+                 : fresnelSchlick(dotHV, F0);
+    vec3 kD = vec3(1.0) - F;
+    kD *= 1.0 - metallic;
+
     vec3 Lo;
-    if(light.lightType==AMBIENT){
-        if(light.useColorTexture!=1)
-            Lo=albedo*lightColor;
-        else{
-            vec3 diffuse= albedo*texture(reflectMap,panoramaUV(N)).xyz;
-            vec3 specular =texture(reflectMap,panoramaUV(R)).xyz* (F);
-            Lo=(kD*diffuse+specular)*ao*light.power*fadeOut;
-            outScreenVolume.xyz+=specular*ao*light.power*fadeOut;
+    if (light.lightType == AMBIENT) {
+        if (light.useColorTexture != 1)
+            Lo = albedo * lightColor;
+        else {
+            vec3 diffuse = albedo * texture(reflectMap, panoramaUV(N)).xyz;
+            vec3 specular = texture(reflectMap, panoramaUV(R)).xyz * (F);
+            Lo = (kD * diffuse + specular) * ao * light.power * fadeOut;
+            outScreenVolume.xyz += specular * ao * light.power * fadeOut;
         }
 
+    } else {
+        vec3 numerator = NDF * G * F;
+        float denominator = 4.0 * max(dotNV, 0.0) * dotNL;
+        vec3 diffuse = albedo;
+        vec3 specular = numerator / max(denominator, 0.001) *
+                        float(deferredInfo.ID.a != 1.0);
+        Lo = (kD * diffuse / PI + specular) * dotNL * lightColor *
+             (1 - shadow) * light.power * fadeOut * spot;
+        outScreenVolume.xyz += specular;
     }
-    else{
-        vec3  numerator   = NDF * G * F;
-        float denominator = 4.0 * max(dotNV, 0.0) *dotNL;
-        vec3 diffuse= albedo;
-        vec3 specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
-        Lo=(kD *diffuse / PI + specular)* dotNL*lightColor*(1-shadow)*light.power*fadeOut*spot;
-        outScreenVolume.xyz+=specular;
-    }
-    return vec4(Lo,1);
+    return vec4(Lo, 1);
 }
 vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
                 LightData lights[LIGHT_NUMBER]) {
@@ -334,7 +334,7 @@ void main() {
 
     DeferredData baseInfo;
     baseInfo.albedo = texture(screenAlbedo, UV).rgb;
-    baseInfo.normal = texture(screenNormal, UV).rgb*2.0-1.0;
+    baseInfo.normal = texture(screenNormal, UV).rgb * 2.0 - 1.0;
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;

@@ -52,7 +52,7 @@ struct CameraData {
 layout(std140, binding = 3) uniform Camera {
     CameraData cameraInfo;
 };
-layout(std140, binding = 4) uniform PipelineUniform{
+layout(std140, binding = 4) uniform PipelineUniform {
     PipelineData pipelineInfo;
 };
 #define PI 3.1415926
@@ -79,32 +79,34 @@ vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
     }
     return blurColor.xyz / blurColor.w;
 }
-float idBorder(sampler2D idPass,int id) {
-    if(id==-1)return 0.0;
-    const vec2 offset = 1.0 / vec2(textureSize(idPass,0));
-        // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
+float idBorder(sampler2D idPass, int id) {
+    if (id == -1)
+        return 0.0;
+    const vec2 offset = 1.0 / vec2(textureSize(idPass, 0));
+    // https://learnopengl-cn.github.io/04%20Advanced%20OpenGL/05%20Framebuffers/
 
-    vec2 offsets[9] = vec2[](vec2(-offset.x, offset.y), // 左上
-    vec2(0.0f, offset.y),     // 正上
-    vec2(offset.x, offset.y),   // 右上
-    vec2(-offset.x, 0.0f),    // 左
-    vec2(0.0f, 0.0f),       // 中
-    vec2(offset.x, 0.0f),     // 右
-    vec2(-offset.x, -offset.y), // 左下
-    vec2(0.0f, -offset.y),    // 正下
-    vec2(offset.x, -offset.y)   // 右下
+    vec2 offsets[9] = vec2[](vec2(-offset.x, offset.y),  // 左上
+                             vec2(0.0f, offset.y),       // 正上
+                             vec2(offset.x, offset.y),   // 右上
+                             vec2(-offset.x, 0.0f),      // 左
+                             vec2(0.0f, 0.0f),           // 中
+                             vec2(offset.x, 0.0f),       // 右
+                             vec2(-offset.x, -offset.y), // 左下
+                             vec2(0.0f, -offset.y),      // 正下
+                             vec2(offset.x, -offset.y)   // 右下
     );
 
-        // edge detction
+    // edge detction
     float kernel[9] = float[](-1, -1, -1, -1, 8, -1, -1, -1, -1);
-        // blur
-        // float kernel[9] = float[](1.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 4.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 1.0 / 16);
+    // blur
+    // float kernel[9] = float[](1.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 4.0 /
+    // 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 1.0 / 16);
 
     float sampleTex[9];
-    float v=0;
-    for(int i = 0; i < 9; i++) {
-        sampleTex[i] = float(texture(idPass, UV + offsets[i]).a*255==id);
-        v+= sampleTex[i] * kernel[i];
+    float v = 0;
+    for (int i = 0; i < 9; i++) {
+        sampleTex[i] = float(texture(idPass, UV + offsets[i]).a * 255 == id);
+        v += sampleTex[i] * kernel[i];
     }
     return abs(v);
 }
@@ -123,7 +125,7 @@ vec3 cubeUV(samplerCube sampleTexture, vec2 uv) {
     nuv.y = cos(uv.y);
     return texture(sampleTexture, normalize(nuv)).rgb;
 }
-vec4 displayPass(int i){
+vec4 displayPass(int i) {
     switch (i) {
     case 0:
         return texture(screenAlbedo, UV);
@@ -144,15 +146,16 @@ vec4 displayPass(int i){
     case 9:
         return texture(screenVolume, UV);
     case 12:
-        return texture(screenLight, UV);
-        return texture(screenLight, UV)+vec4(gaussianBlur(screenVolume, 1.0, UV),0.0);
+        // return texture(screenLight, UV);
+        return texture(screenLight, UV) +
+               vec4(gaussianBlur(screenVolume, 1.0, UV), 0.0);
     default:
         return vec4(1);
     }
 }
 
-vec3 viewDirection(mat4 projection,mat4 view,vec2 uv) {
-    mat4 invert_view_projection = inverse(projection *view);
+vec3 viewDirection(mat4 projection, mat4 view, vec2 uv) {
+    mat4 invert_view_projection = inverse(projection * view);
     float ViewZ;
     ViewZ = 0.5 * 2.0 - 1.0;
     // way1
@@ -163,11 +166,12 @@ vec3 viewDirection(mat4 projection,mat4 view,vec2 uv) {
 void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
-    vec3 dir=viewDirection(cameraInfo.projection,cameraInfo.view,UV);
+    vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
 
-    col.xyz=mix(col.xyz,texture(reflectMap,panoramaUV(dir)).xyz,float(texture(screenID,UV).w==1.0));
+    col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
+                  float(texture(screenID, UV).w == 1.0));
 
-    col.xyz=mix(col.xyz,vec3(0,1,0),idBorder(screenID,pipelineInfo.ID));
+    col.xyz = mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
 
     FragColor = vec4(col.xyz, 1.0);
 }
