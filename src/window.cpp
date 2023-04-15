@@ -19,8 +19,8 @@ void GLFWErrorCallback(int, const char *errorMessage) {
  * necessary
  */
 void GLFWScrollCallback(GLFWwindow *window, double offsetX, double offsetY) {
-    ((Window *)glfwGetWindowUserPointer(window))->m_ScrollOffset = {offsetX,
-                                                                    offsetY};
+    static_cast<Window *>(glfwGetWindowUserPointer(window))->m_ScrollOffset = {
+        offsetX, offsetY};
 }
 
 Window::Window(int width, int height, const char *title)

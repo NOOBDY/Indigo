@@ -215,12 +215,12 @@ Texture::Format Texture::Channels2Format(int channel) const {
         return Texture::Format::RGB;
     case 4:
         return Texture::Format::RGBA;
+    default:
+        throw std::runtime_error("Image channel unsupported");
     }
-    LOG_ERROR("image channel {} unsupported", channel);
-    throw;
 }
 
-void Texture::SaveTexture(std::string path) const {
+void Texture::SaveTexture(const std::string &path) const {
     int channelNumber = Format2Channels(m_Format);
     std::vector<unsigned char> pixels = GetTexturePixels();
     stbi_flip_vertically_on_write(1);

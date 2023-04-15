@@ -12,7 +12,7 @@ public:
         LIGHT,
     };
 
-    SceneObject(ObjectType type, std::string label,
+    SceneObject(ObjectType type, const std::string &label,
                 Transform transform = Transform())
         : m_ID(idCount++), m_Label(label), m_ObjectType(type),
           m_Transform(transform) {}

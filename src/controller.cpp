@@ -3,7 +3,7 @@
 #include "log.hpp"
 
 namespace Controller {
-void InitGUI(Window &window) {
+void InitGUI(const Window &window) {
     IMGUI_CHECKVERSION();
     LOG_INFO("ImGui Version: {}", IMGUI_VERSION);
     ImGui::CreateContext();
