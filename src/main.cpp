@@ -96,9 +96,7 @@ int main(int argc, char **argv) {
             Transform({50, 100, 200},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
-            1, 1000, glm::vec3(1.0f), false);
-        light1->SetColorTexture(reflectMap);
-        light1->SetUseColorTexture(true);
+            1, 1000, glm::vec3(1.0f));
         // biger texture size for direaction shadow
         scene.AddLight(light1);
     } catch (std::exception &e) {
@@ -108,7 +106,7 @@ int main(int argc, char **argv) {
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
             "Light 2",                                           //
-            Light::POINT,                                        //
+            Light::DIRECTION,                                    //
             Transform({-300, 300, 0},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
@@ -116,6 +114,22 @@ int main(int argc, char **argv) {
 
         light2->SetShadowSize(2048);
         scene.AddLight(light2);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+    try {
+        std::shared_ptr<Light> light3 = std::make_shared<Light>( //
+            "Light 3",                                           //
+            Light::AMBIENT,                                      //
+            Transform({0.0, 300, 0},                             //
+                      {0, 0, 0},                                 //
+                      {20, 20, 20}),
+            1, 1000, glm::vec3(1.0f), false);
+
+        // light3->SetShadowSize(2048);
+        light3->SetColorTexture(reflectMap);
+        light3->SetUseColorTexture(true);
+        scene.AddLight(light3);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }

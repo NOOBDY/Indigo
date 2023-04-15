@@ -196,13 +196,11 @@ vec2 panoramaUV(vec3 nuv) {
     uv.y = 0.5 + asin(nuv.y) / (PI);
     return uv;
 }
-float DistributionGGX(vec3 N, vec3 H, float roughness)
+float DistributionGGX(float dotNH, float roughness)
 {
     float a = roughness*roughness;
     float a2 = a*a;
-    float NdotH = max(dot(N, H), 0.0);
-    float NdotH2 = NdotH*NdotH;
-
+    float NdotH2 = pow(dotNH,2.0);
     float nom   = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
@@ -219,13 +217,10 @@ float GeometrySchlickGGX(float NdotV, float roughness)
 
     return nom / denom;
 }
-float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+float GeometrySmith(float dotNV,float dotNL, float roughness)
 {
-    float NdotV = max(dot(N, V), 0.0);
-    float NdotL = max(dot(N, L), 0.0);
-    float ggx2 = GeometrySchlickGGX(NdotV, roughness);
-    float ggx1 = GeometrySchlickGGX(NdotL, roughness);
-
+    float ggx2 = GeometrySchlickGGX(dotNV, roughness);
+    float ggx1 = GeometrySchlickGGX(dotNL, roughness);
     return ggx1 * ggx2;
 }
 vec3 fresnelSchlick(float cosTheta, vec3 F0)
@@ -250,13 +245,12 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // direction :cam to mesh
     vec3 V = normalize(cameraPosition - position);
     // direction :reflection
-    vec3 R = normalize(reflect(-L, N));
+    vec3 R = normalize(reflect(-V, N));
     // for Blinn-Phong lighting
     vec3 H = normalize(V + L);
 
     vec3 lightColor=light.useColorTexture==1?texture(reflectMap,panoramaUV(-L)).rgb:light.lightColor;
-    vec3 ambient = light.lightType == AMBIENT ? texture(reflectMap,panoramaUV(R)).rgb : vec3(0.05);
-    float fadeOut = light.lightType == POINT
+    float fadeOut = light.lightType !=DIRECTION 
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
     // spotlight
@@ -270,7 +264,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // diffuse lighting
     float dotNL = max(dot(N, L), 0.0);
     float dotNV = max(dot(N, V), 0.0);
-    float dotRV = max(dot(R, V), 0.0);
+    float dotNH = max(dot(N, H), 0.0);
     float dotHV = max(dot(H, V), 0.0);
     //shadow
     float shadow = 0;
@@ -291,32 +285,32 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
 
 
     vec3  F0 = mix (vec3 (0.04), albedo, metallic);
-    float NDF = DistributionGGX(N, H, roughness);
-    float G   = GeometrySmith(N, V, L, roughness);
-    vec3  F   = fresnelSchlick( dotHV, F0 );
+    float NDF = DistributionGGX(dotNH, roughness);
+    float G   = GeometrySmith(dotNV,dotNL, roughness);
+    vec3  F   = light.lightType==AMBIENT ?fresnelSchlickRoughness(dotNV, F0, roughness):fresnelSchlick( dotHV, F0 );
     vec3  kD  = vec3(1.0) - F;
     kD *= 1.0 - metallic;	  
     
-    vec3  numerator   = NDF * G * F;
-    float denominator = 4.0 * max(dotNV, 0.0) *dotNL;
-    vec3 specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
-    vec3 diffuse= albedo;
     vec3 Lo;
-    if(light.lightType==AMBIENT)
-        Lo=(kD*ambient)*ao*light.power*fadeOut;
-    else
+    if(light.lightType==AMBIENT){
+        if(light.useColorTexture!=1)
+            Lo=albedo*lightColor;
+        else{
+            vec3 diffuse= albedo*texture(reflectMap,panoramaUV(N)).xyz;
+            vec3 specular =texture(reflectMap,panoramaUV(R)).xyz* (F);
+            Lo=(kD*diffuse+specular)*ao*light.power*fadeOut;
+            outScreenVolume.xyz+=specular*ao*light.power*fadeOut;
+        }
+
+    }
+    else{
+        vec3  numerator   = NDF * G * F;
+        float denominator = 4.0 * max(dotNV, 0.0) *dotNL;
+        vec3 diffuse= albedo;
+        vec3 specular = numerator / max(denominator, 0.001)*float(deferredInfo.ID.a!=1.0);  
         Lo=(kD *diffuse / PI + specular)* dotNL*lightColor*(1-shadow)*light.power*fadeOut*spot;
-    outScreenVolume.xyz+=specular;
-
-    // vec3 F = fresnelSchlickRoughness(dotNV, F0, roughness);
-    // vec3 kD = vec3(1.0) - F;
-    // kD *= 1.0 - metallic;	
-    // const float MAX_REFLECTION_LOD = 4.0;
-    // vec3 prefilteredColor = textureLod(prefilterMap, R,  roughness * MAX_REFLECTION_LOD).rgb;    
-    // vec2 brdf  = texture(brdfLUT, vec2(dotNV, roughness)).rg;
-    // vec3 specular = prefilteredColor * (F * brdf.x + brdf.y);
-
-    // vec3 ambient = (kD * diffuse + specular) * ao;
+        outScreenVolume.xyz+=specular;
+    }
     return vec4(Lo,1);
 }
 vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
