@@ -322,7 +322,7 @@ void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Unbind();
 }
 
-void Pipeline::CompositorPass(Scene scene) {
+void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     m_Compositor.Bind();
 
@@ -337,8 +337,8 @@ void Pipeline::CompositorPass(Scene scene) {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
-    if (scene.GetEnviomentMap())
-        scene.GetEnviomentMap()->Bind(REFLECT);
+    if (scene.GetEnvironmentMap())
+        scene.GetEnvironmentMap()->Bind(REFLECT);
 
     m_Screen.Bind();
     PipelineData pipelineInfo =

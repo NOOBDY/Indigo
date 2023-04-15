@@ -38,7 +38,9 @@ public:
     void SetEnvironmentMap(const std::shared_ptr<Texture> map) {
         m_EnvironmentMap = map;
     }
-    std::shared_ptr<Texture> GetEnviomentMap() { return m_EnvironmentMap; }
+    std::shared_ptr<Texture> GetEnvironmentMap() const {
+        return m_EnvironmentMap;
+    }
 
 private:
     unsigned int m_ActiveCameraID;

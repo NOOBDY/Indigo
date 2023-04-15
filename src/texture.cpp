@@ -185,23 +185,16 @@ int Texture::Format2Channels(Format format) const {
     switch (format) {
     case Format::DEPTH:
         return 1;
-        break;
     case Format::R:
         return 1;
-        break;
     case Format::RG:
         return 2;
-        break;
     case Format::RGB:
         return 3;
-        break;
     case Format::RGBA:
         return 4;
-        break;
-
     default:
         throw std::runtime_error("invalid format");
-        break;
     }
 }
 

@@ -44,7 +44,7 @@ public:
         int id;
 
         float time;
-        float detiaTime;
+        float deltaTime;
         int selectPass;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
@@ -60,10 +60,6 @@ public:
     void Init();
 
 private:
-    void ShadowPass(Scene scene);
-    void BasePass(Scene scene);
-    void LightPass(Scene scene);
-    void CompositorPass(Scene scene);
     void ShadowPass(const Scene &scene);
     void BasePass(const Scene &scene);
     void LightPass(const Scene &scene);
