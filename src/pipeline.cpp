@@ -15,6 +15,8 @@ Pipeline::Pipeline(int width, int height)
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN) {
+    m_Passes[LUT] =
+        std::make_shared<Texture>("../assets/textures/brdf_lut.png");
 
     m_Basic.Bind();
     m_Basic.SetInt("albedoMap", ALBEDO);
@@ -39,6 +41,7 @@ Pipeline::Pipeline(int width, int height)
 
     m_Light.SetInt("pointShadowMap", POINT_SHADOW);
     m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
+    m_Light.SetInt("LUT", LUT);
 
     m_Compositor.Bind();
     m_Compositor.SetInt("screenAlbedo", ALBEDO);
@@ -52,6 +55,7 @@ Pipeline::Pipeline(int width, int height)
     m_Compositor.SetInt("reflectMap", REFLECT);
     m_Compositor.SetInt("screenLight", LIGHTING);
     m_Compositor.SetInt("screenVolume", VOLUME);
+    m_Compositor.SetInt("LUT", LUT);
 
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
@@ -286,6 +290,7 @@ void Pipeline::LightPass(Scene scene) {
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
+    m_Passes[LUT]->Bind(LUT);
 
     m_Light.Validate();
 

@@ -19,6 +19,8 @@ uniform samplerCube pointShadowMap;
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
 
+uniform sampler2D LUT; 
+
 struct PipelineData {
     int ID;
     float time;
@@ -63,21 +65,20 @@ vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
         float weight = 1.0 - float(i) / float(MAX_LENGTH);
-        // weight =1.0-smoothstep(1.,float(MAX_LENGTH),float(i)); // smoothstep
-        // way1
         weight = weight * weight * (3.0 - 2.0 * weight); // smoothstep way2
 
         for (int j = 0; j < MAX_ROUND; ++j) {
             float angle = (float(j) / float(MAX_ROUND) + 0.125) * 2.0 * PI;
-            vec2 blurOffset = vec2(cos(angle), sin(angle)) * blurWidth * 0.05;
+            vec2 blurOffset = vec2(cos(angle), sin(angle)) * blurWidth*i/float(MAX_LENGTH) ;
             // screen aspect ratio
-            blurOffset *= vec2(1.0 / 16., 1.0 / 9.0);
+
+            blurOffset*= 1.0 / vec2(textureSize(sampleTexture, 0));
             vec4 sampleColor =
-                texture(sampleTexture, texCoord + blurOffset * float(i));
+                texture(sampleTexture, texCoord + blurOffset);
             blurColor += vec4(sampleColor.rgb, 1.0) * weight;
         }
     }
-    return blurColor.xyz / blurColor.w;
+    return clamp( blurColor.xyz / blurColor.w,0.0,1.0);
 }
 float idBorder(sampler2D idPass, int id) {
     if (id == -1)
@@ -98,9 +99,6 @@ float idBorder(sampler2D idPass, int id) {
 
     // edge detction
     float kernel[9] = float[](-1, -1, -1, -1, 8, -1, -1, -1, -1);
-    // blur
-    // float kernel[9] = float[](1.0 / 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 4.0 /
-    // 16, 2.0 / 16, 1.0 / 16, 2.0 / 16, 1.0 / 16);
 
     float sampleTex[9];
     float v = 0;
@@ -115,15 +113,6 @@ vec2 panoramaUV(vec3 nuv) {
     uv.x = 0.5 + atan(nuv.x, nuv.z) / (2 * PI);
     uv.y = 0.5 + asin(nuv.y) / (PI);
     return uv;
-}
-vec3 cubeUV(samplerCube sampleTexture, vec2 uv) {
-    vec3 nuv = vec3(0.0);
-    uv = (uv - vec2(0.5)) * 2 * PI;
-
-    nuv.x = sin(uv.x);
-    nuv.z = cos(uv.x);
-    nuv.y = cos(uv.y);
-    return texture(sampleTexture, normalize(nuv)).rgb;
 }
 vec4 displayPass(int i) {
     switch (i) {
@@ -145,10 +134,10 @@ vec4 displayPass(int i) {
         return texture(screenLight, UV);
     case 9:
         return texture(screenVolume, UV);
-    case 12:
+    case 13:
         // return texture(screenLight, UV);
         return texture(screenLight, UV) +
-               vec4(gaussianBlur(screenVolume, 1.0, UV), 0.0);
+               vec4(gaussianBlur(screenVolume, 10, UV), 0.0);
     default:
         return vec4(1);
     }
@@ -167,7 +156,7 @@ void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
     vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
-
+    //enviment
     col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
                   float(texture(screenID, UV).w == 1.0));
 

@@ -32,6 +32,7 @@ public:
         // shadow
         POINT_SHADOW, // Must be last because cube map stuff
         DIRECTION_SHADOW,
+        LUT,
 
         SCREEN
     };
