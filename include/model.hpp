@@ -34,8 +34,7 @@ public:
         ROUGHNESS,
         SHADOW, // first non-shadow texture index
     };
-    Model(std::string label, std::shared_ptr<VertexArray> vao,
-          Transform transform = Transform());
+    Model(std::string label, Mesh mesh, Transform transform = Transform());
     ~Model();
 
     void Draw() const;
@@ -49,7 +48,7 @@ public:
     void SetNormalTexture(std::shared_ptr<Texture> normal) {
         m_NormalTexture = normal;
     }
-    void SetARMTexture(std::shared_ptr<Texture> ARM) { m_ARMTexture = ARM; }
+    void SetARMTexture(std::shared_ptr<Texture> arm) { m_ARMTexture = arm; }
 
     void SetAlbedoColor(glm::vec3 albedo) { m_AlbedoColor = albedo; }
     void SetEmissionColor(glm::vec3 emission) { m_EmissionColor = emission; }
@@ -105,7 +104,7 @@ public:
     ModelData GetModelData();
 
 private:
-    std::shared_ptr<VertexArray> m_VAO;
+    Mesh m_Mesh;
 
     std::shared_ptr<Texture> m_AlbedoTexture;
     std::shared_ptr<Texture> m_EmissionTexture;

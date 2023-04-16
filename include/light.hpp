@@ -83,11 +83,11 @@ public:
     ModelData GetModelData();
 
 private:
-    std::shared_ptr<VertexArray> m_VAO;
-    std::shared_ptr<Texture> m_ShadowTexture;
-    std::shared_ptr<Texture> m_ColorTexture;
+    Mesh m_Mesh;
     Type m_Type;
 
+    std::shared_ptr<Texture> m_ShadowTexture;
+    std::shared_ptr<Texture> m_ColorTexture;
     glm::vec3 m_Color;
 
     float m_Radius;

@@ -31,4 +31,6 @@ private:
     std::shared_ptr<IndexBuffer> m_IndexBuffer;
 };
 
+typedef std::vector<std::shared_ptr<VertexArray>> Mesh;
+
 #endif
