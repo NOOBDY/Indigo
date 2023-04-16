@@ -130,7 +130,7 @@ int main(int argc, char **argv) {
 
         // light3->SetShadowSize(2048);
         light3->SetColorTexture(reflectMap);
-        // light3->SetUseColorTexture(true);
+        light3->SetUseColorTexture(true);
         scene.AddLight(light3);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());

@@ -115,8 +115,8 @@ void LightAttributeGUI(std::shared_ptr<Light> light) {
     auto power = light->GetPower();
     auto radius = light->GetRadius();
     auto lightColor = light->GetColor();
-    auto haveColorTexture = light->GetColorTexture() != nullptr;
     auto useColorTexture = light->GetUseColorTexture();
+    // auto haveColorTexture = light->GetColorTexture() != nullptr;
 
     ImGui::Begin("Light Attributes");
     ImGui::SetWindowPos({10, 115});
@@ -126,10 +126,6 @@ void LightAttributeGUI(std::shared_ptr<Light> light) {
     ImGui::ColorEdit3("Light Color", &lightColor[0]);
     ImGui::EndDisabled();
 
-    ImGui::BeginDisabled(!haveColorTexture);
-    ImGui::Checkbox("useColorTexture", &useColorTexture);
-    ImGui::EndDisabled();
-
     ImGui::DragFloat("Power", &power, 0.05f, 0.0f, 10.0f, "%.2f");
     ImGui::DragFloat("Radius", &radius, 5, 1, 1000.0f, "%.1f");
     ImGui::End();
@@ -137,7 +133,6 @@ void LightAttributeGUI(std::shared_ptr<Light> light) {
     light->SetPower(power);
     light->SetRadius(radius);
     light->SetLightColor(lightColor);
-    light->SetUseColorTexture(useColorTexture);
 }
 
 } // namespace Controller

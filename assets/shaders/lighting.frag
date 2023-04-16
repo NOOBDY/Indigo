@@ -102,10 +102,10 @@ uniform sampler2D screenVolume;
 
 uniform sampler2D reflectMap;
 
-uniform sampler2D directionShadowMap; 
+uniform sampler2D directionShadowMap;
 uniform samplerCube pointShadowMap;
 
-uniform sampler2D LUT; 
+uniform sampler2D LUT;
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
 
@@ -289,23 +289,24 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     vec3 F = light.lightType == AMBIENT
                  ? fresnelSchlickRoughness(dotNV, F0, roughness)
                  : fresnelSchlick(dotHV, F0);
-    vec3 kD = (vec3(1.0) - F)*( 1.0 - metallic);
+    vec3 kD = (vec3(1.0) - F) * (1.0 - metallic);
 
     vec3 Lo;
     if (light.lightType == AMBIENT) {
         if (light.useColorTexture != 1)
-            Lo = albedo * lightColor*light.power*ao*fadeOut;
+            Lo = albedo * lightColor * light.power * ao * fadeOut;
         else {
-            vec2 brdf  = texture(LUT,vec2(dotNV)).rg;
+            vec2 brdf = texture(LUT, vec2(dotNV)).rg;
             vec3 diffuse = albedo * texture(reflectMap, panoramaUV(N)).xyz;
-            vec3 specular = texture(reflectMap, panoramaUV(R)).xyz *( F * brdf.x + brdf.y);
+            vec3 specular =
+                texture(reflectMap, panoramaUV(R)).xyz * (F * brdf.x + brdf.y);
             Lo = (kD * diffuse + specular) * ao * light.power * fadeOut;
             outScreenVolume.xyz += specular * ao * light.power * fadeOut;
         }
 
     } else {
         vec3 diffuse = albedo;
-        vec3 specular = NDF * G * F *0.25/ max(dotNV * dotNL, 0.001) *
+        vec3 specular = NDF * G * F * 0.25 / max(dotNV * dotNL, 0.001) *
                         float(deferredInfo.ID.a != 1.0);
         Lo = (kD * diffuse / PI + specular) * dotNL * lightColor *
              (1 - shadow) * light.power * fadeOut * spot;

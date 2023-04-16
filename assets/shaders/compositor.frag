@@ -19,7 +19,7 @@ uniform samplerCube pointShadowMap;
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
 
-uniform sampler2D LUT; 
+uniform sampler2D LUT;
 
 struct PipelineData {
     int ID;
@@ -69,16 +69,16 @@ vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
 
         for (int j = 0; j < MAX_ROUND; ++j) {
             float angle = (float(j) / float(MAX_ROUND) + 0.125) * 2.0 * PI;
-            vec2 blurOffset = vec2(cos(angle), sin(angle)) * blurWidth*i/float(MAX_LENGTH) ;
+            vec2 blurOffset = vec2(cos(angle), sin(angle)) * blurWidth * i /
+                              float(MAX_LENGTH);
             // screen aspect ratio
 
-            blurOffset*= 1.0 / vec2(textureSize(sampleTexture, 0));
-            vec4 sampleColor =
-                texture(sampleTexture, texCoord + blurOffset);
+            blurOffset *= 1.0 / vec2(textureSize(sampleTexture, 0));
+            vec4 sampleColor = texture(sampleTexture, texCoord + blurOffset);
             blurColor += vec4(sampleColor.rgb, 1.0) * weight;
         }
     }
-    return clamp( blurColor.xyz / blurColor.w,0.0,1.0);
+    return clamp(blurColor.xyz / blurColor.w, 0.0, 1.0);
 }
 float idBorder(sampler2D idPass, int id) {
     if (id == -1)
@@ -156,7 +156,7 @@ void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
     vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
-    //enviment
+    // enviment
     col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
                   float(texture(screenID, UV).w == 1.0));
 
