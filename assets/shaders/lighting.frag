@@ -307,7 +307,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     return vec4(Lo, 1);
 }
 vec4 lighting(DeferredData deferredInfo, CameraData cameraInfo,
-                LightData lights[LIGHT_NUMBER]) {
+              LightData lights[LIGHT_NUMBER]) {
     vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
         LightData light = lights[i];
