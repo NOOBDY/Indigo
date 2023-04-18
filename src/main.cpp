@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
         LOG_ERROR("{}", e.what());
     }
 
-    scene.SetEnvironmentMap(reflectMap);
+    // scene.SetEnvironmentMap(reflectMap);
     do {
         auto &io = ImGui::GetIO();
         glm::vec2 delta = window.GetCursorDelta();

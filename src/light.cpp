@@ -7,7 +7,7 @@ Light::Light(std::string label, Type type, Transform transform, float power,
              float radius, glm::vec3 lightColor, bool castShadow)
     : SceneObject(SceneObject::LIGHT, label, transform),
       m_Mesh(Importer::LoadFile("../assets/models/sphere.obj")),       //
-      m_ColorTexture(nullptr), m_ShadowTexture(nullptr), m_Type(type), //
+      m_Type(type), m_ShadowTexture(nullptr), m_ColorTexture(nullptr), //
       m_Color(lightColor), m_Radius(radius),                           //
       m_Power(power), m_InnerCone(20.0f),                              //
       m_OuterCone(30.0f), m_NearPlane(1.0f),                           //
