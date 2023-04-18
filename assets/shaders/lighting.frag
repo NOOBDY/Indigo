@@ -42,11 +42,6 @@ struct LightData {
     int useColorTexture;
 };
 
-struct MaterialData {
-    vec3 baseColor;
-    float maxShine;
-    // vec3 normal;
-};
 struct CameraData {
     TransformData transform;
     mat4 projection;
@@ -69,9 +64,6 @@ struct DeferredData {
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
-};
-layout(std140, binding = 1) uniform Materials {
-    MaterialData material;
 };
 
 layout(std140, binding = 2) uniform Lights {
@@ -314,7 +306,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     }
     return vec4(Lo, 1);
 }
-vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
+vec4 lighting(DeferredData deferredInfo, CameraData cameraInfo,
                 LightData lights[LIGHT_NUMBER]) {
     vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
@@ -345,5 +337,5 @@ void main() {
 
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
-        texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);
+        texture(screenLight, UV) + lighting(baseInfo, cameraInfo, lights);
 }

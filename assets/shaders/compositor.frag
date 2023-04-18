@@ -59,8 +59,8 @@ layout(std140, binding = 4) uniform PipelineUniform {
 };
 #define PI 3.1415926
 vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
-#define MAX_LENGTH 8
-#define MAX_ROUND 4
+    const int MAX_LENGTH =8;
+    const int MAX_ROUND =4;
     float blurWidth = blurStrength;
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
@@ -106,7 +106,7 @@ float idBorder(sampler2D idPass, int id) {
         sampleTex[i] = float(texture(idPass, UV + offsets[i]).a * 255 == id);
         v += sampleTex[i] * kernel[i];
     }
-    return abs(v);
+    return floor(abs(v)*0.4);
 }
 vec2 panoramaUV(vec3 nuv) {
     vec2 uv = vec2(0.0);
