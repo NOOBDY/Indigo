@@ -14,7 +14,9 @@ Pipeline::Pipeline(int width, int height)
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height) {
+      m_Width(width), m_Height(height), m_ActivePass(SCREEN) {
+    m_Passes[LUT] =
+        std::make_shared<Texture>("../assets/textures/brdf_lut.png");
 
     m_Basic.Bind();
     m_Basic.SetInt("albedoMap", ALBEDO);
@@ -39,6 +41,7 @@ Pipeline::Pipeline(int width, int height)
 
     m_Light.SetInt("pointShadowMap", POINT_SHADOW);
     m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
+    m_Light.SetInt("LUT", LUT);
 
     m_Compositor.Bind();
     m_Compositor.SetInt("screenAlbedo", ALBEDO);
@@ -52,11 +55,13 @@ Pipeline::Pipeline(int width, int height)
     m_Compositor.SetInt("reflectMap", REFLECT);
     m_Compositor.SetInt("screenLight", LIGHTING);
     m_Compositor.SetInt("screenVolume", VOLUME);
+    m_Compositor.SetInt("LUT", LUT);
 
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(LightData), 2));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(CameraData), 3));
+    m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(PipelineData), 4));
 
     // vertices
     m_Screen.AddVertexBuffer(std::make_shared<VertexBuffer>(
@@ -152,7 +157,7 @@ void Pipeline::Render(Scene scene) {
     ShadowPass(scene);
     BasePass(scene);
     LightPass(scene);
-    CompositorPass();
+    CompositorPass(scene);
 }
 
 void Pipeline::ShadowPass(Scene scene) {
@@ -285,19 +290,23 @@ void Pipeline::LightPass(Scene scene) {
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
+    m_Passes[LUT]->Bind(LUT);
 
     m_Light.Validate();
 
     for (const auto &light : lights) {
-        if (!light->GetCastShadow())
-            continue;
 
-        if (light->GetType() == Light::POINT ||
-            light->GetType() == Light::SPOT) {
-            light->GetShadowTexture()->Bind(POINT_SHADOW);
+        if (light->GetCastShadow()) {
+            if (light->GetType() == Light::POINT ||
+                light->GetType() == Light::SPOT) {
+                light->GetShadowTexture()->Bind(POINT_SHADOW);
 
-        } else if (light->GetType() == Light::DIRECTION)
-            light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
+            } else if (light->GetType() == Light::DIRECTION)
+                light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
+        }
+
+        if (light->GetUseColorTexture() && light->GetColorTexture())
+            light->GetColorTexture()->Bind(REFLECT);
 
         LightData lightInfo = light->GetLightData();
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
@@ -313,7 +322,7 @@ void Pipeline::LightPass(Scene scene) {
     m_LightPassFBO.Unbind();
 }
 
-void Pipeline::CompositorPass() {
+void Pipeline::CompositorPass(Scene scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     m_Compositor.Bind();
 
@@ -328,7 +337,14 @@ void Pipeline::CompositorPass() {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
+    if (scene.GetEnviomentMap())
+        scene.GetEnviomentMap()->Bind(REFLECT);
+
     m_Screen.Bind();
+    PipelineData pipelineInfo =
+        PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};
+
+    m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
     m_Compositor.Unbind();

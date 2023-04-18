@@ -1,7 +1,7 @@
 #include "scene.hpp"
 
 Scene::Scene(const std::shared_ptr<Camera> defaultCamera)
-    : m_ActiveCameraID(0), m_ActiveObjectID(-1) {
+    : m_ActiveCameraID(0), m_ActiveObjectID(-1), m_EnvironmentMap(nullptr) {
     m_Cameras.push_back(defaultCamera);
 }
 

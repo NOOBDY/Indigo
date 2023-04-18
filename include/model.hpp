@@ -21,7 +21,7 @@ struct ModelData {
     int useARMTexture;
 
     int useNormalTexture;
-    unsigned int id;
+    int id;
     int castShadows;
     int visible;
 };

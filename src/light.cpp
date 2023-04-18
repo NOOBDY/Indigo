@@ -6,14 +6,14 @@
 Light::Light(std::string label, Type type, Transform transform, float power,
              float radius, glm::vec3 lightColor, bool castShadow)
     : SceneObject(SceneObject::LIGHT, label, transform),
-      m_Mesh(Importer::LoadFile("../assets/models/sphere.obj")), //
-      m_Type(type), m_Color(lightColor),                         //
-      m_Radius(radius), m_Power(power),                          //
-      m_InnerCone(20.0f), m_OuterCone(30.0f),                    //
-      m_NearPlane(1.0f), m_FarPlane(1000.0f),                    //
-      m_CastShadow(castShadow),                                  //
-      m_ShadowSize(1024),                                        //
-      m_ShadowTexture(nullptr) {
+      m_Mesh(Importer::LoadFile("../assets/models/sphere.obj")),       //
+      m_Type(type), m_ShadowTexture(nullptr), m_ColorTexture(nullptr), //
+      m_Color(lightColor), m_Radius(radius),                           //
+      m_Power(power), m_InnerCone(20.0f),                              //
+      m_OuterCone(30.0f), m_NearPlane(1.0f),                           //
+      m_FarPlane(1000.0f),                                             //
+      m_CastShadow(castShadow),                                        //
+      m_ShadowSize(1024), m_useColorTexture(false) {
 
     if (m_CastShadow) {
         m_ShadowTexture = std::make_shared<Texture>(
@@ -89,7 +89,7 @@ LightData Light::GetLightData() {
     data.radius = m_Radius;
 
     data.power = m_Power;
-    data.type = m_Type;
+    data.type = int(m_Type);
 
     data.innerCone = m_InnerCone;
     data.outerCone = m_OuterCone;
@@ -106,7 +106,7 @@ LightData Light::GetLightData() {
     data.farPlane = m_FarPlane;
     // lazy to fix padding issues
     data.castShadow = int(m_CastShadow);
-    data.pad1 = 0.0;
+    data.useColorTexture = int(m_useColorTexture);
 
     return data;
 }

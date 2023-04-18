@@ -29,7 +29,7 @@ public:
 
 protected:
     static unsigned int idCount;
-    unsigned int m_ID;
+    int m_ID;
 
     std::string m_Label;
 

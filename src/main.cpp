@@ -45,6 +45,12 @@ int main(int argc, char **argv) {
         "../assets/textures/little_city/interior.jpg");
     std::shared_ptr<Texture> texMisc =
         std::make_shared<Texture>("../assets/textures/little_city/misc.png");
+    std::shared_ptr<Texture> reflectMap =
+        std::make_shared<Texture>("../assets/textures/vestibule_2k.hdr");
+    std::shared_ptr<Texture> wallNormalMap = std::make_shared<Texture>(
+        "../assets/textures/T_Wall_Damaged_2x1_A_N.png");
+    std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
+        "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
         45.0f, window.GetAspectRatio(), 100.0f, 1500.0f);
@@ -119,7 +125,7 @@ int main(int argc, char **argv) {
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
             "Light 1",                                           //
-            Light::DIRECTION,                                    //
+            Light::POINT,                                        //
             Transform({50, 100, 200},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
@@ -134,17 +140,36 @@ int main(int argc, char **argv) {
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
             "Light 2",                                           //
-            Light::POINT,                                        //
+            Light::DIRECTION,                                    //
             Transform({-300, 300, 0},                            //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
             2, 1000, glm::vec3(1.0f));
 
+        light2->SetShadowSize(2048);
+        light2->SetColorTexture(reflectMap);
         scene.AddLight(light2);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
+    try {
+        std::shared_ptr<Light> light3 = std::make_shared<Light>( //
+            "Light 3",                                           //
+            Light::AMBIENT,                                      //
+            Transform({0.0, 300, 0},                             //
+                      {0, 0, 0},                                 //
+                      {20, 20, 20}),
+            1, 1000, glm::vec3(1.0f), false);
 
+        // light3->SetShadowSize(2048);
+        light3->SetColorTexture(reflectMap);
+        light3->SetUseColorTexture(true);
+        scene.AddLight(light3);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    // scene.SetEnvironmentMap(reflectMap);
     do {
         auto &io = ImGui::GetIO();
         glm::vec2 delta = window.GetCursorDelta();

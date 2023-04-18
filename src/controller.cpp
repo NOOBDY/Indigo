@@ -34,6 +34,7 @@ void TransformGUI(std::shared_ptr<SceneObject> object) {
 }
 
 void ModelAttributeGUI(std::shared_ptr<Model> model) {
+    auto meshColor = model->GetAlbedoColor();
     auto hasAlbedo = model->GetAlbedoTexture() != nullptr;
     auto useAlbedo = model->GetUseAlbedoTexture() && hasAlbedo;
 
@@ -45,13 +46,20 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
 
     auto hasARM = model->GetARMTexture() != nullptr;
     auto useARM = model->GetUseARMTexture() && hasARM;
+    float AO = model->GetAO();
+    float roughness = model->GetRoughness();
+    float metallic = model->GetMetallic();
 
     auto castShadow = model->GetCastShadows();
     auto visible = model->GetVisible();
 
     ImGui::Begin("Model Attributes");
     ImGui::SetWindowPos({10, 115});
-    ImGui::SetWindowSize({270, 170});
+    ImGui::SetWindowSize({270, 270});
+
+    ImGui::BeginDisabled(useAlbedo);
+    ImGui::ColorEdit3("Albedo Color", &meshColor[0]);
+    ImGui::EndDisabled();
 
     ImGui::BeginDisabled(!hasAlbedo);
     ImGui::Checkbox("Albedo", &useAlbedo);
@@ -80,6 +88,9 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
     ImGui::BeginDisabled(model->GetARMTexture() == nullptr);
     ImGui::Checkbox("ARM", &useARM);
     ImGui::EndDisabled();
+    ImGui::DragFloat("AO", &AO, 0.01, 0, 1, "%.2f");
+    ImGui::DragFloat("roughness", &roughness, 0.01, 0, 1, "%.2f");
+    ImGui::DragFloat("metallic", &metallic, 0.01, 0, 1, "%.2f");
     if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) && !hasARM) {
         ImGui::SetTooltip("No ARM texture set");
     }
@@ -88,10 +99,14 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
     ImGui::Checkbox("Show/Hide", &visible);
     ImGui::End();
 
+    model->SetAlbedoColor(meshColor);
     model->SetUseAlbedoTexture(useAlbedo);
     model->SetUseNormalTexture(useNormal);
     model->SetUseEmissionTexture(useEmission);
     model->SetUseARMTexture(useARM);
+    model->SetAO(AO);
+    model->SetRoughness(roughness);
+    model->SetMetallic(metallic);
     model->SetCastShadows(castShadow);
     model->SetVisible(visible);
 }
@@ -99,16 +114,25 @@ void ModelAttributeGUI(std::shared_ptr<Model> model) {
 void LightAttributeGUI(std::shared_ptr<Light> light) {
     auto power = light->GetPower();
     auto radius = light->GetRadius();
+    auto lightColor = light->GetColor();
+    auto useColorTexture = light->GetUseColorTexture();
+    // auto haveColorTexture = light->GetColorTexture() != nullptr;
 
     ImGui::Begin("Light Attributes");
     ImGui::SetWindowPos({10, 115});
-    ImGui::SetWindowSize({270, 85});
-    ImGui::DragFloat("Power", &power, 0.1f, 0.1f, 10, "%.1f");
-    ImGui::DragFloat("Radius", &radius, 5, 1, 1000, "%.1f");
+    ImGui::SetWindowSize({270, 125});
+
+    ImGui::BeginDisabled(useColorTexture);
+    ImGui::ColorEdit3("Light Color", &lightColor[0]);
+    ImGui::EndDisabled();
+
+    ImGui::DragFloat("Power", &power, 0.05f, 0.0f, 10.0f, "%.2f");
+    ImGui::DragFloat("Radius", &radius, 5, 1, 1000.0f, "%.1f");
     ImGui::End();
 
     light->SetPower(power);
     light->SetRadius(radius);
+    light->SetLightColor(lightColor);
 }
 
 } // namespace Controller

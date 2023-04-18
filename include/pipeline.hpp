@@ -32,12 +32,22 @@ public:
         // shadow
         POINT_SHADOW, // Must be last because cube map stuff
         DIRECTION_SHADOW,
+        LUT,
 
         SCREEN
     };
     struct MVP {
         glm::mat4 model;
         glm::mat4 viewProjection;
+    };
+    struct PipelineData {
+        int id;
+
+        float time;
+        float detiaTime;
+        int selectPass;
+        // glm::vec3 tem;
+        // glm::vec2 mousePosition;
     };
 
     Pipeline(int width, int height);
@@ -53,7 +63,7 @@ private:
     void ShadowPass(Scene scene);
     void BasePass(Scene scene);
     void LightPass(Scene scene);
-    void CompositorPass();
+    void CompositorPass(Scene scene);
 
 private:
     void UpdatePass();
@@ -74,5 +84,6 @@ private:
     VertexArray m_Screen;
     int m_Width;
     int m_Height;
+    int m_ActivePass;
 };
 #endif

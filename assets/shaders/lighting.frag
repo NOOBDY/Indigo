@@ -38,15 +38,10 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
-    float pad1;
-    float pad2;
+    int castShadow;
+    int useColorTexture;
 };
 
-struct MaterialData {
-    vec3 baseColor;
-    float maxShine;
-    // vec3 normal;
-};
 struct CameraData {
     TransformData transform;
     mat4 projection;
@@ -62,16 +57,13 @@ struct DeferredData {
     vec3 normal;
     vec3 position;
     vec3 ARM;
-    vec3 ID;
+    vec4 ID;
     vec3 depth;
 };
 
 layout(std140, binding = 0) uniform Matrices {
     mat4 model;
     mat4 viewProjection;
-};
-layout(std140, binding = 1) uniform Materials {
-    MaterialData material;
 };
 
 layout(std140, binding = 2) uniform Lights {
@@ -102,9 +94,12 @@ uniform sampler2D screenVolume;
 
 uniform sampler2D reflectMap;
 
-uniform sampler2D directionShadowMap; // frame buffer texture
-uniform samplerCube pointShadowMap;   // frame buffer texture
+uniform sampler2D directionShadowMap;
+uniform samplerCube pointShadowMap;
+
+uniform sampler2D LUT;
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
+#define PI 3.1415926
 
 vec3 depth2position(highp float depth, mat4 projection, mat4 view) {
     mat4 invert_view_projection = inverse(projection * view);
@@ -161,6 +156,10 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     vec3 projCoords = lightSpace.xyz / lightSpace.w;
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
+    // keep the shadow at 0.0 when outside the far_plane region of the light's
+    // frustum.
+    if (projCoords.z > 1.0)
+        return 0.0;
     // get closest depth value from light's perspective (using [0,1] range
     // fragPosLight as coords)
     float closestDepth = texture(directionShadowMap, projCoords.xy).r;
@@ -182,74 +181,133 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
         }
     }
     shadow /= 9.0;
-    // keep the shadow at 0.0 when outside the far_plane region of the light's
-    // frustum.
-    // if (projCoords.z > 1.0)
-    //     shadow = 0.0;
 
     return shadow;
+}
+vec2 panoramaUV(vec3 nuv) {
+    vec2 uv = vec2(0.0);
+    uv.x = 0.5 + atan(nuv.x, nuv.z) / (2 * PI);
+    uv.y = 0.5 + asin(nuv.y) / (PI);
+    return uv;
+}
+float DistributionGGX(float dotNH, float roughness) {
+    float a = roughness * roughness;
+    float a2 = a * a;
+    float NdotH2 = pow(dotNH, 2.0);
+    float nom = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+float GeometrySchlickGGX(float NdotV, float roughness) {
+    float r = (roughness + 1.0);
+    float k = (r * r) / 8.0;
+
+    float nom = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+float GeometrySmith(float dotNV, float dotNL, float roughness) {
+    float ggx2 = GeometrySchlickGGX(dotNV, roughness);
+    float ggx1 = GeometrySchlickGGX(dotNL, roughness);
+    return ggx1 * ggx2;
+}
+vec3 fresnelSchlick(float cosTheta, vec3 F0) {
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
+                    pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
     vec3 position = deferredInfo.position;
     // mesh normal
-    vec3 n = deferredInfo.normal;
+    vec3 N = deferredInfo.normal;
     // n = TBN * (texture(texture3, UV).xyz * 2 - 1);
-    vec3 direction = light.transform.direction;
+    vec3 direction = normalize(light.transform.direction);
     // direction :light to mesh
-    vec3 l = light.lightType == DIRECTION
+    vec3 L = light.lightType == DIRECTION
                  ? direction
                  : normalize(light.transform.position - position);
     // direction :cam to mesh
-    vec3 v = normalize(cameraPosition - position);
+    vec3 V = normalize(cameraPosition - position);
     // direction :reflection
-    vec3 r = normalize(reflect(-l, n));
+    vec3 R = normalize(reflect(-V, N));
     // for Blinn-Phong lighting
-    vec3 halfwayVec = normalize(v + l);
+    vec3 H = normalize(V + L);
 
-    float ambient = light.lightType == AMBIENT ? 1.0 : 0.1;
-    float fadeOut = light.lightType == POINT
+    vec3 lightColor = light.useColorTexture == 1
+                          ? texture(reflectMap, panoramaUV(-L)).rgb
+                          : light.lightColor;
+    float fadeOut = light.lightType != DIRECTION
                         ? fade(light.transform.position, position, light.radius)
                         : 1.0;
     // spotlight
-    float angle = clamp(dot(direction, l), 0.0, 1.0);
-    float spot = light.lightType == SPOT
-                     ? clamp((angle - light.outerCone) /
-                                 (light.innerCone - light.outerCone),
-                             0.0, 1.0)
-                     : 1.0;
+    float theta = dot(L, normalize(direction));
+    float epsilon =
+        cos(radians(light.innerCone)) - cos(radians(light.outerCone));
+    float intensity =
+        clamp((theta - cos(radians(light.outerCone))) / epsilon, 0.0, 1.0);
+    float spot = light.lightType == SPOT ? intensity : 1.0;
 
     // diffuse lighting
-    float dotLN = max(dot(halfwayVec, n), 0.0);
-    vec3 diffuse = deferredInfo.albedo * (dotLN + ambient);
-
-    // color tranform
-    //  diffuse = pow(diffuse, vec3(2.2));
-
-    // specular lighting
-    float dotRV = max(dot(r, v), 0.0);
-    // ambient light not specular
-    vec3 specular =
-        vec3(1) * ((light.lightType == AMBIENT || diffuse == vec3(0.0))
-                       ? 0.0
-                       : pow(dotRV, deferredInfo.ARM.y * 100));
-
+    float dotNL = max(dot(N, L), 0.0);
+    float dotNV = max(dot(N, V), 0.0);
+    float dotNH = max(dot(N, H), 0.0);
+    float dotHV = max(dot(H, V), 0.0);
+    // shadow
     float shadow = 0;
     if (light.lightType == POINT || light.lightType == SPOT)
         shadow = pointShadow(position, light);
     else if (light.lightType == DIRECTION)
-        shadow = directionShadow(position, n, light);
+        shadow = directionShadow(position, N, light);
 
-    diffuse *= 1 - shadow;
-    specular *= 1 - shadow;
-    outScreenVolume += vec4(abs(specular) * light.power, 1.0);
+    // color tranform
+    //  diffuse = pow(diffuse, vec3(2.2));
 
-    return vec4((diffuse + specular) * light.lightColor * light.power *
-                    fadeOut * spot,
-                shadow);
+    // Cook-Torrance BRDF
+
+    vec3 albedo = deferredInfo.albedo;
+    float ao = deferredInfo.ARM.x;
+    float roughness = deferredInfo.ARM.y;
+    float metallic = deferredInfo.ARM.z;
+
+    vec3 F0 = mix(vec3(0.04), albedo, metallic);
+    float NDF = DistributionGGX(dotNH, roughness);
+    float G = GeometrySmith(dotNV, dotNL, roughness);
+    vec3 F = light.lightType == AMBIENT
+                 ? fresnelSchlickRoughness(dotNV, F0, roughness)
+                 : fresnelSchlick(dotHV, F0);
+    vec3 kD = (vec3(1.0) - F) * (1.0 - metallic);
+
+    vec3 Lo;
+    if (light.lightType == AMBIENT) {
+        if (light.useColorTexture != 1)
+            Lo = albedo * lightColor * light.power * ao * fadeOut;
+        else {
+            vec2 brdf = texture(LUT, vec2(dotNV)).rg;
+            vec3 diffuse = albedo * texture(reflectMap, panoramaUV(N)).xyz;
+            vec3 specular =
+                texture(reflectMap, panoramaUV(R)).xyz * (F * brdf.x + brdf.y);
+            Lo = (kD * diffuse + specular) * ao * light.power * fadeOut;
+            outScreenVolume.xyz += specular * ao * light.power * fadeOut;
+        }
+
+    } else {
+        vec3 diffuse = albedo;
+        vec3 specular = NDF * G * F * 0.25 / max(dotNV * dotNL, 0.001) *
+                        float(deferredInfo.ID.a != 1.0);
+        Lo = (kD * diffuse / PI + specular) * dotNL * lightColor *
+             (1 - shadow) * light.power * fadeOut * spot;
+        outScreenVolume.xyz += specular * ao * light.power * fadeOut;
+    }
+    return vec4(Lo, 1);
 }
-vec4 PhongLight(DeferredData deferredInfo, CameraData cameraInfo,
-                LightData lights[LIGHT_NUMBER]) {
+vec4 lighting(DeferredData deferredInfo, CameraData cameraInfo,
+              LightData lights[LIGHT_NUMBER]) {
     vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
         LightData light = lights[i];
@@ -269,15 +327,15 @@ void main() {
 
     DeferredData baseInfo;
     baseInfo.albedo = texture(screenAlbedo, UV).rgb;
-    baseInfo.normal = texture(screenNormal, UV).rgb;
+    baseInfo.normal = texture(screenNormal, UV).rgb * 2.0 - 1.0;
     baseInfo.emission = texture(screenEmission, UV).rgb;
     baseInfo.depth = texture(screenDepth, UV).rgb;
     baseInfo.ARM = texture(screenARM, UV).rgb;
-    baseInfo.ID = texture(screenID, UV).rgb;
+    baseInfo.ID = texture(screenID, UV).rgba;
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo.projection,
                                        cameraInfo.view);
 
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
-        texture(screenLight, UV) + PhongLight(baseInfo, cameraInfo, lights);
+        texture(screenLight, UV) + lighting(baseInfo, cameraInfo, lights);
 }

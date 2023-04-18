@@ -49,7 +49,7 @@ struct ModelData {
     int useARMTexture;
 
     int useNormalTexture;
-    uint id;
+    int id;
     int castShadows;
     int visible;
 };
@@ -129,7 +129,7 @@ void main() {
     screenARM.xyz = (modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz
                                                    : modelInfo.ARM;
     screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
-    screenNormal.xyz = normalize(normal);
+    screenNormal.xyz = normalize(normal) * 0.5 + 0.5;
     screenID.xyz = unpackColor(Hash32(modelInfo.id));
     screenID.a = modelInfo.id / 255.0;
     // screenID.xyz=vec3(screenID.z);
@@ -137,7 +137,8 @@ void main() {
 
     // make sure the normalmap is in right format
     if (modelInfo.useNormalTexture == 1) {
-        screenNormal.xyz = TBN * (texture(normalMap, UV).xyz * 2 - 1);
+        screenNormal.xyz =
+            (TBN * (texture(normalMap, UV).xyz * 2 - 1)) * 0.5 + 0.5;
     }
 
     // color3 = ColorTransform(color3);
