@@ -7,7 +7,7 @@
 
 class FileNotFoundException : public std::exception {
 public:
-    FileNotFoundException(std::string filename);
+    FileNotFoundException(const std::string &filename);
 
     const char *what() const noexcept override;
 

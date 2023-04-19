@@ -23,8 +23,8 @@ public:
         CUBE = GL_TEXTURE_CUBE_MAP,
         IMAGE_2D = GL_TEXTURE_2D,
     };
-    Texture(const int width, const int height, Format type,
-            Target format = IMAGE_2D, int bit = 16);
+    Texture(const int width, const int height, Format format,
+            Target target = IMAGE_2D, int bit = 16);
     Texture(const std::string &textureFilepath, int bit = 16);
     ~Texture();
 
@@ -48,7 +48,7 @@ public:
     int GetPixelSize() const { return Format2Channels(m_Format) * (m_Bit / 8); }
     std::vector<unsigned char> GetPixelColorByPosition(glm::vec2 pos) const;
 
-    void SaveTexture(std::string path) const;
+    void SaveTexture(const std::string &path) const;
 
 private:
     void LoadImage(const std::string &textureFilepath, int bit);

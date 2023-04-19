@@ -153,14 +153,14 @@ void Pipeline::Init() {
 #pragma endregion
 }
 
-void Pipeline::Render(Scene scene) {
+void Pipeline::Render(const Scene &scene) {
     ShadowPass(scene);
     BasePass(scene);
     LightPass(scene);
     CompositorPass(scene);
 }
 
-void Pipeline::ShadowPass(Scene scene) {
+void Pipeline::ShadowPass(const Scene &scene) {
     MVP lightMVP;
     ModelData modelInfo;
     LightData lightInfo;
@@ -211,7 +211,7 @@ void Pipeline::ShadowPass(Scene scene) {
     Renderer::EnableCullFace();
 }
 
-void Pipeline::BasePass(Scene scene) {
+void Pipeline::BasePass(const Scene &scene) {
     m_BasicPassFBO.Bind();
     m_Basic.Bind();
 
@@ -266,7 +266,7 @@ void Pipeline::BasePass(Scene scene) {
     m_BasicPassFBO.Unbind();
 }
 
-void Pipeline::LightPass(Scene scene) {
+void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Bind();
     m_Light.Bind();
     glViewport(0, 0, m_Width, m_Height);
@@ -322,7 +322,7 @@ void Pipeline::LightPass(Scene scene) {
     m_LightPassFBO.Unbind();
 }
 
-void Pipeline::CompositorPass(Scene scene) {
+void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     m_Compositor.Bind();
 
@@ -337,8 +337,8 @@ void Pipeline::CompositorPass(Scene scene) {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
-    if (scene.GetEnviomentMap())
-        scene.GetEnviomentMap()->Bind(REFLECT);
+    if (scene.GetEnvironmentMap())
+        scene.GetEnvironmentMap()->Bind(REFLECT);
 
     m_Screen.Bind();
     PipelineData pipelineInfo =
@@ -370,7 +370,7 @@ void Pipeline::UpdatePass() {
         pass.second->SetHeight(m_Height);
     }
 }
-void Pipeline::SavePass(Pass targetPass, std::string path) {
+void Pipeline::SavePass(Pass targetPass, const std::string &path) {
     if (m_Passes.find(targetPass) == m_Passes.end())
         throw std::runtime_error("not support texture to save as image");
     m_Passes[targetPass]->SaveTexture(path);

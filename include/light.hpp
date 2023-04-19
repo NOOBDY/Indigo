@@ -21,9 +21,9 @@ public:
         AMBIENT,
     };
 
-    Light(std::string label, Type type, Transform transform, float power = 1.0f,
-          float radius = 1.0f, glm::vec3 lightColor = glm::vec3(1.0f),
-          bool castShadow = true);
+    Light(const std::string &label, Type type, Transform transform,
+          float power = 1.0f, float radius = 1.0f,
+          glm::vec3 lightColor = glm::vec3(1.0f), bool castShadow = true);
 
     // Draws the sphere representing the light position
     void Draw() const;

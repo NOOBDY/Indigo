@@ -34,7 +34,8 @@ public:
         ROUGHNESS,
         SHADOW, // first non-shadow texture index
     };
-    Model(std::string label, Mesh mesh, Transform transform = Transform());
+    Model(const std::string &label, const Mesh &mesh,
+          Transform transform = Transform());
     ~Model();
 
     void Draw() const;

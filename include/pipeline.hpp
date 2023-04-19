@@ -44,7 +44,7 @@ public:
         int id;
 
         float time;
-        float detiaTime;
+        float deltaTime;
         int selectPass;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
@@ -52,18 +52,18 @@ public:
 
     Pipeline(int width, int height);
 
-    void Render(Scene scene);
+    void Render(const Scene &scene);
     void SetWidth(int width);
     void SetHeight(int height);
-    void SavePass(Pass targetPass, std::string path);
+    void SavePass(Pass targetPass, const std::string &path);
     unsigned int GetIdByPosition(glm::vec2 pos);
     void Init();
 
 private:
-    void ShadowPass(Scene scene);
-    void BasePass(Scene scene);
-    void LightPass(Scene scene);
-    void CompositorPass(Scene scene);
+    void ShadowPass(const Scene &scene);
+    void BasePass(const Scene &scene);
+    void LightPass(const Scene &scene);
+    void CompositorPass(const Scene &scene);
 
 private:
     void UpdatePass();

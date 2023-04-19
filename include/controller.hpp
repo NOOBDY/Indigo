@@ -9,7 +9,7 @@
 #include "light.hpp"
 
 namespace Controller {
-void InitGUI(Window &window);
+void InitGUI(const Window &window);
 
 void TransformGUI(std::shared_ptr<SceneObject> object);
 

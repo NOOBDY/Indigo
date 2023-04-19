@@ -3,8 +3,8 @@
 #include "importer.hpp"
 #include "renderer.hpp"
 
-Light::Light(std::string label, Type type, Transform transform, float power,
-             float radius, glm::vec3 lightColor, bool castShadow)
+Light::Light(const std::string &label, Type type, Transform transform,
+             float power, float radius, glm::vec3 lightColor, bool castShadow)
     : SceneObject(SceneObject::LIGHT, label, transform),
       m_Mesh(Importer::LoadFile("../assets/models/sphere.obj")),       //
       m_Type(type), m_ShadowTexture(nullptr), m_ColorTexture(nullptr), //

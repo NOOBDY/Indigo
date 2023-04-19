@@ -4,7 +4,7 @@
 
 #include "renderer.hpp"
 
-Model::Model(std::string label, Mesh mesh, Transform transform)
+Model::Model(const std::string &label, const Mesh &mesh, Transform transform)
     : SceneObject(SceneObject::MODEL, label, transform), m_Mesh(mesh) {
     LOG_TRACE("Creating Model");
 
