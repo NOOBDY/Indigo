@@ -123,16 +123,16 @@ int main(int argc, char **argv) {
     }
 
     try {
-        std::shared_ptr<Light> light1 = std::make_shared<Light>( //
-            "Light 1",                                           //
-            Light::POINT,                                        //
-            Transform({50, 100, 200},                            //
-                      {0, 0, 0},                                 //
-                      {20, 20, 20}),
-            1, 1000, glm::vec3(1.0f));
-        // bigger texture size for direction shadow
-        light1->SetShadowSize(2048);
-        scene.AddLight(light1);
+        // std::shared_ptr<Light> light1 = std::make_shared<Light>( //
+        //     "Light 1",                                           //
+        //     Light::POINT,                                        //
+        //     Transform({50, 100, 200},                            //
+        //               {0, 0, 0},                                 //
+        //               {20, 20, 20}),
+        //     1, 1000, glm::vec3(1.0f));
+        // // bigger texture size for direction shadow
+        // light1->SetShadowSize(2048);
+        // scene.AddLight(light1);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
             "Light 2",                                           //
             Light::DIRECTION,                                    //
-            Transform({-300, 300, 0},                            //
+            Transform({0, 400, 0},                               //
                       {0, 0, 0},                                 //
                       {20, 20, 20}),
             2, 1000, glm::vec3(1.0f));
@@ -153,18 +153,18 @@ int main(int argc, char **argv) {
         LOG_ERROR("{}", e.what());
     }
     try {
-        std::shared_ptr<Light> light3 = std::make_shared<Light>( //
-            "Light 3",                                           //
-            Light::AMBIENT,                                      //
-            Transform({0.0, 300, 0},                             //
-                      {0, 0, 0},                                 //
-                      {20, 20, 20}),
-            1, 1000, glm::vec3(1.0f), false);
+        // std::shared_ptr<Light> light3 = std::make_shared<Light>( //
+        //     "Light 3",                                           //
+        //     Light::AMBIENT,                                      //
+        //     Transform({0.0, 300, 0},                             //
+        //               {0, 0, 0},                                 //
+        //               {20, 20, 20}),
+        //     1, 1000, glm::vec3(1.0f), false);
 
-        // light3->SetShadowSize(2048);
-        light3->SetColorTexture(reflectMap);
-        light3->SetUseColorTexture(true);
-        scene.AddLight(light3);
+        // // light3->SetShadowSize(2048);
+        // light3->SetColorTexture(reflectMap);
+        // light3->SetUseColorTexture(true);
+        // scene.AddLight(light3);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }

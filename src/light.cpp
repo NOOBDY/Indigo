@@ -45,7 +45,7 @@ glm::mat4 Light::GetLightOrth() {
 
     // glm::mat4 lightView = m_Transform.GetDirection4();
     glm::mat4 lightView =
-        glm::lookAt(m_Transform.GetPosition(), glm::vec3(0.0, 0.0, 1),
+        glm::lookAt(m_Transform.GetDirection(), glm::vec3(0.0, -0.01, 0.0),
                     glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
@@ -140,7 +140,7 @@ ModelData Light::GetModelData() {
         static_cast<int>(false),        //
         {0, 0, 0},                      // Emission
         static_cast<int>(false),        //
-        {0, 1, 0},                      // ARM
+        {0, 0.5, 0},                    // ARM
         static_cast<int>(false),        //
         static_cast<int>(false),        // Normal
         m_ID,                           //

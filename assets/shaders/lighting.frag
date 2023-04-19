@@ -168,8 +168,8 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     vec3 lightDir = normalize(light.transform.position - position);
     float bias = max(0.005 * (1.0 - dot(normal, lightDir)), 0.003);
     float shadow = 0.0;
-    shadow += currentDepth - bias > closestDepth ? 1.0 : 0.0;
-    return shadow;
+    // shadow += currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    // return shadow;
     // PCF
     vec2 texelSize = 1.0 / textureSize(directionShadowMap, 0);
     for (int x = -1; x <= 1; ++x) {
@@ -221,7 +221,7 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
                     pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
-vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
+vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
     vec3 position = deferredInfo.position;
     // mesh normal
@@ -291,7 +291,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
             vec2 brdf = texture(LUT, vec2(dotNV)).rg;
             vec3 diffuse = albedo * texture(reflectMap, panoramaUV(N)).xyz;
             vec3 specular =
-                texture(reflectMap, panoramaUV(R)).xyz * (F * brdf.x + brdf.y);
+                texture(reflectMap, panoramaUV(R)).xyz * (F*brdf.x+brdf.y*0.1 );
             Lo = (kD * diffuse + specular) * ao * light.power * fadeOut;
             outScreenVolume.xyz += specular * ao * light.power * fadeOut;
         }
@@ -306,7 +306,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     }
     return vec4(Lo, 1);
 }
-vec4 lighting(DeferredData deferredInfo, CameraData cameraInfo,
+vec4 allLight(DeferredData deferredInfo, CameraData cameraInfo,
               LightData lights[LIGHT_NUMBER]) {
     vec4 color4 = vec4(0);
     for (int i = 0; i < LIGHT_NUMBER; i++) {
@@ -315,7 +315,7 @@ vec4 lighting(DeferredData deferredInfo, CameraData cameraInfo,
             continue;
         // color3 = light.lightColor;
         color4 +=
-            AllLight(cameraInfo.transform.position, deferredInfo, light, i) /
+            lighting(cameraInfo.transform.position, deferredInfo, light, i) /
             LIGHT_NUMBER;
     }
 
@@ -337,5 +337,5 @@ void main() {
 
     outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
-        texture(screenLight, UV) + lighting(baseInfo, cameraInfo, lights);
+        texture(screenLight, UV) + allLight(baseInfo, cameraInfo, lights);
 }

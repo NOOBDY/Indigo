@@ -14,9 +14,9 @@ Pipeline::Pipeline(int width, int height)
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height), m_ActivePass(SCREEN) {
+      m_Width(width), m_Height(height), m_ActivePass(LIGHTING) {
     m_Passes[LUT] =
-        std::make_shared<Texture>("../assets/textures/brdf_lut.png");
+        std::make_shared<Texture>("../assets/textures/brdf_lut2.png");
 
     m_Basic.Bind();
     m_Basic.SetInt("albedoMap", ALBEDO);
