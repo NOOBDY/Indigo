@@ -27,6 +27,8 @@ public:
     virtual Transform GetTransform() const { return m_Transform; }
     virtual void SetTransform(Transform transform) { m_Transform = transform; }
 
+    static int GetIDCount() { return idCount; }
+
 protected:
     static unsigned int idCount;
     int m_ID;
