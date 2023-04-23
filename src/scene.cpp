@@ -1,5 +1,9 @@
 #include "scene.hpp"
 
+#include <algorithm>
+
+#include "scene_object.hpp"
+
 Scene::Scene(const std::shared_ptr<Camera> defaultCamera)
     : m_ActiveCameraID(0), m_ActiveObjectID(-1), m_EnvironmentMap(nullptr) {
     m_Cameras.push_back(defaultCamera);
@@ -40,9 +44,15 @@ std::vector<std::shared_ptr<Light>> Scene::GetLights() const {
 }
 
 void Scene::SetActiveSceneObject(unsigned int id) {
-    m_ActiveObjectID = id < m_SceneObjects.size() ? id : -1;
+    m_ActiveObjectID = id < SceneObject::GetIDCount() ? id : -1;
 }
 
 std::shared_ptr<SceneObject> Scene::GetActiveSceneObject() const {
-    return m_ActiveObjectID != -1 ? m_SceneObjects[m_ActiveObjectID] : nullptr;
+    // I probably should've used `std::unordered_map` but oh well
+    return m_ActiveObjectID != -1
+               ? *std::find_if(m_SceneObjects.begin(), m_SceneObjects.end(),
+                               [this](std::shared_ptr<SceneObject> obj) {
+                                   return obj->GetID() == m_ActiveObjectID;
+                               })
+               : nullptr;
 }
