@@ -88,6 +88,8 @@ Texture::GetPixelColorByPosition(glm::vec2 pos) const {
 }
 
 void Texture::LoadImage(const std::string &textureFilepath, int bit) {
+    LOG_TRACE("load texture path :{}", textureFilepath);
+    LOG_INFO("load texture path :{}", textureFilepath);
     m_Target = IMAGE_2D;
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
