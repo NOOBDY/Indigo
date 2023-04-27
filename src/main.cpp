@@ -168,11 +168,12 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
-    auto model =
-        // Importer::LoadFileModel("test", "../assets/models/hourse/horse.glb");
-        Importer::LoadFileModel("test", "../assets/models/hourse/scene.gltf");
+    // auto model =
+    //     // Importer::LoadFileModel("test",
+    //     "../assets/models/hourse/horse.glb"); Importer::LoadFileModel("test",
+    //     "../assets/models/hourse/scene.gltf");
 
-    scene.AddModel(model);
+    // scene.AddModel(model);
     // scene.SetEnvironmentMap(reflectMap);
     do {
         auto &io = ImGui::GetIO();

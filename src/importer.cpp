@@ -254,6 +254,12 @@ std::shared_ptr<Model> Importer::LoadFileModel(const std::string name,
         case aiTextureType_SHININESS:
             model->SetARMTexture(texture);
             break;
+        case aiTextureType_SPECULAR:
+            model->SetARMTexture(texture);
+            break;
+        case aiTextureType_SHEEN:
+            model->SetARMTexture(texture);
+            break;
         case aiTextureType_METALNESS:
             model->SetARMTexture(texture);
             break;
