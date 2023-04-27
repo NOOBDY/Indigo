@@ -221,15 +221,14 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
                     pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
-//https://www.unrealengine.com/en-US/blog/phiysically-based-shading-on-mobile
-vec3 EnvBRDFApprox( vec3 SpecularColor, float Roughness, float dotNV )
-{
-	const vec4 c0 = { -1, -0.0275, -0.572, 0.022 };
-	const vec4 c1 = { 1, 0.0425, 1.04, -0.04 };
-	vec4 r = (Roughness*Roughness) * c0 + c1;
-	float a004 = min( r.x * r.x, exp2( -9.28 * dotNV ) ) * r.x + r.y;
-	vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
-	return SpecularColor * AB.x + AB.y;
+// https://www.unrealengine.com/en-US/blog/phiysically-based-shading-on-mobile
+vec3 EnvBRDFApprox(vec3 SpecularColor, float Roughness, float dotNV) {
+    const vec4 c0 = {-1, -0.0275, -0.572, 0.022};
+    const vec4 c1 = {1, 0.0425, 1.04, -0.04};
+    vec4 r = (Roughness * Roughness) * c0 + c1;
+    float a004 = min(r.x * r.x, exp2(-9.28 * dotNV)) * r.x + r.y;
+    vec2 AB = vec2(-1.04, 1.04) * a004 + r.zw;
+    return SpecularColor * AB.x + AB.y;
 }
 vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
               int index) {
@@ -300,9 +299,9 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         else {
             // vec2 brdf = texture(LUT, vec2(dotNV,roughness-0.03)).rg;
             vec3 diffuse = albedo * texture(reflectMap, panoramaUV(N)).xyz;
-            vec3 env=texture(reflectMap, panoramaUV(R)).xyz;
-            vec3 specular =env*EnvBRDFApprox(F0,roughness,dotNV);
-            specular*=pow(dotNV+ao,roughness*roughness)-1.0+ao;
+            vec3 env = texture(reflectMap, panoramaUV(R)).xyz;
+            vec3 specular = env * EnvBRDFApprox(F0, roughness, dotNV);
+            specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
             Lo = (kD * diffuse + specular) * light.power * fadeOut;
             outScreenVolume.xyz += specular * ao * light.power * fadeOut;
         }
