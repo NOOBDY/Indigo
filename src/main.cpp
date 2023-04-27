@@ -132,6 +132,7 @@ int main(int argc, char **argv) {
             1, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
         light1->SetShadowSize(2048);
+
         scene.AddLight(light1);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
@@ -148,6 +149,7 @@ int main(int argc, char **argv) {
 
         light2->SetShadowSize(2048);
         light2->SetColorTexture(reflectMap);
+
         scene.AddLight(light2);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
@@ -164,6 +166,7 @@ int main(int argc, char **argv) {
         // light3->SetShadowSize(2048);
         light3->SetColorTexture(reflectMap);
         light3->SetUseColorTexture(true);
+
         scene.AddLight(light3);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
