@@ -21,8 +21,8 @@
  */
 namespace Importer {
 // Returns `std::shared_ptr` due to some C++ optimization dark magic
-std::shared_ptr<Model> LoadFileModel(const std::string name,
-                                     const std::string &filepath);
+std::vector<std::shared_ptr<Model>> LoadFileScene(const std::string &filepath);
+std::shared_ptr<Model> LoadFileModel(const std::string &filepath);
 Mesh LoadFile(const std::string &filepath);
 }; // namespace Importer
 

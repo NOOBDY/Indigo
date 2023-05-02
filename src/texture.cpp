@@ -223,7 +223,6 @@ void Texture::SaveTexture(const std::string &path) const {
     LOG_INFO("saving image {}", path);
     stbi_write_png(path.c_str(), m_Width, m_Height, channelNumber,
                    pixels.data(), m_Width * channelNumber);
-    LOG_INFO("saved");
 }
 
 void Texture::Update(unsigned char *data) {

@@ -58,66 +58,11 @@ int main(int argc, char **argv) {
     Scene scene(mainCamera);
 
     try {
-        auto model = std::make_shared<Model>(                            //
-            "Main",                                                      //
-            Importer::LoadFile("../assets/models/little_city/main.glb"), //
-            Transform({0, 0, 0},                                         //
-                      {180, 180, 180},                                   //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texMainColor);
-        model->SetUseAlbedoTexture(true);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                                //
-            "Interior",                                                      //
-            Importer::LoadFile("../assets/models/little_city/interior.glb"), //
-            Transform({0, 0, 0},                                             //
-                      {180, 180, 180},                                       //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texInterior);
-        model->SetUseAlbedoTexture(true);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                            //
-            "Misc",                                                      //
-            Importer::LoadFile("../assets/models/little_city/misc.glb"), //
-            Transform({0, 0.1, 0},                                       //
-                      {180, 180, 180},                                   //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texMisc);
-        model->SetUseAlbedoTexture(true);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                               //
-            "Outline",                                                      //
-            Importer::LoadFile("../assets/models/little_city/outline.glb"), //
-            Transform({0, 0, 0},                                            //
-                      {180, 180, 180},                                      //
-                      {1, 1, 1}));
-
-        model->SetAlbedoColor({0, 0, 0});
-        model->SetUseAlbedoTexture(false);
-        model->SetCastShadows(false);
-
-        scene.AddModel(model);
+        auto models =
+            Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
+        for (auto &i : models) {
+            scene.AddModel(i);
+        }
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -171,13 +116,7 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
-    // auto model =
-    //     // Importer::LoadFileModel("test",
-    //     "../assets/models/hourse/horse.glb"); Importer::LoadFileModel("test",
-    //     "../assets/models/hourse/scene.gltf");
-
-    // scene.AddModel(model);
-    // scene.SetEnvironmentMap(reflectMap);
+    scene.SetEnvironmentMap(reflectMap);
     do {
         auto &io = ImGui::GetIO();
         glm::vec2 delta = window.GetCursorDelta();
