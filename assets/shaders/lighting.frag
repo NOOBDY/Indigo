@@ -338,7 +338,8 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
             Lo = albedo * lightColor * light.power * ao * fadeOut;
         else {
             // vec2 brdf = texture(LUT, vec2(dotNV,roughness-0.03)).rg;
-            vec3 diffuse = albedo*texture(reflectMap, panoramaUV(N)).xyz;
+            // vec3 diffuse = albedo*texture(reflectMap, panoramaUV(N)).xyz;
+            vec3 diffuse=albedo*SHIrradiance(N);
             vec3 env = texture(reflectMap, panoramaUV(R)).xyz;
             vec3 specular = env * EnvBRDFApprox(F0, roughness, dotNV);
             specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;

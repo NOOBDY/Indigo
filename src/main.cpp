@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 100.0f, 1500.0f);
+        45.0f, window.GetAspectRatio(), 10.0f, 2500.0f);
 
     Scene scene(mainCamera);
     // try {
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
         auto models =
             Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
         for (auto &i : models) {
-            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {0.3, 0.3, 0.3}));
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {1., 1., 1.}));
             scene.AddModel(i);
         }
     } catch (std::exception &e) {
