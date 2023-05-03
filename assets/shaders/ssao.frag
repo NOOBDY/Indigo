@@ -30,7 +30,7 @@ struct CameraData {
 
 layout(location = 0) in vec2 UV;
 
-layout(location = 0) out vec4 fragColor;
+layout(location = 0) out float fragColor;
 
 uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
@@ -118,10 +118,6 @@ float gold_noise(in vec2 xy, in float seed) {
     return fract(tan(distance(xy * PHI, xy) * seed) * xy.x);
 }
 
-float rand(vec2 co) {
-    return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453);
-}
-
 vec3 depth2position(highp float depth, mat4 projection, mat4 view) {
     mat4 invert_view_projection = inverse(projection * view);
 
@@ -152,51 +148,49 @@ void main() {
     // screen size / noise texture size
     const vec2 noiseScale = vec2(1280.0 / 20.0, 720.0 / 20.0);
 
-    const float radius = 5.5;
-    const float bias = 0.005;
+    const float radius = 2.5;
+    const float bias = 0.8;
 
     vec3 fragPos = depth2position(texture(screenDepth, UV).x,
                                   cameraInfo.projection, cameraInfo.view);
+    fragPos = (cameraInfo.view * vec4(fragPos, 1)).xyz;
     // fragPos = (cameraInfo.projection * vec4(fragPos, 1.0)).xyz;
     // vec3 fragPos = (texture(screenPosition, UV).xyz);
     // fragPos = (cameraInfo.projection * vec4(fragPos, 1.0)).xyz;
     vec3 normal = texture(screenNormal, UV).xyz * 2.0 - 1.0;
-    vec3 randomVec = vec3(texture(noise, UV).xy * 2.0 - 1.0, 0.5);
-    // vec3 randomVec =
-    //     texture(noise, UV + vec2(gold_noise(UV, 1), gold_noise(UV, 2))).xyz;
-    // vec3 randomVec = vec3(1.0);
+    normal = (cameraInfo.view * vec4(normal, 0)).xyz;
+    vec3 randomVec =
+        vec3(texture(noise, UV * noiseScale).xy * 2.0 - 1.0, 0.5 * noiseScale);
 
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
     vec3 bitangent = cross(normal, tangent);
     mat3 TBN = mat3(tangent, bitangent, normal);
 
-    // GenKernel();
-
     float occlusion = 0.0;
     for (int i = 0; i < KERNEL_SIZE; ++i) {
+        // get sample position
         vec3 samplePos = TBN * kernel[i];
         samplePos = fragPos + samplePos * radius;
 
         vec4 offset = vec4(samplePos, 1.0);
-        offset = cameraInfo.projection * cameraInfo.view * offset;
+        offset = cameraInfo.projection * offset;
         offset.xyz /= offset.w;
         offset.xyz = offset.xyz * 0.5 + 0.5;
 
-        // float sampleDepth = fragPos.z;
-        float sampleDepth = texture(screenDepth, offset.xy).x;
-        // float sampleDepth = texture(screenPosition, offset.xy).z;
+        // get sample depth
+        vec3 temp = depth2position(texture(screenDepth, offset.xy).x,
+                                   cameraInfo.projection, cameraInfo.view);
+        temp = (cameraInfo.view * vec4(temp, 1)).xyz;
+        float sampleDepth = temp.z;
+        // float sampleDepth = texture(screenPosition, offset.xy)
+        //                         .z; // get depth value of kernel sample
 
-        occlusion += (sampleDepth >= offset.z + bias ? 1.0 : 0.0);
-
-        // float rangeCheck =
-        //     smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
-        // occlusion += (sampleDepth >= offset.z + bias ? 1.0 : 0.0) *
-        // rangeCheck;
-
-        // fragColor = vec4(samplePos, 1);
+        float rangeCheck =
+            smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));
+        occlusion +=
+            (sampleDepth >= samplePos.z + bias ? 1.0 : 0.0) * rangeCheck;
     }
-
     occlusion = 1.0 - (occlusion / KERNEL_SIZE);
 
-    fragColor = vec4(occlusion);
+    fragColor = occlusion;
 }

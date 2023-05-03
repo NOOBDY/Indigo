@@ -133,7 +133,7 @@ vec4 displayPass(int i) {
     case 6:
         return texture(screenDepth, UV);
     case 9:
-        return texture(ssao, UV);
+        return vec4(texture(ssao, UV).r);
     case 10:
         return texture(screenLight, UV);
     case 11:
@@ -166,6 +166,6 @@ void main() {
 
     col.xyz = mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
 
-    // FragColor = vec4(col.xyz, 1.0);
-    FragColor = texture(ssao, UV);
+    FragColor = vec4(col.xyz, 1.0);
+    // FragColor = texture(ssao, UV);
 }

@@ -19,7 +19,7 @@ Pipeline::Pipeline(int width, int height)
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height), m_ActivePass(NORMAL) {
+      m_Width(width), m_Height(height), m_ActivePass(SSAO) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
@@ -167,8 +167,7 @@ void Pipeline::Init() {
 
 #pragma region ssao
     m_SSAOPassFBO.Bind();
-    m_Passes[SSAO] =
-        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_Passes[SSAO] = std::make_shared<Texture>(m_Width, m_Height, Texture::R);
     m_SSAOPassFBO.AttachTexture(m_Passes[SSAO]->GetTextureID(), attachments[0]);
     glDrawBuffers(1, attachments);
     m_SSAOPassFBO.Unbind();
