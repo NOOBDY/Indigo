@@ -221,6 +221,46 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
     return F0 + (max(vec3(1.0 - roughness), F0) - F0) *
                     pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
+// St. Peter's Basilica SH
+// https://www.shadertoy.com/view/lt2GRD
+struct SHCoefficients
+{
+	vec3 l00, l1m1, l10, l11, l2m2, l2m1, l20, l21, l22;
+};
+
+const SHCoefficients SH_STPETER = SHCoefficients(
+	vec3(0.3623915, 0.2624130, 0.2326261),
+	vec3(0.1759131, 0.1436266, 0.1260569),
+	vec3(-0.0247311, -0.0101254, -0.0010745),
+	vec3(0.0346500, 0.0223184, 0.0101350),
+	vec3(0.0198140, 0.0144073, 0.0043987),
+	vec3(-0.0469596, -0.0254485, -0.0117786),
+	vec3(-0.0898667, -0.0760911, -0.0740964),
+	vec3(0.0050194, 0.0038841, 0.0001374),
+	vec3(-0.0818750, -0.0321501, 0.0033399)
+);
+
+vec3 SHIrradiance(vec3 nrm)
+{
+	const SHCoefficients c = SH_STPETER;
+	const float c1 = 0.429043;
+	const float c2 = 0.511664;
+	const float c3 = 0.743125;
+	const float c4 = 0.886227;
+	const float c5 = 0.247708;
+	return (
+		c1 * c.l22 * (nrm.x * nrm.x - nrm.y * nrm.y) +
+		c3 * c.l20 * nrm.z * nrm.z +
+		c4 * c.l00 -
+		c5 * c.l20 +
+		2.0 * c1 * c.l2m2 * nrm.x * nrm.y +
+		2.0 * c1 * c.l21  * nrm.x * nrm.z +
+		2.0 * c1 * c.l2m1 * nrm.y * nrm.z +
+		2.0 * c2 * c.l11  * nrm.x +
+		2.0 * c2 * c.l1m1 * nrm.y +
+		2.0 * c2 * c.l10  * nrm.z
+		);
+}
 // https://www.unrealengine.com/en-US/blog/phiysically-based-shading-on-mobile
 vec3 EnvBRDFApprox(vec3 SpecularColor, float Roughness, float dotNV) {
     const vec4 c0 = {-1, -0.0275, -0.572, 0.022};
@@ -298,7 +338,7 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
             Lo = albedo * lightColor * light.power * ao * fadeOut;
         else {
             // vec2 brdf = texture(LUT, vec2(dotNV,roughness-0.03)).rg;
-            vec3 diffuse = albedo * texture(reflectMap, panoramaUV(N)).xyz;
+            vec3 diffuse = albedo*texture(reflectMap, panoramaUV(N)).xyz;
             vec3 env = texture(reflectMap, panoramaUV(R)).xyz;
             vec3 specular = env * EnvBRDFApprox(F0, roughness, dotNV);
             specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;

@@ -56,11 +56,75 @@ int main(int argc, char **argv) {
         45.0f, window.GetAspectRatio(), 100.0f, 1500.0f);
 
     Scene scene(mainCamera);
+    // try {
+    //     auto model = std::make_shared<Model>(                            //
+    //         "Main",                                                      //
+    //         Importer::LoadFile("../assets/models/little_city/main.glb"), //
+    //         Transform({0, 0, 0},                                         //
+    //                   {180, 180, 180},                                   //
+    //                   {1, 1, 1}));
+
+    //     model->SetAlbedoTexture(texMainColor);
+    //     model->SetUseAlbedoTexture(true);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
+
+    // try {
+    //     auto model = std::make_shared<Model>( //
+    //         "Interior", //
+    //         Importer::LoadFile("../assets/models/little_city/interior.glb"),
+    //         // Transform({0, 0, 0}, //
+    //                   {180, 180, 180}, // {1, 1, 1}));
+
+    //     model->SetAlbedoTexture(texInterior);
+    //     model->SetUseAlbedoTexture(true);
+    //     model->SetNormalTexture(wallNormalMap);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
+
+    // try {
+    //     auto model = std::make_shared<Model>(                            //
+    //         "Misc",                                                      //
+    //         Importer::LoadFile("../assets/models/little_city/misc.glb"), //
+    //         Transform({0, 0.1, 0},                                       //
+    //                   {180, 180, 180},                                   //
+    //                   {1, 1, 1}));
+
+    //     model->SetAlbedoTexture(texMisc);
+    //     model->SetUseAlbedoTexture(true);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
+
+    // try {
+    //     auto model = std::make_shared<Model>( //
+    //         "Outline", //
+    //         Importer::LoadFile("../assets/models/little_city/outline.glb"),
+    //         // Transform({0, 0, 0}, //
+    //                   {180, 180, 180}, // {1, 1, 1}));
+
+    //     model->SetAlbedoColor({0, 0, 0});
+    //     model->SetUseAlbedoTexture(false);
+    //     model->SetCastShadows(false);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
 
     try {
         auto models =
             Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
         for (auto &i : models) {
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {0.3, 0.3, 0.3}));
             scene.AddModel(i);
         }
     } catch (std::exception &e) {

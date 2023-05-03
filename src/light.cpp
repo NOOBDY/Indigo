@@ -45,7 +45,8 @@ glm::mat4 Light::GetLightOrth() {
 
     // glm::mat4 lightView = m_Transform.GetDirection4();
     glm::mat4 lightView =
-        glm::lookAt(m_Transform.GetDirection(), glm::vec3(0.0, -0.01, 0.0),
+        glm::lookAt(m_Transform.GetPosition(),
+                    m_Transform.GetPosition() - m_Transform.GetDirection(),
                     glm::vec3(0.0, 1.0, 0.0));
     glm::mat4 lightSpaceMatrix = lightProjection * lightView;
 
