@@ -11,6 +11,8 @@ uniform sampler2D screenARM;
 uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
+uniform sampler2D ssao;
+
 uniform sampler2D reflectMap;
 
 uniform sampler2D directionShadowMap;
@@ -130,11 +132,13 @@ vec4 displayPass(int i) {
         return texture(screenID, UV);
     case 6:
         return texture(screenDepth, UV);
-    case 8:
-        return texture(screenLight, UV);
     case 9:
+        return texture(ssao, UV);
+    case 10:
+        return texture(screenLight, UV);
+    case 11:
         return texture(screenVolume, UV);
-    case 13:
+    case 15:
         // return texture(screenLight, UV);
         return texture(screenLight, UV) +
                vec4(gaussianBlur(screenVolume, 10, UV), 0.0);
@@ -162,5 +166,6 @@ void main() {
 
     col.xyz = mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
 
-    FragColor = vec4(col.xyz, 1.0);
+    // FragColor = vec4(col.xyz, 1.0);
+    FragColor = texture(ssao, UV);
 }

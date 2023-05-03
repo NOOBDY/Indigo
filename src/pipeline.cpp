@@ -1,5 +1,8 @@
 #include "pipeline.hpp"
 
+#include <iostream>
+#include <random>
+
 #include "renderer.hpp"
 
 Pipeline::Pipeline(int width, int height)
@@ -10,13 +13,17 @@ Pipeline::Pipeline(int width, int height)
                              "../assets/shaders/shadow_direction.frag"),
       m_Basic("../assets/shaders/base_pass.vert",
               "../assets/shaders/base_pass.frag"),
+      m_SSAO("../assets/shaders/frame_screen.vert",
+             "../assets/shaders/ssao.frag"),
       m_Light("../assets/shaders/frame_screen.vert",
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height), m_ActivePass(SCREEN) {
+      m_Width(width), m_Height(height), m_ActivePass(NORMAL) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
+    m_Passes[NOISE] =
+        std::make_shared<Texture>("../assets/textures/perlin_noise.png");
 
     m_Basic.Bind();
     m_Basic.SetInt("albedoMap", ALBEDO);
@@ -24,6 +31,12 @@ Pipeline::Pipeline(int width, int height)
     m_Basic.SetInt("normalMap", NORMAL);
     m_Basic.SetInt("ARMMap", ARM);
     m_Basic.SetInt("reflectMap", REFLECT);
+
+    m_SSAO.Bind();
+    m_SSAO.SetInt("screenNormal", NORMAL);
+    m_SSAO.SetInt("screenPosition", POSITION);
+    m_SSAO.SetInt("screenDepth", DEPTH);
+    m_SSAO.SetInt("noise", NOISE);
 
     m_Light.Bind();
     m_Light.SetInt("screenAlbedo", ALBEDO);
@@ -51,6 +64,8 @@ Pipeline::Pipeline(int width, int height)
     m_Compositor.SetInt("screenPosition", POSITION);
     m_Compositor.SetInt("screenID", ID);
     m_Compositor.SetInt("screenDepth", DEPTH);
+
+    m_Compositor.SetInt("ssao", SSAO);
 
     m_Compositor.SetInt("reflectMap", REFLECT);
     m_Compositor.SetInt("screenLight", LIGHTING);
@@ -89,6 +104,28 @@ Pipeline::Pipeline(int width, int height)
             0, 1, 2, //
             0, 2, 3, //
         }));
+
+    // std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
+    // std::default_random_engine generator;
+
+    // std::array<glm::vec3, 64> ssaoKernel;
+
+    // auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
+
+    // float counter = 0;
+    // std::for_each(ssaoKernel.begin(), ssaoKernel.end(), [&](glm::vec3
+    // &sample) {
+    //     sample = {
+    //         randomFloats(generator) * 2.0 - 1.0,
+    //         randomFloats(generator) * 2.0 - 1.0,
+    //         randomFloats(generator),
+    //     };
+
+    //     sample = glm::normalize(sample);
+
+    //     float scale = counter++ / 64.0;
+    //     sample *= lerp(0.1f, 1.0f, scale * scale);
+    // });
 }
 
 void Pipeline::Init() {
@@ -128,6 +165,15 @@ void Pipeline::Init() {
     m_BasicPassFBO.Unbind();
 #pragma endregion
 
+#pragma region ssao
+    m_SSAOPassFBO.Bind();
+    m_Passes[SSAO] =
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+    m_SSAOPassFBO.AttachTexture(m_Passes[SSAO]->GetTextureID(), attachments[0]);
+    glDrawBuffers(1, attachments);
+    m_SSAOPassFBO.Unbind();
+#pragma endregion
+
 #pragma region lighting pass texture
     m_LightPassFBO.Bind();
     m_Passes[LIGHTING] =
@@ -156,6 +202,7 @@ void Pipeline::Init() {
 void Pipeline::Render(const Scene &scene) {
     ShadowPass(scene);
     BasePass(scene);
+    SSAOPass(scene);
     LightPass(scene);
     CompositorPass(scene);
 }
@@ -266,6 +313,34 @@ void Pipeline::BasePass(const Scene &scene) {
     m_BasicPassFBO.Unbind();
 }
 
+void Pipeline::SSAOPass(const Scene &scene) {
+    m_SSAOPassFBO.Bind();
+    m_SSAO.Bind();
+
+    glViewport(0, 0, m_Width, m_Height);
+
+    Renderer::DisableDepthTest();
+    Renderer::Clear();
+
+    CameraData camData = scene.GetActiveCamera()->GetCameraData();
+
+    m_SSAO.Validate();
+
+    m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+
+    m_Passes[POSITION]->Bind(POSITION);
+    m_Passes[NORMAL]->Bind(NORMAL);
+    m_Passes[DEPTH]->Bind(DEPTH);
+    m_Passes[NOISE]->Bind(NOISE);
+
+    m_Screen.Bind();
+    glTextureBarrier();
+    Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+
+    m_SSAO.Unbind();
+    m_SSAOPassFBO.Unbind();
+}
+
 void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Bind();
     m_Light.Bind();
@@ -334,6 +409,7 @@ void Pipeline::CompositorPass(const Scene &scene) {
     m_Passes[POSITION]->Bind(POSITION);
     m_Passes[ID]->Bind(ID);
     m_Passes[DEPTH]->Bind(DEPTH);
+    m_Passes[SSAO]->Bind(SSAO);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 

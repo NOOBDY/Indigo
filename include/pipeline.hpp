@@ -25,12 +25,15 @@ public:
         //
         REFLECT,
 
+        NOISE,
+        SSAO,
+
         // lighting
         LIGHTING,
         VOLUME,
 
         // shadow
-        POINT_SHADOW, // Must be last because cube map stuff
+        POINT_SHADOW,
         DIRECTION_SHADOW,
         LUT,
 
@@ -62,6 +65,7 @@ public:
 private:
     void ShadowPass(const Scene &scene);
     void BasePass(const Scene &scene);
+    void SSAOPass(const Scene &scene);
     void LightPass(const Scene &scene);
     void CompositorPass(const Scene &scene);
 
@@ -70,11 +74,13 @@ private:
     Program m_PointLightShadow;
     Program m_DirectionLightShadow;
     Program m_Basic;
+    Program m_SSAO;
     Program m_Light;
     Program m_Compositor;
 
     FrameBuffer m_ShadowFBO;
     FrameBuffer m_BasicPassFBO;
+    FrameBuffer m_SSAOPassFBO;
     FrameBuffer m_LightPassFBO;
     FrameBuffer m_CompositorFBO;
 

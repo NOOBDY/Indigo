@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
         model->SetAlbedoTexture(texInterior);
         model->SetUseAlbedoTexture(true);
 
-        scene.AddModel(model);
+        // scene.AddModel(model);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
         model->SetAlbedoTexture(texMisc);
         model->SetUseAlbedoTexture(true);
 
-        scene.AddModel(model);
+        // scene.AddModel(model);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -117,7 +117,7 @@ int main(int argc, char **argv) {
         model->SetUseAlbedoTexture(false);
         model->SetCastShadows(false);
 
-        scene.AddModel(model);
+        // scene.AddModel(model);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
