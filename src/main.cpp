@@ -54,6 +54,7 @@ int main(int argc, char **argv) {
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
         45.0f, window.GetAspectRatio(), 10.0f, 2500.0f);
+    mainCamera->GetTransform().SetPosition({200, 90, 0});
 
     Scene scene(mainCamera);
     // try {
@@ -124,7 +125,7 @@ int main(int argc, char **argv) {
         auto models =
             Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
         for (auto &i : models) {
-            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {1., 1., 1.}));
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
             scene.AddModel(i);
         }
     } catch (std::exception &e) {
@@ -135,9 +136,9 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
             "Light 1",                                           //
             Light::POINT,                                        //
-            Transform({50, 100, 200},                            //
+            Transform({5, 10, 20},                               //
                       {0, 0, 0},                                 //
-                      {20, 20, 20}),
+                      {5, 5, 5}),
             1, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
         light1->SetShadowSize(2048);
@@ -151,9 +152,9 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
             "Light 2",                                           //
             Light::DIRECTION,                                    //
-            Transform({0, 400, 0},                               //
-                      {0, 0, 0},                                 //
-                      {20, 20, 20}),
+            Transform({0, 500, 0},                               //
+                      {20, 0, 0},                                //
+                      {5, 5, 5}),
             2, 1000, glm::vec3(1.0f));
 
         light2->SetShadowSize(2048);
@@ -167,9 +168,9 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light3 = std::make_shared<Light>( //
             "Light 3",                                           //
             Light::AMBIENT,                                      //
-            Transform({0.0, 300, 0},                             //
+            Transform({0.0, 30, 0},                              //
                       {0, 0, 0},                                 //
-                      {20, 20, 20}),
+                      {5, 5, 5}),
             1, 1000, glm::vec3(1.0f), false);
 
         // light3->SetShadowSize(2048);
@@ -201,7 +202,7 @@ int main(int argc, char **argv) {
         if (!io.WantCaptureMouse) {
             activeCamera->GetTransform().SetPosition(
                 activeCamera->GetTransform().GetPosition() +
-                10 * window.GetScrollOffset().y *
+                20 * window.GetScrollOffset().y *
                     glm::normalize(activeCamera->GetTransform().GetPosition()));
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
