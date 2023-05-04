@@ -41,6 +41,7 @@ layout(std140, binding = 3) uniform Camera {
     CameraData cameraInfo;
 };
 
+// hard-coded C++ generated random floats
 vec3 kernel[KERNEL_SIZE] = {vec3(-0.0687772, -0.0506844, 0.0519692),
                             vec3(-0.0340995, 0.0270217, 0.0902831),
                             vec3(-0.0769596, 0.0303901, 0.0577081),
@@ -131,16 +132,17 @@ vec3 depth2position(highp float depth, mat4 projection, mat4 view) {
     return worldPosition.xyz;
 }
 
+// Using this instead of C++ generated random would produce weird patterns
 void GenKernel() {
     for (int i = 0; i < KERNEL_SIZE; ++i) {
-        kernel[i].x = gold_noise(UV, 0) * 0.5 - 0.5;
-        kernel[i].y = gold_noise(UV, 69) * 0.5 - 0.5;
+        kernel[i].x = gold_noise(vec2(UV.x), 0) * 0.5 - 0.5;
+        kernel[i].y = gold_noise(vec2(UV.y), 69) * 0.5 - 0.5;
         kernel[i].z = gold_noise(UV, 420);
 
-        // float scale = float(i) / float(KERNEL_SIZE);
-        // scale = mix(0.1, 1.0, scale * scale);
+        float scale = float(i) / float(KERNEL_SIZE);
+        scale = mix(0.1, 1.0, scale * scale);
 
-        // kernel[i] *= scale;
+        kernel[i] *= scale;
     }
 }
 
@@ -148,17 +150,19 @@ void main() {
     // screen size / noise texture size
     const vec2 noiseScale = vec2(1280.0 / 20.0, 720.0 / 20.0);
 
-    const float radius = 2.5;
-    const float bias = 0.8;
+    // This setting would have artifacts and weird "blooming" effect when
+    // viewing raw SSAO pass but blended with ambient would hide it. If this
+    // value is too small the effects are too insignificant
+    const float radius = 20.0;
+    const float bias = 0.5;
 
     vec3 fragPos = depth2position(texture(screenDepth, UV).x,
                                   cameraInfo.projection, cameraInfo.view);
     fragPos = (cameraInfo.view * vec4(fragPos, 1)).xyz;
-    // fragPos = (cameraInfo.projection * vec4(fragPos, 1.0)).xyz;
-    // vec3 fragPos = (texture(screenPosition, UV).xyz);
-    // fragPos = (cameraInfo.projection * vec4(fragPos, 1.0)).xyz;
+
     vec3 normal = texture(screenNormal, UV).xyz * 2.0 - 1.0;
     normal = (cameraInfo.view * vec4(normal, 0)).xyz;
+
     vec3 randomVec =
         vec3(texture(noise, UV * noiseScale).xy * 2.0 - 1.0, 0.5 * noiseScale);
 
@@ -182,8 +186,6 @@ void main() {
                                    cameraInfo.projection, cameraInfo.view);
         temp = (cameraInfo.view * vec4(temp, 1)).xyz;
         float sampleDepth = temp.z;
-        // float sampleDepth = texture(screenPosition, offset.xy)
-        //                         .z; // get depth value of kernel sample
 
         float rangeCheck =
             smoothstep(0.0, 1.0, radius / abs(fragPos.z - sampleDepth));

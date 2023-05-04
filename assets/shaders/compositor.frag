@@ -167,5 +167,7 @@ void main() {
     col.xyz = mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
 
     FragColor = vec4(col.xyz, 1.0);
-    // FragColor = texture(ssao, UV);
+
+    // using "fake" ambient for better viewing experience
+    FragColor = 0.3 * texture(screenAlbedo, UV) * texture(ssao, UV).r;
 }
