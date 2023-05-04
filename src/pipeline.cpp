@@ -19,7 +19,7 @@ Pipeline::Pipeline(int width, int height)
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height), m_ActivePass(SCREEN) {
+      m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
@@ -55,6 +55,7 @@ Pipeline::Pipeline(int width, int height)
     m_Light.SetInt("pointShadowMap", POINT_SHADOW);
     m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
     m_Light.SetInt("LUT", LUT);
+    m_Light.SetInt("ssao", SSAO);
 
     m_Compositor.Bind();
     m_Compositor.SetInt("screenAlbedo", ALBEDO);
@@ -104,28 +105,6 @@ Pipeline::Pipeline(int width, int height)
             0, 1, 2, //
             0, 2, 3, //
         }));
-
-    // std::uniform_real_distribution<float> randomFloats(0.0f, 1.0f);
-    // std::default_random_engine generator;
-
-    // std::array<glm::vec3, 64> ssaoKernel;
-
-    // auto lerp = [](float a, float b, float f) { return a + f * (b - a); };
-
-    // float counter = 0;
-    // std::for_each(ssaoKernel.begin(), ssaoKernel.end(), [&](glm::vec3
-    // &sample) {
-    //     sample = {
-    //         randomFloats(generator) * 2.0 - 1.0,
-    //         randomFloats(generator) * 2.0 - 1.0,
-    //         randomFloats(generator),
-    //     };
-
-    //     sample = glm::normalize(sample);
-
-    //     float scale = counter++ / 64.0;
-    //     sample *= lerp(0.1f, 1.0f, scale * scale);
-    // });
 }
 
 void Pipeline::Init() {
@@ -201,7 +180,8 @@ void Pipeline::Init() {
 void Pipeline::Render(const Scene &scene) {
     ShadowPass(scene);
     BasePass(scene);
-    SSAOPass(scene);
+    if (m_UseSSAO)
+        SSAOPass(scene);
     LightPass(scene);
     CompositorPass(scene);
 }
@@ -365,6 +345,7 @@ void Pipeline::LightPass(const Scene &scene) {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
     m_Passes[LUT]->Bind(LUT);
+    m_Passes[SSAO]->Bind(SSAO);
 
     m_Light.Validate();
 
@@ -383,8 +364,16 @@ void Pipeline::LightPass(const Scene &scene) {
             light->GetColorTexture()->Bind(REFLECT);
 
         LightData lightInfo = light->GetLightData();
+        PipelineData pipelineInfo = PipelineData{scene.GetActiveSceneObjectID(),
+                                                 1.0f,
+                                                 1.0f,
+                                                 m_ActivePass,
+                                                 m_UseSSAO,
+                                                 {}};
+
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
         // shader need to delete light type to select use cube for image 2d
         m_Screen.Bind();
         // make sure the texture have write before next draw
@@ -416,8 +405,12 @@ void Pipeline::CompositorPass(const Scene &scene) {
         scene.GetEnvironmentMap()->Bind(REFLECT);
 
     m_Screen.Bind();
-    PipelineData pipelineInfo =
-        PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};
+    PipelineData pipelineInfo = PipelineData{scene.GetActiveSceneObjectID(),
+                                             1.0f,
+                                             1.0f,
+                                             m_ActivePass,
+                                             m_UseSSAO,
+                                             {}};
 
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());

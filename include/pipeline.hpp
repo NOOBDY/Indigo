@@ -49,6 +49,8 @@ public:
         float time;
         float deltaTime;
         int selectPass;
+        int useSSAO;
+        glm::vec3 pad0;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
     };
@@ -91,5 +93,7 @@ private:
     int m_Width;
     int m_Height;
     int m_ActivePass;
+
+    bool m_UseSSAO;
 };
 #endif

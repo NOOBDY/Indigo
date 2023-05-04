@@ -7,6 +7,15 @@
 #define DIRECTION 3
 #define AMBIENT 4
 
+struct PipelineData {
+    int ID;
+    float time;
+    float detiaTime;
+    int selectPass;
+    int useSSAO;
+    vec3 pad0;
+};
+
 struct TransformData {
     mat4 transform;
 
@@ -72,6 +81,9 @@ layout(std140, binding = 2) uniform Lights {
 layout(std140, binding = 3) uniform Camera {
     CameraData cameraInfo;
 };
+layout(std140, binding = 4) uniform PipelineUniform {
+    PipelineData pipelineInfo;
+};
 
 layout(location = 0) in vec2 UV;
 // in vec2 UV;
@@ -98,6 +110,8 @@ uniform sampler2D directionShadowMap;
 uniform samplerCube pointShadowMap;
 
 uniform sampler2D LUT;
+uniform sampler2D ssao;
+
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
 
@@ -271,7 +285,8 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // Cook-Torrance BRDF
 
     vec3 albedo = deferredInfo.albedo;
-    float ao = deferredInfo.ARM.x;
+    float ao = deferredInfo.ARM.x *
+               (pipelineInfo.useSSAO == 1 ? texture(ssao, UV).r : 1.0);
     float roughness = deferredInfo.ARM.y;
     float metallic = deferredInfo.ARM.z;
 
@@ -302,7 +317,7 @@ vec4 AllLight(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
                         float(deferredInfo.ID.a != 1.0);
         Lo = (kD * diffuse / PI + specular) * dotNL * lightColor *
              (1 - shadow) * light.power * fadeOut * spot;
-        outScreenVolume.xyz += specular * ao * light.power * fadeOut;
+        outScreenVolume.xyz += specular * light.power * fadeOut;
     }
     return vec4(Lo, 1);
 }

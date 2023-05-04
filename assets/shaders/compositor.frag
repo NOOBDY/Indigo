@@ -28,7 +28,10 @@ struct PipelineData {
     float time;
     float detiaTime;
     int selectPass;
+    int useSSAO;
+    vec3 pad0;
 };
+
 struct TransformData {
     mat4 transform;
 
@@ -169,5 +172,6 @@ void main() {
     FragColor = vec4(col.xyz, 1.0);
 
     // using "fake" ambient for better viewing experience
-    FragColor = 0.3 * texture(screenAlbedo, UV) * texture(ssao, UV).r;
+    // FragColor = 0.3 * texture(screenAlbedo, UV) * texture(ssao, UV).r;
+    // FragColor = vec4(texture(ssao, UV).r);
 }
