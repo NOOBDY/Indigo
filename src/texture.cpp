@@ -88,8 +88,8 @@ Texture::GetPixelColorByPosition(glm::vec2 pos) const {
 }
 
 void Texture::LoadImage(const std::string &textureFilepath, int bit) {
-    LOG_TRACE("load texture path :{}", textureFilepath);
-    LOG_INFO("load texture path :{}", textureFilepath);
+    LOG_TRACE("Load texture path :{}", textureFilepath);
+    LOG_INFO("Load texture path :{}", textureFilepath);
     m_Target = IMAGE_2D;
     stbi_set_flip_vertically_on_load(true);
     int width, height, channels;
@@ -176,11 +176,11 @@ int Texture::Format2Bit(Texture::Format inFormat, int bit) const {
         case Texture::Format::RGBA:
             return GL_RGBA32F;
         default:
-            throw std::runtime_error("invalid format");
+            throw std::runtime_error("Invalid format");
         }
     }
     }
-    throw std::runtime_error("invalid bit number");
+    throw std::runtime_error("Invalid bit number");
 }
 
 int Texture::Format2Channels(Format format) const {
@@ -196,7 +196,7 @@ int Texture::Format2Channels(Format format) const {
     case Format::RGBA:
         return 4;
     default:
-        throw std::runtime_error("invalid format");
+        throw std::runtime_error("Invalid format");
     }
 }
 

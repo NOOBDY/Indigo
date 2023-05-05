@@ -52,7 +52,8 @@ std::shared_ptr<SceneObject> Scene::GetActiveSceneObject() const {
     return m_ActiveObjectID != -1
                ? *std::find_if(m_SceneObjects.begin(), m_SceneObjects.end(),
                                [this](std::shared_ptr<SceneObject> obj) {
-                                   return obj->GetID() == m_ActiveObjectID;
+                                   return static_cast<int>(obj->GetID()) ==
+                                          m_ActiveObjectID;
                                })
                : nullptr;
 }
