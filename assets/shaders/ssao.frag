@@ -33,7 +33,6 @@ layout(location = 0) in vec2 UV;
 layout(location = 0) out float fragColor;
 
 uniform sampler2D screenNormal;
-uniform sampler2D screenPosition;
 uniform sampler2D screenDepth;
 uniform sampler2D noise;
 

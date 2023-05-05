@@ -34,7 +34,6 @@ Pipeline::Pipeline(int width, int height)
 
     m_SSAO.Bind();
     m_SSAO.SetInt("screenNormal", NORMAL);
-    m_SSAO.SetInt("screenPosition", POSITION);
     m_SSAO.SetInt("screenDepth", DEPTH);
     m_SSAO.SetInt("noise", NOISE);
 
@@ -307,13 +306,12 @@ void Pipeline::SSAOPass(const Scene &scene) {
 
     m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
 
-    m_Passes[POSITION]->Bind(POSITION);
     m_Passes[NORMAL]->Bind(NORMAL);
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[NOISE]->Bind(NOISE);
 
     m_Screen.Bind();
-    glTextureBarrier();
+    // glTextureBarrier();
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
     m_SSAO.Unbind();
