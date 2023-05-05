@@ -134,12 +134,12 @@ int main(int argc, char **argv) {
 
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
-            "Light 1",                                           //
+            "point light",                                       //
             Light::POINT,                                        //
-            Transform({5, 10, 20},                               //
+            Transform({10, 50, 100},                             //
                       {0, 0, 0},                                 //
                       {5, 5, 5}),
-            1, 1000, glm::vec3(1.0f));
+            5, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
         light1->SetShadowSize(512);
 
@@ -150,10 +150,10 @@ int main(int argc, char **argv) {
 
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
-            "Light 2",                                           //
+            "direction light",                                   //
             Light::DIRECTION,                                    //
             Transform({0, 500, 0},                               //
-                      {20, 0, 0},                                //
+                      {20, 90, 0},                               //
                       {5, 5, 5}),
             2, 1000, glm::vec3(1.0f));
 
@@ -166,7 +166,7 @@ int main(int argc, char **argv) {
     }
     try {
         std::shared_ptr<Light> light3 = std::make_shared<Light>( //
-            "Light 3",                                           //
+            "ambient light",                                     //
             Light::AMBIENT,                                      //
             Transform({0.0, 30, 0},                              //
                       {0, 0, 0},                                 //

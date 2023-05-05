@@ -372,27 +372,27 @@ Importer::LoadFileScene(const std::string &filepath) {
                 break;
             case aiTextureType_AMBIENT_OCCLUSION:
                 model->SetARMTexture(texture);
-                model->SetUseARMTexture(true);
+                // model->SetUseARMTexture(true);
                 break;
             case aiTextureType_DIFFUSE_ROUGHNESS:
                 model->SetARMTexture(texture);
-                model->SetUseARMTexture(true);
+                // model->SetUseARMTexture(true);
                 break;
             case aiTextureType_SHININESS:
                 model->SetARMTexture(texture);
-                model->SetUseARMTexture(true);
+                // model->SetUseARMTexture(true);
                 break;
             case aiTextureType_SPECULAR:
                 model->SetARMTexture(texture);
-                model->SetUseARMTexture(true);
+                // model->SetUseARMTexture(true);
                 break;
             case aiTextureType_SHEEN:
                 model->SetARMTexture(texture);
-                model->SetUseARMTexture(true);
+                // model->SetUseARMTexture(true);
                 break;
             case aiTextureType_METALNESS:
                 model->SetARMTexture(texture);
-                model->SetUseARMTexture(true);
+                // model->SetUseARMTexture(true);
                 break;
             case aiTextureType_EMISSION_COLOR:
                 model->SetEmissionTexture(texture);

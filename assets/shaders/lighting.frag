@@ -7,6 +7,15 @@
 #define DIRECTION 3
 #define AMBIENT 4
 
+struct PipelineData {
+    int ID;
+    float time;
+    float detiaTime;
+    int selectPass;
+    int useSSAO;
+    vec3 pad0;
+};
+
 struct TransformData {
     mat4 transform;
 
@@ -72,6 +81,9 @@ layout(std140, binding = 2) uniform Lights {
 layout(std140, binding = 3) uniform Camera {
     CameraData cameraInfo;
 };
+layout(std140, binding = 4) uniform PipelineUniform {
+    PipelineData pipelineInfo;
+};
 
 layout(location = 0) in vec2 UV;
 // in vec2 UV;
@@ -98,6 +110,8 @@ uniform sampler2D directionShadowMap;
 uniform samplerCube pointShadowMap;
 
 uniform sampler2D LUT;
+uniform sampler2D ssao;
+
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
 
@@ -311,7 +325,8 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     // Cook-Torrance BRDF
 
     vec3 albedo = deferredInfo.albedo;
-    float ao = deferredInfo.ARM.x;
+    float ao = deferredInfo.ARM.x *
+               (pipelineInfo.useSSAO == 1 ? texture(ssao, UV).r : 1.0);
     float roughness = deferredInfo.ARM.y;
     float metallic = deferredInfo.ARM.z;
 
@@ -330,21 +345,23 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         else {
             // vec2 brdf = texture(LUT, vec2(dotNV,roughness-0.03)).rg;
             // vec3 diffuse = albedo*texture(reflectMap, panoramaUV(N)).xyz;
-            vec3 diffuse = albedo * SHIrradiance(N);
+            vec3 diffuse = albedo * SHIrradiance(N)*ao;
             vec3 env = texture(reflectMap, panoramaUV(R)).xyz;
             vec3 specular = env * EnvBRDFApprox(F0, roughness, dotNV);
             specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
+
             Lo = (kD * diffuse + specular) * light.power * fadeOut;
             outScreenVolume.xyz += specular * ao * light.power * fadeOut;
         }
 
     } else {
-        vec3 diffuse = albedo;
+        vec3 diffuse = albedo*ao;
         vec3 specular = NDF * G * F * 0.25 / max(dotNV * dotNL, 0.001) *
                         float(deferredInfo.ID.a != 1.0);
+        specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
         Lo = (kD * diffuse / PI + specular) * dotNL * lightColor *
              (1 - shadow) * light.power * fadeOut * spot;
-        outScreenVolume.xyz += specular * ao * light.power * fadeOut;
+        outScreenVolume.xyz += specular*ao * light.power * fadeOut;
     }
     return vec4(Lo, 1);
 }

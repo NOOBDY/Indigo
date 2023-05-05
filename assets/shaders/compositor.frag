@@ -11,6 +11,8 @@ uniform sampler2D screenARM;
 uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
+uniform sampler2D ssao;
+
 uniform sampler2D reflectMap;
 
 uniform sampler2D directionShadowMap;
@@ -26,7 +28,10 @@ struct PipelineData {
     float time;
     float detiaTime;
     int selectPass;
+    int useSSAO;
+    vec3 pad0;
 };
+
 struct TransformData {
     mat4 transform;
 
@@ -130,11 +135,13 @@ vec4 displayPass(int i) {
         return texture(screenID, UV);
     case 6:
         return texture(screenDepth, UV);
-    case 8:
-        return texture(screenLight, UV);
     case 9:
+        return vec4(texture(ssao, UV).r);
+    case 10:
+        return texture(screenLight, UV);
+    case 11:
         return texture(screenVolume, UV);
-    case 13:
+    case 15:
         // return texture(screenLight, UV);
         return texture(screenLight, UV) +
                vec4(gaussianBlur(screenVolume, 10, UV), 0.0);
@@ -163,4 +170,8 @@ void main() {
     col.xyz = mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
 
     FragColor = vec4(col.xyz, 1.0);
+
+    // using "fake" ambient for better viewing experience
+    // FragColor = 0.3 * texture(screenAlbedo, UV) * texture(ssao, UV).r;
+    // FragColor = vec4(texture(ssao, UV).r);
 }

@@ -141,7 +141,7 @@ ModelData Light::GetModelData() {
         static_cast<int>(false),        //
         {0, 0, 0},                      // Emission
         static_cast<int>(false),        //
-        {0, 0.5, 0},                    // ARM
+        {1, 0.5, 0.1},                  // ARM
         static_cast<int>(false),        //
         static_cast<int>(false),        // Normal
         m_ID,                           //

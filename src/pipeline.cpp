@@ -1,5 +1,8 @@
 #include "pipeline.hpp"
 
+#include <iostream>
+#include <random>
+
 #include "renderer.hpp"
 
 Pipeline::Pipeline(int width, int height)
@@ -10,13 +13,17 @@ Pipeline::Pipeline(int width, int height)
                              "../assets/shaders/shadow_direction.frag"),
       m_Basic("../assets/shaders/base_pass.vert",
               "../assets/shaders/base_pass.frag"),
+      m_SSAO("../assets/shaders/frame_screen.vert",
+             "../assets/shaders/ssao.frag"),
       m_Light("../assets/shaders/frame_screen.vert",
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height), m_ActivePass(LIGHTING) {
+      m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true) {
     m_Passes[LUT] =
-        std::make_shared<Texture>("../assets/textures/brdf_lut2.png");
+        std::make_shared<Texture>("../assets/textures/brdf_lut.png");
+    m_Passes[NOISE] =
+        std::make_shared<Texture>("../assets/textures/perlin_noise.png");
 
     m_Basic.Bind();
     m_Basic.SetInt("albedoMap", ALBEDO);
@@ -24,6 +31,11 @@ Pipeline::Pipeline(int width, int height)
     m_Basic.SetInt("normalMap", NORMAL);
     m_Basic.SetInt("ARMMap", ARM);
     m_Basic.SetInt("reflectMap", REFLECT);
+
+    m_SSAO.Bind();
+    m_SSAO.SetInt("screenNormal", NORMAL);
+    m_SSAO.SetInt("screenDepth", DEPTH);
+    m_SSAO.SetInt("noise", NOISE);
 
     m_Light.Bind();
     m_Light.SetInt("screenAlbedo", ALBEDO);
@@ -42,6 +54,7 @@ Pipeline::Pipeline(int width, int height)
     m_Light.SetInt("pointShadowMap", POINT_SHADOW);
     m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
     m_Light.SetInt("LUT", LUT);
+    m_Light.SetInt("ssao", SSAO);
 
     m_Compositor.Bind();
     m_Compositor.SetInt("screenAlbedo", ALBEDO);
@@ -51,6 +64,8 @@ Pipeline::Pipeline(int width, int height)
     m_Compositor.SetInt("screenPosition", POSITION);
     m_Compositor.SetInt("screenID", ID);
     m_Compositor.SetInt("screenDepth", DEPTH);
+
+    m_Compositor.SetInt("ssao", SSAO);
 
     m_Compositor.SetInt("reflectMap", REFLECT);
     m_Compositor.SetInt("screenLight", LIGHTING);
@@ -128,6 +143,14 @@ void Pipeline::Init() {
     m_BasicPassFBO.Unbind();
 #pragma endregion
 
+#pragma region ssao
+    m_SSAOPassFBO.Bind();
+    m_Passes[SSAO] = std::make_shared<Texture>(m_Width, m_Height, Texture::R);
+    m_SSAOPassFBO.AttachTexture(m_Passes[SSAO]->GetTextureID(), attachments[0]);
+    glDrawBuffers(1, attachments);
+    m_SSAOPassFBO.Unbind();
+#pragma endregion
+
 #pragma region lighting pass texture
     m_LightPassFBO.Bind();
     m_Passes[LIGHTING] =
@@ -156,6 +179,8 @@ void Pipeline::Init() {
 void Pipeline::Render(const Scene &scene) {
     ShadowPass(scene);
     BasePass(scene);
+    if (m_UseSSAO)
+        SSAOPass(scene);
     LightPass(scene);
     CompositorPass(scene);
 }
@@ -266,6 +291,33 @@ void Pipeline::BasePass(const Scene &scene) {
     m_BasicPassFBO.Unbind();
 }
 
+void Pipeline::SSAOPass(const Scene &scene) {
+    m_SSAOPassFBO.Bind();
+    m_SSAO.Bind();
+
+    glViewport(0, 0, m_Width, m_Height);
+
+    Renderer::DisableDepthTest();
+    Renderer::Clear();
+
+    CameraData camData = scene.GetActiveCamera()->GetCameraData();
+
+    m_SSAO.Validate();
+
+    m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+
+    m_Passes[NORMAL]->Bind(NORMAL);
+    m_Passes[DEPTH]->Bind(DEPTH);
+    m_Passes[NOISE]->Bind(NOISE);
+
+    m_Screen.Bind();
+    // glTextureBarrier();
+    Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+
+    m_SSAO.Unbind();
+    m_SSAOPassFBO.Unbind();
+}
+
 void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Bind();
     m_Light.Bind();
@@ -291,6 +343,7 @@ void Pipeline::LightPass(const Scene &scene) {
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
     m_Passes[LUT]->Bind(LUT);
+    m_Passes[SSAO]->Bind(SSAO);
 
     m_Light.Validate();
 
@@ -309,8 +362,16 @@ void Pipeline::LightPass(const Scene &scene) {
             light->GetColorTexture()->Bind(REFLECT);
 
         LightData lightInfo = light->GetLightData();
+        PipelineData pipelineInfo = PipelineData{scene.GetActiveSceneObjectID(),
+                                                 1.0f,
+                                                 1.0f,
+                                                 m_ActivePass,
+                                                 m_UseSSAO,
+                                                 {}};
+
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
+        m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
         // shader need to delete light type to select use cube for image 2d
         m_Screen.Bind();
         // make sure the texture have write before next draw
@@ -334,6 +395,7 @@ void Pipeline::CompositorPass(const Scene &scene) {
     m_Passes[POSITION]->Bind(POSITION);
     m_Passes[ID]->Bind(ID);
     m_Passes[DEPTH]->Bind(DEPTH);
+    m_Passes[SSAO]->Bind(SSAO);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
 
@@ -341,8 +403,12 @@ void Pipeline::CompositorPass(const Scene &scene) {
         scene.GetEnvironmentMap()->Bind(REFLECT);
 
     m_Screen.Bind();
-    PipelineData pipelineInfo =
-        PipelineData{scene.GetActiveSceneObjectID(), 1.0f, 1.0f, m_ActivePass};
+    PipelineData pipelineInfo = PipelineData{scene.GetActiveSceneObjectID(),
+                                             1.0f,
+                                             1.0f,
+                                             m_ActivePass,
+                                             m_UseSSAO,
+                                             {}};
 
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
