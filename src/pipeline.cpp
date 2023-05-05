@@ -367,7 +367,7 @@ void Pipeline::LightPass(const Scene &scene) {
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
-        // shader need to delete light type to select use cube for image 2d
+        // shader need to delect light type to select use cube for image 2d
         m_Screen.Bind();
         // make sure the texture have write before next draw
         glTextureBarrier();

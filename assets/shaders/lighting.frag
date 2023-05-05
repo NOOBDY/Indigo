@@ -345,23 +345,23 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         else {
             // vec2 brdf = texture(LUT, vec2(dotNV,roughness-0.03)).rg;
             // vec3 diffuse = albedo*texture(reflectMap, panoramaUV(N)).xyz;
-            vec3 diffuse = albedo * SHIrradiance(N)*ao;
+            vec3 diffuse = albedo * SHIrradiance(N);
             vec3 env = texture(reflectMap, panoramaUV(R)).xyz;
             vec3 specular = env * EnvBRDFApprox(F0, roughness, dotNV);
             specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
 
-            Lo = (kD * diffuse + specular) * light.power * fadeOut;
-            outScreenVolume.xyz += specular * ao * light.power * fadeOut;
+            Lo = (kD * diffuse *ao+ specular) * light.power * fadeOut;
+            outScreenVolume.xyz += specular  * light.power * fadeOut;
         }
 
     } else {
-        vec3 diffuse = albedo*ao;
+        vec3 diffuse = albedo;
         vec3 specular = NDF * G * F * 0.25 / max(dotNV * dotNL, 0.001) *
                         float(deferredInfo.ID.a != 1.0);
         specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
-        Lo = (kD * diffuse / PI + specular) * dotNL * lightColor *
+        Lo = (kD *ao* diffuse / PI + specular) * dotNL * lightColor *
              (1 - shadow) * light.power * fadeOut * spot;
-        outScreenVolume.xyz += specular*ao * light.power * fadeOut;
+        outScreenVolume.xyz += specular * light.power * fadeOut;
     }
     return vec4(Lo, 1);
 }

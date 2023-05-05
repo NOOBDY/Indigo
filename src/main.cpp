@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
                       {5, 5, 5}),
             5, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
-        // light1->SetShadowSize(512);
+        light1->SetShadowSize(512);
 
         scene.AddLight(light1);
     } catch (std::exception &e) {
