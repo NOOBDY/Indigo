@@ -36,7 +36,7 @@ public:
     void SetOuter(float outer) { m_OuterCone = outer; }
     void SetShadowSize(int size) {
         m_ShadowSize = size;
-        if (m_ShadowTexture) {
+        if (m_ShadowTexture != nullptr) {
             m_ShadowTexture->SetWidth(m_ShadowSize);
             m_ShadowTexture->SetHeight(m_ShadowSize);
         }

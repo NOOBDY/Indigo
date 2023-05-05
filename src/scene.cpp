@@ -44,7 +44,9 @@ std::vector<std::shared_ptr<Light>> Scene::GetLights() const {
 }
 
 void Scene::SetActiveSceneObject(unsigned int id) {
-    m_ActiveObjectID = id < SceneObject::GetIDCount() ? id : -1;
+    m_ActiveObjectID = static_cast<int>(id) < SceneObject::GetIDCount()
+                           ? static_cast<int>(id)
+                           : -1;
 }
 
 std::shared_ptr<SceneObject> Scene::GetActiveSceneObject() const {
