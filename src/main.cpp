@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 100.0f, 1500.0f);
+        45.0f, window.GetAspectRatio(), 10.0f, 1500.0f);
 
     Scene scene(mainCamera);
 
