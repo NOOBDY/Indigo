@@ -350,8 +350,8 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
             vec3 specular = env * EnvBRDFApprox(F0, roughness, dotNV);
             specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
 
-            Lo = (kD * diffuse *ao+ specular) * light.power * fadeOut;
-            outScreenVolume.xyz += specular  * light.power * fadeOut;
+            Lo = (kD * diffuse * ao + specular) * light.power * fadeOut;
+            outScreenVolume.xyz += specular * light.power * fadeOut;
         }
 
     } else {
@@ -359,7 +359,7 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         vec3 specular = NDF * G * F * 0.25 / max(dotNV * dotNL, 0.001) *
                         float(deferredInfo.ID.a != 1.0);
         specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
-        Lo = (kD *ao* diffuse / PI + specular) * dotNL * lightColor *
+        Lo = (kD * ao * diffuse / PI + specular) * dotNL * lightColor *
              (1 - shadow) * light.power * fadeOut * spot;
         outScreenVolume.xyz += specular * light.power * fadeOut;
     }
