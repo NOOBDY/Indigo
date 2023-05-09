@@ -367,7 +367,7 @@ void Pipeline::LightPass(const Scene &scene) {
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
-        // shader need to delect light type to select use cube for image 2d
+        // shader need to detect light type to select use cube for image 2d
         m_Screen.Bind();
         // make sure the texture have write before next draw
         glTextureBarrier();
@@ -438,7 +438,7 @@ unsigned int Pipeline::GetIdByPosition(glm::vec2 pos) {
                                       // direction id is stored in alpha channel
     return static_cast<unsigned int>(id);
 }
-Pipeline::PipelineData Pipeline::GetPipelineData(const Scene scene) {
+Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
 
     return PipelineData{scene.GetActiveSceneObjectID(),
                         1.0f,

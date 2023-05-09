@@ -240,7 +240,6 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness) {
 struct SHCoefficients {
     vec3 l00, l1m1, l10, l11, l2m2, l2m1, l20, l21, l22;
 };
-
 const SHCoefficients SH_STPETER =
     SHCoefficients(vec3(0.3623915, 0.2624130, 0.2326261),
                    vec3(0.1759131, 0.1436266, 0.1260569),
@@ -323,7 +322,6 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     //  diffuse = pow(diffuse, vec3(2.2));
 
     // Cook-Torrance BRDF
-
     vec3 albedo = deferredInfo.albedo;
     float ao = deferredInfo.ARM.x *
                (pipelineInfo.useSSAO == 1 ? texture(ssao, UV).r : 1.0);

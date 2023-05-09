@@ -63,7 +63,7 @@ public:
     void SavePass(Pass targetPass, const std::string &path);
     unsigned int GetIdByPosition(glm::vec2 pos);
     void Init();
-    PipelineData GetPipelineData(const Scene scene);
+    PipelineData GetPipelineData(const Scene &scene);
 
 private:
     void ShadowPass(const Scene &scene);
