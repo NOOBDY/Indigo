@@ -362,17 +362,12 @@ void Pipeline::LightPass(const Scene &scene) {
             light->GetColorTexture()->Bind(REFLECT);
 
         LightData lightInfo = light->GetLightData();
-        PipelineData pipelineInfo = PipelineData{scene.GetActiveSceneObjectID(),
-                                                 1.0f,
-                                                 1.0f,
-                                                 m_ActivePass,
-                                                 m_UseSSAO,
-                                                 {}};
+        PipelineData pipelineInfo = GetPipelineData(scene);
 
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
         m_UBOs[3]->SetData(0, sizeof(CameraData), &camData);
         m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
-        // shader need to delete light type to select use cube for image 2d
+        // shader need to detect light type to select use cube for image 2d
         m_Screen.Bind();
         // make sure the texture have write before next draw
         glTextureBarrier();
@@ -403,13 +398,7 @@ void Pipeline::CompositorPass(const Scene &scene) {
         scene.GetEnvironmentMap()->Bind(REFLECT);
 
     m_Screen.Bind();
-    PipelineData pipelineInfo = PipelineData{scene.GetActiveSceneObjectID(),
-                                             1.0f,
-                                             1.0f,
-                                             m_ActivePass,
-                                             m_UseSSAO,
-                                             {}};
-
+    PipelineData pipelineInfo = GetPipelineData(scene);
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
 
@@ -448,4 +437,13 @@ unsigned int Pipeline::GetIdByPosition(glm::vec2 pos) {
         pos.x, m_Height - pos.y})[3]; // OpenGL and GLFW have different Y axis
                                       // direction id is stored in alpha channel
     return static_cast<unsigned int>(id);
+}
+Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
+
+    return PipelineData{scene.GetActiveSceneObjectID(),
+                        1.0f,
+                        1.0f,
+                        m_ActivePass,
+                        m_UseSSAO,
+                        {}};
 }

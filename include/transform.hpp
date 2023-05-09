@@ -30,7 +30,7 @@ public:
     glm::vec3 GetRotation() const { return m_Rotation; }
     glm::vec3 GetScale() const { return m_Scale; }
 
-    glm::vec3 GetDirection(glm::vec3 dir) const;
+    glm::vec3 GetDirection(glm::vec3 dir = glm::vec3({0, 1, 0})) const;
     glm::mat4 GetDirection4() const;
 
     glm::mat4 GetTransformMatrix();

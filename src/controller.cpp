@@ -127,7 +127,7 @@ void LightAttributeGUI(std::shared_ptr<Light> light) {
     ImGui::EndDisabled();
 
     ImGui::DragFloat("Power", &power, 0.05f, 0.0f, 10.0f, "%.2f");
-    ImGui::DragFloat("Radius", &radius, 5, 1, 1000.0f, "%.1f");
+    ImGui::DragFloat("Radius", &radius, 5, 1, 5000.0f, "%.1f");
     ImGui::End();
 
     light->SetPower(power);

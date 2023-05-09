@@ -115,8 +115,8 @@ float idBorder(sampler2D idPass, int id) {
 }
 vec2 panoramaUV(vec3 nuv) {
     vec2 uv = vec2(0.0);
-    uv.x = 0.5 + atan(nuv.x, nuv.z) / (2 * PI);
-    uv.y = 0.5 + asin(nuv.y) / (PI);
+    uv.x = 0.50 + atan(nuv.x, nuv.z) / (2.0 * PI);
+    uv.y = 0.50 + asin(nuv.y) / (PI);
     return uv;
 }
 vec4 displayPass(int i) {
@@ -153,7 +153,7 @@ vec4 displayPass(int i) {
 vec3 viewDirection(mat4 projection, mat4 view, vec2 uv) {
     mat4 invert_view_projection = inverse(projection * view);
     float ViewZ;
-    ViewZ = 0.5 * 2.0 - 1.0;
+    ViewZ = 0.9 * 2.0 - 1.0;
     // way1
     vec4 sPos = vec4(uv * 2.0 - 1.0, 1, 1.0);
     vec4 worldPosition = invert_view_projection * sPos;

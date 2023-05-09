@@ -53,85 +53,95 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 10.0f, 1500.0f);
+        45.0f, window.GetAspectRatio(), 10.0f, 2500.0f);
+    mainCamera->GetTransform().SetPosition({200, 90, 0});
 
     Scene scene(mainCamera);
+    // try {
+    //     auto model = std::make_shared<Model>(                            //
+    //         "Main",                                                      //
+    //         Importer::LoadFile("../assets/models/little_city/main.glb"), //
+    //         Transform({0, 0, 0},                                         //
+    //                   {180, 180, 180},                                   //
+    //                   {1, 1, 1}));
+
+    //     model->SetAlbedoTexture(texMainColor);
+    //     model->SetUseAlbedoTexture(true);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
+
+    // try {
+    //     auto model = std::make_shared<Model>( //
+    //         "Interior", //
+    //         Importer::LoadFile("../assets/models/little_city/interior.glb"),
+    //         // Transform({0, 0, 0}, //
+    //                   {180, 180, 180}, // {1, 1, 1}));
+
+    //     model->SetAlbedoTexture(texInterior);
+    //     model->SetUseAlbedoTexture(true);
+    //     model->SetNormalTexture(wallNormalMap);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
+
+    // try {
+    //     auto model = std::make_shared<Model>(                            //
+    //         "Misc",                                                      //
+    //         Importer::LoadFile("../assets/models/little_city/misc.glb"), //
+    //         Transform({0, 0.1, 0},                                       //
+    //                   {180, 180, 180},                                   //
+    //                   {1, 1, 1}));
+
+    //     model->SetAlbedoTexture(texMisc);
+    //     model->SetUseAlbedoTexture(true);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
+
+    // try {
+    //     auto model = std::make_shared<Model>( //
+    //         "Outline", //
+    //         Importer::LoadFile("../assets/models/little_city/outline.glb"),
+    //         // Transform({0, 0, 0}, //
+    //                   {180, 180, 180}, // {1, 1, 1}));
+
+    //     model->SetAlbedoColor({0, 0, 0});
+    //     model->SetUseAlbedoTexture(false);
+    //     model->SetCastShadows(false);
+
+    //     scene.AddModel(model);
+    // } catch (std::exception &e) {
+    //     LOG_ERROR("{}", e.what());
+    // }
 
     try {
-        auto model = std::make_shared<Model>(                            //
-            "Main",                                                      //
-            Importer::LoadFile("../assets/models/little_city/main.glb"), //
-            Transform({0, 0, 0},                                         //
-                      {180, 180, 180},                                   //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texMainColor);
-        model->SetUseAlbedoTexture(true);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                                //
-            "Interior",                                                      //
-            Importer::LoadFile("../assets/models/little_city/interior.glb"), //
-            Transform({0, 0, 0},                                             //
-                      {180, 180, 180},                                       //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texInterior);
-        model->SetUseAlbedoTexture(true);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                            //
-            "Misc",                                                      //
-            Importer::LoadFile("../assets/models/little_city/misc.glb"), //
-            Transform({0, 0.1, 0},                                       //
-                      {180, 180, 180},                                   //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texMisc);
-        model->SetUseAlbedoTexture(true);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                               //
-            "Outline",                                                      //
-            Importer::LoadFile("../assets/models/little_city/outline.glb"), //
-            Transform({0, 0, 0},                                            //
-                      {180, 180, 180},                                      //
-                      {1, 1, 1}));
-
-        model->SetAlbedoColor({0, 0, 0});
-        model->SetUseAlbedoTexture(false);
-        model->SetCastShadows(false);
-
-        scene.AddModel(model);
+        auto models =
+            Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
+        for (auto &i : models) {
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
+            scene.AddModel(i);
+        }
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
 
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
-            "Light 1",                                           //
+            "point light",                                       //
             Light::POINT,                                        //
-            Transform({50, 100, 200},                            //
+            Transform({10, 50, 100},                             //
                       {0, 0, 0},                                 //
-                      {20, 20, 20}),
-            1, 1000, glm::vec3(1.0f));
+                      {5, 5, 5}),
+            5, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
-        light1->SetShadowSize(2048);
+        light1->SetShadowSize(512);
 
         scene.AddLight(light1);
     } catch (std::exception &e) {
@@ -140,11 +150,11 @@ int main(int argc, char **argv) {
 
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
-            "Light 2",                                           //
+            "direction light",                                   //
             Light::DIRECTION,                                    //
-            Transform({-300, 300, 0},                            //
-                      {0, 0, 0},                                 //
-                      {20, 20, 20}),
+            Transform({0, 500, 0},                               //
+                      {20, 90, 0},                               //
+                      {5, 5, 5}),
             2, 1000, glm::vec3(1.0f));
 
         light2->SetShadowSize(2048);
@@ -156,11 +166,11 @@ int main(int argc, char **argv) {
     }
     try {
         std::shared_ptr<Light> light3 = std::make_shared<Light>( //
-            "Light 3",                                           //
+            "ambient light",                                     //
             Light::AMBIENT,                                      //
-            Transform({0.0, 300, 0},                             //
+            Transform({0.0, 30, 0},                              //
                       {0, 0, 0},                                 //
-                      {20, 20, 20}),
+                      {5, 5, 5}),
             1, 1000, glm::vec3(1.0f), false);
 
         // light3->SetShadowSize(2048);
@@ -171,8 +181,7 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
-
-    // scene.SetEnvironmentMap(reflectMap);
+    scene.SetEnvironmentMap(reflectMap);
     do {
         auto &io = ImGui::GetIO();
         glm::vec2 delta = window.GetCursorDelta();
@@ -193,7 +202,7 @@ int main(int argc, char **argv) {
         if (!io.WantCaptureMouse) {
             activeCamera->GetTransform().SetPosition(
                 activeCamera->GetTransform().GetPosition() +
-                10 * window.GetScrollOffset().y *
+                20 * window.GetScrollOffset().y *
                     glm::normalize(activeCamera->GetTransform().GetPosition()));
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
@@ -227,7 +236,7 @@ int main(int argc, char **argv) {
         for (const auto &object : scene.GetSceneObjects()) {
             auto id = scene.GetActiveSceneObjectID();
             if (ImGui::Selectable(object->GetLabel().c_str(),
-                                  object->GetID() == id)) {
+                                  static_cast<int>(object->GetID()) == id)) {
                 scene.SetActiveSceneObject(object->GetID());
             }
         }

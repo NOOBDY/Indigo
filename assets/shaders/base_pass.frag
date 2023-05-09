@@ -120,17 +120,21 @@ uint Hash32(uint x) {
 void main() {
     vec3 color3 = vec3(0.);
     float maxDepth = 600.0;
-    screenAlbedo.xyz = (modelInfo.useAlbedoTexture == 1)
-                           ? texture(albedoMap, UV).xyz
-                           : modelInfo.albedoColor;
-    screenEmission.xyz = (modelInfo.useEmissionTexture == 1)
-                             ? texture(emissionMap, UV).xyz
-                             : modelInfo.emissionColor;
-    screenARM.xyz = (modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz
-                                                   : modelInfo.ARM;
-    screenPosition.xyz = (worldPosition / maxDepth + 1.0) * 0.5;
-    screenNormal.xyz = normalize(normal) * 0.5 + 0.5;
+    screenAlbedo =
+        vec4((modelInfo.useAlbedoTexture == 1) ? texture(albedoMap, UV).xyz
+                                               : modelInfo.albedoColor,
+             1.0);
+    screenEmission =
+        vec4((modelInfo.useEmissionTexture == 1) ? texture(emissionMap, UV).xyz
+                                                 : modelInfo.emissionColor,
+             1.0);
+    screenARM = vec4((modelInfo.useARMTexture == 1) ? texture(ARMMap, UV).xyz
+                                                    : modelInfo.ARM,
+                     1.0);
+    screenPosition = vec4((worldPosition / maxDepth + 1.0) * 0.5, 1.0);
+    screenNormal = vec4(normalize(normal) * 0.5 + 0.5, 1.0);
     screenID.xyz = unpackColor(Hash32(modelInfo.id));
+    // screenID.a=1.0;
     screenID.a = modelInfo.id / 255.0;
     // screenID.xyz=vec3(screenID.z);
     // screenID.xyz=vec3(modelInfo.id==3);
