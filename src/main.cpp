@@ -1,5 +1,7 @@
 #include "pch.hpp"
 
+#include <map>
+
 #include "log.hpp"
 #include "exception.hpp"
 #include "window.hpp"
@@ -235,6 +237,44 @@ int main(int argc, char **argv) {
                 scene.SetActiveSceneObject(object->GetID());
             }
         }
+        ImGui::End();
+
+        ImGui::Begin("Pipeline");
+        ImGui::SetWindowPos({1140, 315});
+        ImGui::SetWindowSize({130, 220});
+        // ImGui::BeginCombo("Pass", "");
+        const std::map<Pipeline::Pass, std::string> passes{
+            {Pipeline::Pass::ALBEDO, "Albedo"},
+            {Pipeline::Pass::EMISSION, "Emission"},
+            {Pipeline::Pass::NORMAL, "Normal"},
+            {Pipeline::Pass::ARM, "ARM"},
+            {Pipeline::Pass::POSITION, "Position"},
+            {Pipeline::Pass::ID, "ID"},
+            {Pipeline::Pass::DEPTH, "Depth"},
+            {Pipeline::Pass::SSAO, "SSAO"},
+            {Pipeline::Pass::LIGHTING, "Lighting"},
+            {Pipeline::Pass::VOLUME, "Volume"},
+            {Pipeline::Pass::SCREEN, "Screen"},
+        };
+
+        static Pipeline::Pass selectedPass = pipeline.GetActivePass();
+
+        if (ImGui::BeginListBox(
+                "##Pass",
+                ImVec2(-FLT_MIN, 10 * ImGui::GetTextLineHeightWithSpacing()))) {
+            for (const auto &pass : passes) {
+                const bool isSelected = selectedPass == pass.first;
+
+                if (ImGui::Selectable(pass.second.c_str(), isSelected))
+                    selectedPass = pass.first;
+
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndListBox();
+        }
+
+        pipeline.SetActivePass(selectedPass);
         ImGui::End();
 
         auto activeObject = scene.GetActiveSceneObject();

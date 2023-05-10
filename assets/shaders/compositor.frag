@@ -134,7 +134,7 @@ vec4 displayPass(int i) {
     case 5:
         return texture(screenID, UV);
     case 6:
-        return texture(screenDepth, UV);
+        return vec4(texture(screenDepth, UV).r);
     case 9:
         return vec4(texture(ssao, UV).r);
     case 10:

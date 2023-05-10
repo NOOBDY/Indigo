@@ -64,6 +64,12 @@ public:
     unsigned int GetIdByPosition(glm::vec2 pos);
     void Init();
     PipelineData GetPipelineData(const Scene &scene);
+    void SetActivePass(Pipeline::Pass pass) {
+        m_ActivePass = static_cast<int>(pass);
+    }
+    Pipeline::Pass GetActivePass() const {
+        return static_cast<Pipeline::Pass>(m_ActivePass);
+    }
 
 private:
     void ShadowPass(const Scene &scene);
