@@ -259,19 +259,14 @@ int main(int argc, char **argv) {
 
         static Pipeline::Pass selectedPass = pipeline.GetActivePass();
 
-        if (ImGui::BeginListBox(
-                "##Pass",
-                ImVec2(-FLT_MIN, 10 * ImGui::GetTextLineHeightWithSpacing()))) {
-            for (const auto &pass : passes) {
-                const bool isSelected = selectedPass == pass.first;
+        for (const auto &pass : passes) {
+            const bool isSelected = selectedPass == pass.first;
 
-                if (ImGui::Selectable(pass.second.c_str(), isSelected))
-                    selectedPass = pass.first;
+            if (ImGui::Selectable(pass.second.c_str(), isSelected))
+                selectedPass = pass.first;
 
-                if (isSelected)
-                    ImGui::SetItemDefaultFocus();
-            }
-            ImGui::EndListBox();
+            if (isSelected)
+                ImGui::SetItemDefaultFocus();
         }
 
         pipeline.SetActivePass(selectedPass);
