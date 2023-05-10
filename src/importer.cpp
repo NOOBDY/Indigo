@@ -12,7 +12,7 @@
 
 namespace fs = std::filesystem;
 
-std::shared_ptr<VertexArray> CreateVAO(const aiMesh *mesh) {
+std::shared_ptr<VertexArray> LoadBuffers(const aiMesh *mesh) {
     /**
      * // There's probably a better way to predetermine vector size and
      * // load entire blocks of memory instead of `push_back()` each element
@@ -80,44 +80,11 @@ std::shared_ptr<VertexArray> CreateVAO(const aiMesh *mesh) {
     return va;
 }
 
-std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
-    LOG_TRACE("Loading File: '{}'", filepath);
-
-    Assimp::Importer importer;
-
-    const aiScene *scene =
-        importer.ReadFile(filepath, aiProcessPreset_TargetRealtime_Quality);
-
-    if (scene == NULL) {
-        LOG_ERROR("{}", importer.GetErrorString());
-        throw FileNotFoundException(filepath);
-    }
-
+void LoadTextures(std::shared_ptr<Model> model, const std::string &filepath,
+                  const aiMaterial *material) {
     std::string path = filepath.substr(0, filepath.find_last_of("/\\"));
 
-    Mesh result;
-    unsigned int totalVertexCount = 0;
-
-    std::string name = std::string(scene->mMeshes[0]->mName.C_Str());
-
-    aiMaterial *material = scene->mMaterials[0];
-
-    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
-        const aiMesh *mesh = scene->mMeshes[i];
-
-        result.push_back(CreateVAO(mesh));
-
-        totalVertexCount += mesh->mNumVertices;
-    }
-    // LOG_INFO("{}", std::string(fileName.data));
-
-    LOG_INFO("Loaded {} Vertices", totalVertexCount);
-    auto model = std::make_shared<Model>(name, result,
-                                         Transform({0, 0, 0},       //
-                                                   {180, 180, 180}, //
-                                                   {1, 1, 1}));
-
-    auto textures = {
+    const std::vector<aiTextureType> textures = {
         aiTextureType_BASE_COLOR,        aiTextureType_DIFFUSE,
         aiTextureType_NORMALS,           aiTextureType_NORMAL_CAMERA,
         aiTextureType_SPECULAR,          aiTextureType_SHEEN,
@@ -125,7 +92,7 @@ std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
         aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_METALNESS,
         aiTextureType_EMISSION_COLOR};
 
-    for (auto textureType : textures) {
+    for (const auto textureType : textures) {
         int len = material->GetTextureCount(textureType);
 
         if (len == 0)
@@ -140,41 +107,91 @@ std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
         switch (textureType) {
         case aiTextureType_BASE_COLOR:
             model->SetAlbedoTexture(texture);
+            model->SetUseAlbedoTexture(true);
             break;
         case aiTextureType_DIFFUSE:
             model->SetAlbedoTexture(texture);
+            model->SetUseAlbedoTexture(true);
             break;
         case aiTextureType_NORMALS:
             model->SetNormalTexture(texture);
+            model->SetUseNormalTexture(true);
             break;
         case aiTextureType_NORMAL_CAMERA:
             model->SetNormalTexture(texture);
+            model->SetUseNormalTexture(true);
             break;
         case aiTextureType_AMBIENT_OCCLUSION:
             model->SetARMTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         case aiTextureType_DIFFUSE_ROUGHNESS:
             model->SetARMTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         case aiTextureType_SHININESS:
             model->SetARMTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         case aiTextureType_SPECULAR:
             model->SetARMTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         case aiTextureType_SHEEN:
             model->SetARMTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         case aiTextureType_METALNESS:
             model->SetARMTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         case aiTextureType_EMISSION_COLOR:
             model->SetEmissionTexture(texture);
+            // model->SetUseARMTexture(true);
             break;
         default:
             break;
         }
     }
+}
+
+std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
+    LOG_TRACE("Loading File: '{}'", filepath);
+
+    Assimp::Importer importer;
+
+    const aiScene *scene =
+        importer.ReadFile(filepath, aiProcessPreset_TargetRealtime_Quality);
+
+    if (scene == NULL) {
+        LOG_ERROR("{}", importer.GetErrorString());
+        throw FileNotFoundException(filepath);
+    }
+
+    const aiMesh *lastMesh = scene->mMeshes[scene->mNumMeshes - 1];
+
+    Mesh result;
+    unsigned int totalVertexCount = 0;
+
+    std::string name = std::string(lastMesh->mName.C_Str());
+
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        const aiMesh *mesh = scene->mMeshes[i];
+
+        result.push_back(LoadBuffers(mesh));
+        totalVertexCount += mesh->mNumVertices;
+    }
+
+    LOG_INFO("Loaded {} Vertices", totalVertexCount);
+
+    auto model = std::make_shared<Model>(name, result,
+                                         Transform({0, 0, 0},       //
+                                                   {180, 180, 180}, //
+                                                   {1, 1, 1}));
+
+    aiMaterial *material = scene->mMaterials[lastMesh->mMaterialIndex];
+
+    LoadTextures(model, filepath, material);
 
     return model;
 }
@@ -192,7 +209,6 @@ Importer::LoadFileScene(const std::string &filepath) {
         LOG_ERROR("{}", importer.GetErrorString());
         throw FileNotFoundException(filepath);
     }
-    std::string path = filepath.substr(0, filepath.find_last_of("/\\"));
 
     std::vector<std::shared_ptr<Model>> models;
 
@@ -204,85 +220,20 @@ Importer::LoadFileScene(const std::string &filepath) {
 
         std::string name = std::string(mesh->mName.C_Str());
 
-        aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
-
-        result.push_back(CreateVAO(mesh));
+        result.push_back(LoadBuffers(mesh));
         totalVertexCount += mesh->mNumVertices;
+
         LOG_INFO("Loaded {} Vertices", totalVertexCount);
+
         auto model = std::make_shared<Model>(name, result,
                                              Transform({0, 0, 0},       //
                                                        {180, 180, 180}, //
                                                        {1, 1, 1}));
 
-        auto textures = {
-            aiTextureType_BASE_COLOR,        aiTextureType_DIFFUSE,
-            aiTextureType_NORMALS,           aiTextureType_NORMAL_CAMERA,
-            aiTextureType_SPECULAR,          aiTextureType_SHEEN,
-            aiTextureType_SHININESS,         aiTextureType_AMBIENT_OCCLUSION,
-            aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_METALNESS,
-            aiTextureType_EMISSION_COLOR};
+        aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
-        for (auto textureType : textures) {
-            int len = material->GetTextureCount(textureType);
+        LoadTextures(model, filepath, material);
 
-            if (len == 0)
-                continue;
-
-            aiString fileName;
-            material->Get(AI_MATKEY_TEXTURE(textureType, 0), fileName);
-            // LOG_DEBUG("{}", fileName.data);
-            auto texture = std::make_shared<Texture>(
-                path + "/" + std::string(fileName.data));
-
-            switch (textureType) {
-            case aiTextureType_BASE_COLOR:
-                model->SetAlbedoTexture(texture);
-                model->SetUseAlbedoTexture(true);
-                break;
-            case aiTextureType_DIFFUSE:
-                model->SetAlbedoTexture(texture);
-                model->SetUseAlbedoTexture(true);
-                break;
-            case aiTextureType_NORMALS:
-                model->SetNormalTexture(texture);
-                model->SetUseNormalTexture(true);
-                break;
-            case aiTextureType_NORMAL_CAMERA:
-                model->SetNormalTexture(texture);
-                model->SetUseNormalTexture(true);
-                break;
-            case aiTextureType_AMBIENT_OCCLUSION:
-                model->SetARMTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            case aiTextureType_DIFFUSE_ROUGHNESS:
-                model->SetARMTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            case aiTextureType_SHININESS:
-                model->SetARMTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            case aiTextureType_SPECULAR:
-                model->SetARMTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            case aiTextureType_SHEEN:
-                model->SetARMTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            case aiTextureType_METALNESS:
-                model->SetARMTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            case aiTextureType_EMISSION_COLOR:
-                model->SetEmissionTexture(texture);
-                // model->SetUseARMTexture(true);
-                break;
-            default:
-                break;
-            }
-        }
         models.push_back(model);
     }
 
