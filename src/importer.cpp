@@ -153,6 +153,9 @@ void LoadTextures(std::shared_ptr<Model> model, const std::string &baseFilepath,
     }
 }
 
+/**
+ * Legacy function
+ */
 Mesh Importer::LoadFile(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
 
@@ -183,6 +186,9 @@ Mesh Importer::LoadFile(const std::string &filepath) {
     return result;
 }
 
+/**
+ * Loads every mesh into a single model
+ */
 std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
 
@@ -225,6 +231,9 @@ std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
     return model;
 }
 
+/**
+ * Load each mesh into a separate model
+ */
 std::vector<std::shared_ptr<Model>>
 Importer::LoadFileScene(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
