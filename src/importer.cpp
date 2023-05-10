@@ -3,14 +3,11 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
-#include <filesystem>
 
 #include "model.hpp"
 #include "texture.hpp"
 #include "log.hpp"
 #include "exception.hpp"
-
-namespace fs = std::filesystem;
 
 std::shared_ptr<VertexArray> LoadBuffers(const aiMesh *mesh) {
     /**
@@ -80,9 +77,9 @@ std::shared_ptr<VertexArray> LoadBuffers(const aiMesh *mesh) {
     return va;
 }
 
-void LoadTextures(std::shared_ptr<Model> model, const std::string &filepath,
+void LoadTextures(std::shared_ptr<Model> model, const std::string &baseFilepath,
                   const aiMaterial *material) {
-    std::string path = filepath.substr(0, filepath.find_last_of("/\\"));
+    std::string path = baseFilepath.substr(0, baseFilepath.find_last_of("/\\"));
 
     const std::vector<aiTextureType> textures = {
         aiTextureType_BASE_COLOR,        aiTextureType_DIFFUSE,
@@ -90,7 +87,8 @@ void LoadTextures(std::shared_ptr<Model> model, const std::string &filepath,
         aiTextureType_SPECULAR,          aiTextureType_SHEEN,
         aiTextureType_SHININESS,         aiTextureType_AMBIENT_OCCLUSION,
         aiTextureType_DIFFUSE_ROUGHNESS, aiTextureType_METALNESS,
-        aiTextureType_EMISSION_COLOR};
+        aiTextureType_EMISSION_COLOR,
+    };
 
     for (const auto textureType : textures) {
         int len = material->GetTextureCount(textureType);
@@ -155,6 +153,36 @@ void LoadTextures(std::shared_ptr<Model> model, const std::string &filepath,
     }
 }
 
+Mesh Importer::LoadFile(const std::string &filepath) {
+    LOG_TRACE("Loading File: '{}'", filepath);
+
+    Assimp::Importer importer;
+
+    Mesh result;
+    unsigned int totalVertexCount = 0;
+
+    std::vector<unsigned int> indexBuffer;
+
+    const aiScene *scene =
+        importer.ReadFile(filepath, aiProcessPreset_TargetRealtime_Quality);
+
+    if (scene == NULL) {
+        LOG_ERROR("{}", importer.GetErrorString());
+        throw FileNotFoundException(filepath);
+    }
+
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i) {
+        const aiMesh *mesh = scene->mMeshes[i];
+
+        result.push_back(LoadBuffers(mesh));
+        totalVertexCount += mesh->mNumVertices;
+    }
+
+    LOG_INFO("Loaded {} Vertices", totalVertexCount);
+
+    return result;
+}
+
 std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
     LOG_TRACE("Loading File: '{}'", filepath);
 
@@ -184,10 +212,11 @@ std::shared_ptr<Model> Importer::LoadFileModel(const std::string &filepath) {
 
     LOG_INFO("Loaded {} Vertices", totalVertexCount);
 
-    auto model = std::make_shared<Model>(name, result,
-                                         Transform({0, 0, 0},       //
-                                                   {180, 180, 180}, //
-                                                   {1, 1, 1}));
+    std::shared_ptr<Model> model =
+        std::make_shared<Model>(name, result,
+                                Transform({0, 0, 0},       //
+                                          {180, 180, 180}, //
+                                          {1, 1, 1}));
 
     aiMaterial *material = scene->mMaterials[lastMesh->mMaterialIndex];
 
@@ -216,19 +245,18 @@ Importer::LoadFileScene(const std::string &filepath) {
         const aiMesh *mesh = scene->mMeshes[i];
 
         Mesh result;
-        unsigned int totalVertexCount = 0;
 
         std::string name = std::string(mesh->mName.C_Str());
 
         result.push_back(LoadBuffers(mesh));
-        totalVertexCount += mesh->mNumVertices;
 
-        LOG_INFO("Loaded {} Vertices", totalVertexCount);
+        LOG_INFO("Loaded {} Vertices", mesh->mNumVertices);
 
-        auto model = std::make_shared<Model>(name, result,
-                                             Transform({0, 0, 0},       //
-                                                       {180, 180, 180}, //
-                                                       {1, 1, 1}));
+        std::shared_ptr<Model> model =
+            std::make_shared<Model>(name, result,
+                                    Transform({0, 0, 0},       //
+                                              {180, 180, 180}, //
+                                              {1, 1, 1}));
 
         aiMaterial *material = scene->mMaterials[mesh->mMaterialIndex];
 
