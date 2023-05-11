@@ -45,31 +45,42 @@ public:
     };
     struct PipelineData {
         int id;
-
         float time;
         float deltaTime;
         int selectPass;
+
         int useSSAO;
-        glm::vec3 pad0;
+        int useOutline;
+        int useHDRI;
+        int pad0;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
     };
 
     Pipeline(int width, int height);
 
+    void Init();
+
     void Render(const Scene &scene);
+    void SavePass(Pass targetPass, const std::string &path);
+
     void SetWidth(int width);
     void SetHeight(int height);
-    void SavePass(Pass targetPass, const std::string &path);
-    unsigned int GetIdByPosition(glm::vec2 pos);
-    void Init();
-    PipelineData GetPipelineData(const Scene &scene);
     void SetActivePass(Pipeline::Pass pass) {
         m_ActivePass = static_cast<int>(pass);
     }
+    void SetUseSSAO(bool useSSAO) { m_UseSSAO = useSSAO; }
+    void SetUseOutline(bool useOutline) { m_UseOutline = useOutline; }
+    void SetUseHDRI(bool useHDRI) { m_UseHDRI = useHDRI; }
+
+    unsigned int GetIdByPosition(glm::vec2 pos);
+    PipelineData GetPipelineData(const Scene &scene);
     Pipeline::Pass GetActivePass() const {
         return static_cast<Pipeline::Pass>(m_ActivePass);
     }
+    bool GetUseSSAO() const { return m_UseSSAO; }
+    bool GetUseOutline() const { return m_UseOutline; }
+    bool GetUseHDRI() const { return m_UseHDRI; }
 
 private:
     void ShadowPass(const Scene &scene);
@@ -102,5 +113,7 @@ private:
     int m_ActivePass;
 
     bool m_UseSSAO;
+    bool m_UseOutline;
+    bool m_UseHDRI;
 };
 #endif

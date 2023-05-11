@@ -28,8 +28,11 @@ struct PipelineData {
     float time;
     float detiaTime;
     int selectPass;
+
     int useSSAO;
-    vec3 pad0;
+    int useOutline;
+    int useHDRI;
+    int pad0;
 };
 
 struct TransformData {
@@ -162,12 +165,17 @@ vec3 viewDirection(mat4 projection, mat4 view, vec2 uv) {
 void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
-    vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
-    // enviment
-    col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
-                  float(texture(screenID, UV).w == 1.0));
+    // environment
+    if (pipelineInfo.useHDRI != 0) {
+        vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
+        col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
+                      float(texture(screenID, UV).w == 1.0));
+    }
 
-    col.xyz = mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
+    if (pipelineInfo.useOutline != 0) {
+        col.xyz =
+            mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
+    }
 
     FragColor = vec4(col.xyz, 1.0);
 

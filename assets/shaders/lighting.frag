@@ -13,7 +13,9 @@ struct PipelineData {
     float detiaTime;
     int selectPass;
     int useSSAO;
-    vec3 pad0;
+    int useOutline;
+    int useHDRI;
+    int pad0;
 };
 
 struct TransformData {

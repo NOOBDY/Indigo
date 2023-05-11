@@ -240,8 +240,8 @@ int main(int argc, char **argv) {
         ImGui::End();
 
         ImGui::Begin("Pipeline");
-        ImGui::SetWindowPos({1140, 315});
-        ImGui::SetWindowSize({130, 220});
+        ImGui::SetWindowPos({1140, 305});
+        ImGui::SetWindowSize({130, 150});
         // ImGui::BeginCombo("Pass", "");
         const std::map<Pipeline::Pass, std::string> passes{
             {Pipeline::Pass::ALBEDO, "Albedo"},
@@ -257,19 +257,36 @@ int main(int argc, char **argv) {
             {Pipeline::Pass::SCREEN, "Screen"},
         };
 
-        static Pipeline::Pass selectedPass = pipeline.GetActivePass();
+        Pipeline::Pass selectedPass = pipeline.GetActivePass();
 
-        for (const auto &pass : passes) {
-            const bool isSelected = selectedPass == pass.first;
+        if (ImGui::BeginCombo("Pass", passes.at(selectedPass).c_str())) {
+            for (const auto &pass : passes) {
+                const bool isSelected = selectedPass == pass.first;
 
-            if (ImGui::Selectable(pass.second.c_str(), isSelected))
-                selectedPass = pass.first;
+                if (ImGui::Selectable(pass.second.c_str(), isSelected))
+                    selectedPass = pass.first;
 
-            if (isSelected)
-                ImGui::SetItemDefaultFocus();
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            pipeline.SetActivePass(selectedPass);
+
+            ImGui::EndCombo();
         }
 
-        pipeline.SetActivePass(selectedPass);
+        if (selectedPass == Pipeline::Pass::SCREEN) {
+            bool useSSAO = pipeline.GetUseSSAO();
+            bool useOutline = pipeline.GetUseOutline();
+            bool useHDRI = pipeline.GetUseHDRI();
+
+            ImGui::Checkbox("SSAO", &useSSAO);
+            ImGui::Checkbox("Outline", &useOutline);
+            ImGui::Checkbox("HDRI", &useHDRI);
+
+            pipeline.SetUseSSAO(useSSAO);
+            pipeline.SetUseOutline(useOutline);
+            pipeline.SetUseHDRI(useHDRI);
+        }
         ImGui::End();
 
         auto activeObject = scene.GetActiveSceneObject();

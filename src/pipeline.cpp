@@ -19,7 +19,8 @@ Pipeline::Pipeline(int width, int height)
               "../assets/shaders/lighting.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
-      m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true) {
+      m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
+      m_UseOutline(true), m_UseHDRI(true) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
@@ -440,10 +441,14 @@ unsigned int Pipeline::GetIdByPosition(glm::vec2 pos) {
 }
 Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
 
-    return PipelineData{scene.GetActiveSceneObjectID(),
-                        1.0f,
-                        1.0f,
-                        m_ActivePass,
-                        m_UseSSAO,
-                        {}};
+    return PipelineData{
+        scene.GetActiveSceneObjectID(),
+        1.0f,
+        1.0f,
+        m_ActivePass,
+        m_UseSSAO,
+        m_UseOutline,
+        m_UseHDRI,
+        {},
+    };
 }
