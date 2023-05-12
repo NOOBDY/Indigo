@@ -1,5 +1,7 @@
 #include "pch.hpp"
 
+#include <map>
+
 #include "log.hpp"
 #include "exception.hpp"
 #include "window.hpp"
@@ -53,81 +55,76 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 10.0f, 2500.0f);
-    mainCamera->GetTransform().SetPosition({200, 90, 0});
+        45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
 
     Scene scene(mainCamera);
-    // try {
-    //     auto model = std::make_shared<Model>(                            //
-    //         "Main",                                                      //
-    //         Importer::LoadFile("../assets/models/little_city/main.glb"), //
-    //         Transform({0, 0, 0},                                         //
-    //                   {180, 180, 180},                                   //
-    //                   {1, 1, 1}));
+    try {
+        auto model = std::make_shared<Model>(                            //
+            "Main",                                                      //
+            Importer::LoadFile("../assets/models/little_city/main.glb"), //
+            Transform({0, 0, 0},                                         //
+                      {180, 180, 180},                                   //
+                      {1, 1, 1}));
 
-    //     model->SetAlbedoTexture(texMainColor);
-    //     model->SetUseAlbedoTexture(true);
+        model->SetAlbedoTexture(texMainColor);
+        model->SetUseAlbedoTexture(true);
+        model->SetRoughness(1.0f);
+        model->SetMetallic(0.0f);
 
-    //     scene.AddModel(model);
-    // } catch (std::exception &e) {
-    //     LOG_ERROR("{}", e.what());
-    // }
-
-    // try {
-    //     auto model = std::make_shared<Model>( //
-    //         "Interior", //
-    //         Importer::LoadFile("../assets/models/little_city/interior.glb"),
-    //         // Transform({0, 0, 0}, //
-    //                   {180, 180, 180}, // {1, 1, 1}));
-
-    //     model->SetAlbedoTexture(texInterior);
-    //     model->SetUseAlbedoTexture(true);
-    //     model->SetNormalTexture(wallNormalMap);
-
-    //     scene.AddModel(model);
-    // } catch (std::exception &e) {
-    //     LOG_ERROR("{}", e.what());
-    // }
-
-    // try {
-    //     auto model = std::make_shared<Model>(                            //
-    //         "Misc",                                                      //
-    //         Importer::LoadFile("../assets/models/little_city/misc.glb"), //
-    //         Transform({0, 0.1, 0},                                       //
-    //                   {180, 180, 180},                                   //
-    //                   {1, 1, 1}));
-
-    //     model->SetAlbedoTexture(texMisc);
-    //     model->SetUseAlbedoTexture(true);
-
-    //     scene.AddModel(model);
-    // } catch (std::exception &e) {
-    //     LOG_ERROR("{}", e.what());
-    // }
-
-    // try {
-    //     auto model = std::make_shared<Model>( //
-    //         "Outline", //
-    //         Importer::LoadFile("../assets/models/little_city/outline.glb"),
-    //         // Transform({0, 0, 0}, //
-    //                   {180, 180, 180}, // {1, 1, 1}));
-
-    //     model->SetAlbedoColor({0, 0, 0});
-    //     model->SetUseAlbedoTexture(false);
-    //     model->SetCastShadows(false);
-
-    //     scene.AddModel(model);
-    // } catch (std::exception &e) {
-    //     LOG_ERROR("{}", e.what());
-    // }
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
 
     try {
-        auto models =
-            Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
-        for (auto &i : models) {
-            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
-            scene.AddModel(i);
-        }
+        auto model = std::make_shared<Model>(                                //
+            "Interior",                                                      //
+            Importer::LoadFile("../assets/models/little_city/interior.glb"), //
+            Transform({0, 0, 0},                                             //
+                      {180, 180, 180},                                       //
+                      {1, 1, 1}));
+
+        model->SetAlbedoTexture(texInterior);
+        model->SetUseAlbedoTexture(true);
+        model->SetNormalTexture(wallNormalMap);
+
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    try {
+        auto model = std::make_shared<Model>(                            //
+            "Misc",                                                      //
+            Importer::LoadFile("../assets/models/little_city/misc.glb"), //
+            Transform({0, 0.1, 0},                                       //
+                      {180, 180, 180},                                   //
+                      {1, 1, 1}));
+
+        model->SetAlbedoTexture(texMisc);
+        model->SetUseAlbedoTexture(true);
+        model->SetRoughness(1.0f);
+        model->SetMetallic(0.0f);
+
+        scene.AddModel(model);
+    } catch (std::exception &e) {
+        LOG_ERROR("{}", e.what());
+    }
+
+    try {
+        auto model = std::make_shared<Model>(                               //
+            "Outline",                                                      //
+            Importer::LoadFile("../assets/models/little_city/outline.glb"), //
+            Transform({0, 0, 0},                                            //
+                      {180, 180, 180},                                      //
+                      {1, 1, 1}));
+
+        model->SetAlbedoColor({0, 0, 0});
+        model->SetUseAlbedoTexture(false);
+        model->SetVisible(false);
+        model->SetCastShadows(false);
+
+        scene.AddModel(model);
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
@@ -136,10 +133,10 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
             "point light",                                       //
             Light::POINT,                                        //
-            Transform({10, 50, 100},                             //
+            Transform({-150, 250, 150},                          //
                       {0, 0, 0},                                 //
-                      {5, 5, 5}),
-            5, 1000, glm::vec3(1.0f));
+                      {20, 20, 20}),
+            0.5, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
         light1->SetShadowSize(512);
 
@@ -153,8 +150,8 @@ int main(int argc, char **argv) {
             "direction light",                                   //
             Light::DIRECTION,                                    //
             Transform({0, 500, 0},                               //
-                      {20, 90, 0},                               //
-                      {5, 5, 5}),
+                      {20, 20, 0},                               //
+                      {20, 20, 20}),
             2, 1000, glm::vec3(1.0f));
 
         light2->SetShadowSize(2048);
@@ -168,9 +165,9 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light3 = std::make_shared<Light>( //
             "ambient light",                                     //
             Light::AMBIENT,                                      //
-            Transform({0.0, 30, 0},                              //
+            Transform({0, 30, -150},                             //
                       {0, 0, 0},                                 //
-                      {5, 5, 5}),
+                      {20, 20, 20}),
             1, 1000, glm::vec3(1.0f), false);
 
         // light3->SetShadowSize(2048);
@@ -222,7 +219,7 @@ int main(int argc, char **argv) {
         float framerate = ImGui::GetIO().Framerate;
 
         ImGui::Begin("Debug Info");
-        ImGui::SetWindowPos({1170, 10});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 110, 10});
         ImGui::SetWindowSize({100, 85});
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
@@ -231,7 +228,7 @@ int main(int argc, char **argv) {
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::SetWindowPos({1140, 100});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 100});
         ImGui::SetWindowSize({130, 200});
         for (const auto &object : scene.GetSceneObjects()) {
             auto id = scene.GetActiveSceneObjectID();
@@ -239,6 +236,56 @@ int main(int argc, char **argv) {
                                   static_cast<int>(object->GetID()) == id)) {
                 scene.SetActiveSceneObject(object->GetID());
             }
+        }
+        ImGui::End();
+
+        ImGui::Begin("Pipeline");
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
+        ImGui::SetWindowSize({130, 150});
+        // ImGui::BeginCombo("Pass", "");
+        const std::map<Pipeline::Pass, std::string> passes{
+            {Pipeline::Pass::ALBEDO, "Albedo"},
+            {Pipeline::Pass::EMISSION, "Emission"},
+            {Pipeline::Pass::NORMAL, "Normal"},
+            {Pipeline::Pass::ARM, "ARM"},
+            {Pipeline::Pass::POSITION, "Position"},
+            {Pipeline::Pass::ID, "ID"},
+            {Pipeline::Pass::DEPTH, "Depth"},
+            {Pipeline::Pass::SSAO, "SSAO"},
+            {Pipeline::Pass::LIGHTING, "Lighting"},
+            {Pipeline::Pass::VOLUME, "Volume"},
+            {Pipeline::Pass::SCREEN, "Screen"},
+        };
+
+        Pipeline::Pass selectedPass = pipeline.GetActivePass();
+
+        if (ImGui::BeginCombo("Pass", passes.at(selectedPass).c_str())) {
+            for (const auto &pass : passes) {
+                const bool isSelected = selectedPass == pass.first;
+
+                if (ImGui::Selectable(pass.second.c_str(), isSelected))
+                    selectedPass = pass.first;
+
+                if (isSelected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            pipeline.SetActivePass(selectedPass);
+
+            ImGui::EndCombo();
+        }
+
+        if (selectedPass == Pipeline::Pass::SCREEN) {
+            bool useSSAO = pipeline.GetUseSSAO();
+            bool useOutline = pipeline.GetUseOutline();
+            bool useHDRI = pipeline.GetUseHDRI();
+
+            ImGui::Checkbox("SSAO", &useSSAO);
+            ImGui::Checkbox("Outline", &useOutline);
+            ImGui::Checkbox("HDRI", &useHDRI);
+
+            pipeline.SetUseSSAO(useSSAO);
+            pipeline.SetUseOutline(useOutline);
+            pipeline.SetUseHDRI(useHDRI);
         }
         ImGui::End();
 
