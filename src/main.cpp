@@ -219,7 +219,7 @@ int main(int argc, char **argv) {
         float framerate = ImGui::GetIO().Framerate;
 
         ImGui::Begin("Debug Info");
-        ImGui::SetWindowPos({1170, 10});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 110, 10});
         ImGui::SetWindowSize({100, 85});
         ImGui::Text("%.1f FPS", framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
@@ -228,7 +228,7 @@ int main(int argc, char **argv) {
         ImGui::End();
 
         ImGui::Begin("Objects");
-        ImGui::SetWindowPos({1140, 100});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 100});
         ImGui::SetWindowSize({130, 200});
         for (const auto &object : scene.GetSceneObjects()) {
             auto id = scene.GetActiveSceneObjectID();
@@ -240,7 +240,7 @@ int main(int argc, char **argv) {
         ImGui::End();
 
         ImGui::Begin("Pipeline");
-        ImGui::SetWindowPos({1140, 305});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
         ImGui::SetWindowSize({130, 150});
         // ImGui::BeginCombo("Pass", "");
         const std::map<Pipeline::Pass, std::string> passes{
