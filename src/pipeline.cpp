@@ -20,7 +20,7 @@ Pipeline::Pipeline(int width, int height)
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
-      m_UseOutline(true), m_UseHDRI(true) {
+      m_UseOutline(true), m_UseHDRI(true), m_UseToneMap(true) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
@@ -381,6 +381,9 @@ void Pipeline::LightPass(const Scene &scene) {
 
 void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
+    if (m_UseToneMap)
+        glEnable(GL_FRAMEBUFFER_SRGB);
+
     m_Compositor.Bind();
 
     m_Compositor.Validate();
@@ -402,6 +405,9 @@ void Pipeline::CompositorPass(const Scene &scene) {
     PipelineData pipelineInfo = GetPipelineData(scene);
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+
+    if (m_UseToneMap)
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
     m_Compositor.Unbind();
 }
@@ -449,6 +455,6 @@ Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
         m_UseSSAO,
         m_UseOutline,
         m_UseHDRI,
-        {},
+        m_UseToneMap,
     };
 }

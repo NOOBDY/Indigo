@@ -15,7 +15,7 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int pad0;
+    int useToneMap;
 };
 
 struct TransformData {

@@ -232,14 +232,17 @@ int main(int argc, char **argv) {
             bool useSSAO = pipeline.GetUseSSAO();
             bool useOutline = pipeline.GetUseOutline();
             bool useHDRI = pipeline.GetUseHDRI();
+            bool useToneMap = pipeline.GetUseToneMap();
 
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
             ImGui::Checkbox("HDRI", &useHDRI);
+            ImGui::Checkbox("Tone Mapping", &useToneMap);
 
             pipeline.SetUseSSAO(useSSAO);
             pipeline.SetUseOutline(useOutline);
             pipeline.SetUseHDRI(useHDRI);
+            pipeline.SetUseToneMap(useToneMap);
         }
         ImGui::End();
 

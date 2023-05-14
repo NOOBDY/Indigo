@@ -32,7 +32,7 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int pad0;
+    int useToneMap;
 };
 
 struct TransformData {
@@ -162,6 +162,37 @@ vec3 viewDirection(mat4 projection, mat4 view, vec2 uv) {
     vec4 worldPosition = invert_view_projection * sPos;
     return normalize(worldPosition.xyz);
 }
+
+const mat3 ACESInput = {
+    {0.59719, 0.35458, 0.04823},
+    {0.07600, 0.90834, 0.01566},
+    {0.02840, 0.13383, 0.83777},
+};
+
+const mat3 ACESOutput = {
+    {1.60475, -0.53108, -0.07367},
+    {-0.10208, 1.10813, -0.00605},
+    {-0.00327, -0.07276, 1.07602},
+};
+
+vec3 RRTAndODTFit(vec3 v) {
+    vec3 a = v * (v + 0.0245786) - 0.000090537;
+    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+    return a / b;
+}
+
+// This is meant to be paired with sRGB
+vec3 ACESFitted(vec3 color) {
+    color = color * ACESInput;
+
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = color * ACESOutput;
+
+    return color;
+}
+
 void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
@@ -175,6 +206,10 @@ void main() {
     if (pipelineInfo.useOutline != 0) {
         col.xyz =
             mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
+    }
+
+    if (pipelineInfo.useToneMap != 0) {
+        col.xyz = ACESFitted(col.xyz);
     }
 
     FragColor = vec4(col.xyz, 1.0);

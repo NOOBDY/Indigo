@@ -52,7 +52,7 @@ public:
         int useSSAO;
         int useOutline;
         int useHDRI;
-        int pad0;
+        int useToneMap;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
     };
@@ -72,6 +72,7 @@ public:
     void SetUseSSAO(bool useSSAO) { m_UseSSAO = useSSAO; }
     void SetUseOutline(bool useOutline) { m_UseOutline = useOutline; }
     void SetUseHDRI(bool useHDRI) { m_UseHDRI = useHDRI; }
+    void SetUseToneMap(bool useToneMap) { m_UseToneMap = useToneMap; }
 
     unsigned int GetIdByPosition(glm::vec2 pos);
     PipelineData GetPipelineData(const Scene &scene);
@@ -81,6 +82,7 @@ public:
     bool GetUseSSAO() const { return m_UseSSAO; }
     bool GetUseOutline() const { return m_UseOutline; }
     bool GetUseHDRI() const { return m_UseHDRI; }
+    bool GetUseToneMap() const { return m_UseToneMap; }
 
 private:
     void ShadowPass(const Scene &scene);
@@ -115,5 +117,6 @@ private:
     bool m_UseSSAO;
     bool m_UseOutline;
     bool m_UseHDRI;
+    bool m_UseToneMap;
 };
 #endif
