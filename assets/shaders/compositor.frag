@@ -163,6 +163,8 @@ vec3 viewDirection(mat4 projection, mat4 view, vec2 uv) {
     return normalize(worldPosition.xyz);
 }
 
+// Based on
+// https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
 const mat3 ACESInput = {
     {0.59719, 0.35458, 0.04823},
     {0.07600, 0.90834, 0.01566},
