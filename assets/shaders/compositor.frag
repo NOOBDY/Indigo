@@ -195,6 +195,66 @@ vec3 ACESFitted(vec3 color) {
     return color;
 }
 
+float max3(float a, float b, float c) {
+    return max(max(a, b), c);
+}
+
+float max3(vec3 vec) {
+    return max(max(vec.x, vec.y), vec.z);
+}
+
+float min3(float a, float b, float c) {
+    return min(min(a, b), c);
+}
+
+float min3(vec3 vec) {
+    return min(min(vec.x, vec.y), vec.z);
+}
+
+vec3 RGBtoHSV(vec3 rgb) {
+    float h, s, v;
+
+    float cmax = max3(rgb);
+    float cmin = min3(rgb);
+    float delta = cmax - cmin;
+
+    if (cmax == rgb.r)
+        h = 0 + (rgb.g - rgb.b) / delta;
+
+    if (cmax == rgb.g)
+        h = 2 + (rgb.b - rgb.r) / delta;
+
+    if (cmax == rgb.b)
+        h = 4 + (rgb.r - rgb.g) / delta;
+
+    h = fract(h / 6);
+
+    if (cmax == 0)
+        s = 0;
+    else
+        s = delta / cmax;
+
+    v = cmax;
+
+    return vec3(h, s, v);
+}
+
+vec3 HSVtoRGB(vec3 hsv) {
+    vec3 rgb;
+
+    float h = fract(hsv.x);
+    rgb.r = abs(h * 6 - 3) - 1;
+    rgb.g = 2 - abs(h * 6 - 2);
+    rgb.b = 2 - abs(h * 6 - 4);
+
+    rgb = clamp(rgb, vec3(0.0), vec3(1.0));
+
+    rgb = mix(vec3(1.0), rgb, hsv.y);
+    rgb *= hsv.z;
+
+    return rgb;
+}
+
 void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
@@ -213,6 +273,10 @@ void main() {
     if (pipelineInfo.useToneMap != 0) {
         col.xyz = ACESFitted(col.xyz);
     }
+
+    vec3 hsv = RGBtoHSV(col.xyz);
+
+    col.xyz = HSVtoRGB(hsv);
 
     FragColor = vec4(col.xyz, 1.0);
 
