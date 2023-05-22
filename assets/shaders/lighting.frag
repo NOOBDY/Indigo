@@ -93,7 +93,6 @@ layout(location = 0) in vec2 UV;
 layout(location = 0) out vec4 outScreenLight;
 layout(location = 1) out vec4 outScreenVolume;
 
-
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
 uniform sampler2D screenPosition;
@@ -112,6 +111,7 @@ uniform samplerCube pointShadowMap;
 
 uniform sampler2D LUT;
 uniform sampler2D ssao;
+uniform sampler2D noise;
 
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
 #define PI 3.1415926
@@ -127,7 +127,6 @@ vec3 depth2position(highp float depth, mat4 projection, mat4 view) {
     vec4 worldPosition = invert_view_projection * sPos;
     worldPosition = vec4((worldPosition.xyz / worldPosition.w), 1.0f);
     return worldPosition.xyz;
-
 }
 float fade(vec3 center, vec3 position, float radius) {
     return (1 - clamp(length(position - center) / radius, 0, 1));
@@ -193,49 +192,70 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
 
     return shadow;
 }
-vec4 PointVolume(vec3 position,vec3 cameraPos,LightData light){
-    const int n=64;
+vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
+    const int n = 64;
     // float maxDistance=light.radius;
-    float maxDistance=1500;
-    const float sigma_a=0.5;
-    //clamp distance
-    vec3 view=(length(position-cameraPos)>maxDistance)?(normalize(position-cameraPos)*maxDistance/n):(position-cameraPos)/n;
-    vec3 samplePos=cameraPos;
-    float bias=1.5;
-    float volume=0;
-    float transmittance =1;
-    vec3 illumination=vec3(0);
-    
-
-    for (int i=0;i<n;i++)
-    {
-        samplePos+=view;
-        vec3 lightDir=light.transform.position-samplePos;
-        float closestDepth =texture(pointShadowMap, -normalize(lightDir)).r;
+    float maxDistance = 2000;
+    const float sigma_a = 0.1;
+    const float bias = 0.005;
+    // clamp distance
+    vec3 view = (length(position - cameraPos) > maxDistance)
+                    ? (normalize(position - cameraPos) * maxDistance / n)
+                    : (position - cameraPos) / n;
+    vec3 samplePos = cameraPos;
+    float transmittance = 1;
+    float v = 0;
+    vec3 illumination = vec3(0);
+    for (int i = 0; i < n; i++) {
+        samplePos += view;
+        // vec3 lightDir=light.transform.position-samplePos;
+        vec4 lightSpace = light.lightProjections[0] * vec4(samplePos, 1.0);
+        vec3 projCoords = lightSpace.xyz / lightSpace.w;
+        projCoords = projCoords * 0.5 + 0.5;
+        float currentDepth = projCoords.z;
+        float closestDepth = texture(directionShadowMap, projCoords.xy).r;
         closestDepth *= light.farPlane;
-        float currentDensity=clamp(0,1,1-length(samplePos-cameraPos)/maxDistance);
-        transmittance *= exp(-(currentDensity*0.001)*sigma_a);
-        if (length(lightDir) - 0.5< closestDepth){
-            volume+=1;
-            // volume+=1;
-            // illumination += volume * light.lightColor;
-            illumination =vec3(0.1137, 0.498, 0.7529);
-            // currentDensity=0.0;
+        float currentDensity = 0.02;
+        transmittance *= exp(-(currentDensity)*sigma_a);
+        if (currentDepth - bias < closestDepth) {
+            // v+=1;
+            illumination += transmittance * light.lightColor;
         }
-            // volume += exp(-length(samplePos-cameraInfo.transform.position)*sigma_a);
-        // if(volume >0.9)
-        //     break;
-
     }
-    return vec4(0);    
-    // return vec4(illumination,abs(1)/1000000);
-    // return vec4(illumination,0);
-    // return vec4(log(volume*length(view)));
-    // return vec4(vec3(1),1);
-    // return vec4(illumination,transmittance);
-    // return vec4(illumination,fract(volume/n));
 
-    // return vec4(smoothstep(0.0,1,volume/n)*light.lightColor,1);
+    illumination = illumination * light.power / n;
+    transmittance = clamp(0, 1, transmittance);
+    return vec4(illumination, transmittance);
+    // return vec4(vec3(v/n),transmittance);
+}
+vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
+    const int n = 64;
+    // float maxDistance=light.radius;
+    float maxDistance = 1000;
+    const float sigma_a = 0.1;
+    const float bias = 1.5;
+    // clamp distance
+    vec3 view = (length(position - cameraPos) > maxDistance)
+                    ? (normalize(position - cameraPos) * maxDistance / n)
+                    : (position - cameraPos) / n;
+    vec3 samplePos = cameraPos;
+    float transmittance = 1;
+    vec3 illumination = vec3(0);
+
+    for (int i = 0; i < n; i++) {
+        samplePos += view;
+        vec3 lightDir = light.transform.position - samplePos;
+        float closestDepth = texture(pointShadowMap, -normalize(lightDir)).r;
+        closestDepth *= light.farPlane;
+        float currentDensity = 0.02;
+        transmittance *= exp(-(currentDensity)*sigma_a);
+        if (length(lightDir) - bias < closestDepth) {
+            illumination += transmittance * light.lightColor;
+        }
+    }
+    illumination = illumination * light.power / n;
+    transmittance = clamp(0, 1, transmittance);
+    return vec4(illumination, transmittance);
 }
 vec2 panoramaUV(vec3 nuv) {
     vec2 uv = vec2(0.0);
@@ -352,13 +372,15 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     float dotHV = max(dot(H, V), 0.0);
     // shadow
     float shadow = 0;
-    if (light.castShadow!=0)
-        if (light.lightType == POINT || light.lightType == SPOT){
+    if (light.castShadow != 0)
+        if (light.lightType == POINT || light.lightType == SPOT) {
             shadow = pointShadow(position, light);
-            outScreenVolume+=PointVolume(position,cameraInfo.transform.position,light);
-        }
-        else if (light.lightType == DIRECTION)
+            // outScreenVolume+=PointVolume(position,cameraInfo.transform.position,light);
+        } else if (light.lightType == DIRECTION) {
             shadow = directionShadow(position, N, light);
+            outScreenVolume +=
+                DirectionVolume(position, cameraInfo.transform.position, light);
+        }
 
     // color tranform
     //  diffuse = pow(diffuse, vec3(2.2));
