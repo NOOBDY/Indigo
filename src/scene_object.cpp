@@ -1,3 +1,3 @@
 #include "scene_object.hpp"
 
-unsigned int SceneObject::idCount = 0;
+unsigned int SceneObject::idCount = 1;

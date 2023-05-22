@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     Renderer::Init();
-    Renderer::ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    Renderer::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     Controller::InitGUI(window);
 
     Pipeline pipeline(SCREEN_WIDTH, SCREEN_HEIGHT);

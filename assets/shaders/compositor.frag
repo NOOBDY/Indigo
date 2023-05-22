@@ -145,7 +145,10 @@ vec4 displayPass(int i) {
     case 11:
         return texture(screenVolume, UV);
     case 15:
-        // return texture(screenLight, UV);
+        return texture(screenLight, UV);
+        // return vec4(texture(screenVolume, UV).w);
+        // return vec4(texture(screenVolume, UV).wxx,0);
+        return mix(texture(screenLight, UV),texture(screenVolume, UV).xyzw,texture(screenVolume, UV).w);
         return texture(screenLight, UV) +
                vec4(gaussianBlur(screenVolume, 10, UV), 0.0);
     default:
@@ -168,9 +171,11 @@ void main() {
     // environment
     if (pipelineInfo.useHDRI != 0) {
         vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
-        col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
-                      float(texture(screenID, UV).w == 1.0));
+        col.xyz+=texture(reflectMap, panoramaUV(dir)).xyz*float(texture(screenID, UV).w == 0.0);
+        // col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
+                    //   float(texture(screenID, UV).w == 1.0));
     }
+    // col.xyz=vec3(float(texture(screenID, UV).w));
 
     if (pipelineInfo.useOutline != 0) {
         col.xyz =
