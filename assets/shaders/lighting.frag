@@ -192,20 +192,34 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
 
     return shadow;
 }
+float ComputeScattering(float lightDotView) {
+    float G_SCATTERING = 0.8;
+    float result = 1.0 - G_SCATTERING * G_SCATTERING;
+    result /= (4.0 * PI *
+               pow(1.0 + G_SCATTERING * G_SCATTERING -
+                (2.0* G_SCATTERING) * lightDotView,1.5));
+    return result;
+}
 vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
-    const int n = 64;
-    // float maxDistance=light.radius;
-    float maxDistance = 2000;
+    mat4 ditherPattern = {{0.0f, 0.5f, 0.125f, 0.625f},
+                          {0.75f, 0.22f, 0.875f, 0.375f},
+                          {0.1875f, 0.6875f, 0.0625f, 0.5625},
+                          {0.9375f, 0.4375f, 0.8125f, 0.3125}};
+
+    const int n = 128;
     const float sigma_a = 0.1;
-    const float bias = 0.005;
+    const float bias = 0.001;
     // clamp distance
+    float maxDistance=light.radius;
+    // float maxDistance = 1000;
     vec3 view = (length(position - cameraPos) > maxDistance)
                     ? (normalize(position - cameraPos) * maxDistance / n)
                     : (position - cameraPos) / n;
+    // view=(vec4(view,0.1)*ditherPattern).xyz;
     vec3 samplePos = cameraPos;
     float transmittance = 1;
-    float v = 0;
     vec3 illumination = vec3(0);
+    float v = 0;
     for (int i = 0; i < n; i++) {
         samplePos += view;
         // vec3 lightDir=light.transform.position-samplePos;
@@ -214,27 +228,26 @@ vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
         projCoords = projCoords * 0.5 + 0.5;
         float currentDepth = projCoords.z;
         float closestDepth = texture(directionShadowMap, projCoords.xy).r;
-        closestDepth *= light.farPlane;
-        float currentDensity = 0.02;
-        transmittance *= exp(-(currentDensity)*sigma_a);
+        float currentDensity = 0.002;
         if (currentDepth - bias < closestDepth) {
-            // v+=1;
+            transmittance *= exp(-(currentDensity)*sigma_a);
             illumination += transmittance * light.lightColor;
         }
     }
 
-    illumination = illumination * light.power / n;
+    illumination = illumination / n;
     transmittance = clamp(0, 1, transmittance);
-    return vec4(illumination, transmittance);
-    // return vec4(vec3(v/n),transmittance);
+    return vec4(smoothstep(vec3(0.8), vec3(1.5), illumination), transmittance);
+    // return vec4(vec3(v/n)*0.5,transmittance);
+    return vec4(vec3(illumination),transmittance);
 }
 vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
     const int n = 64;
-    // float maxDistance=light.radius;
-    float maxDistance = 1000;
+    // float maxDistance = 1000;
     const float sigma_a = 0.1;
     const float bias = 1.5;
     // clamp distance
+    float maxDistance = light.radius;
     vec3 view = (length(position - cameraPos) > maxDistance)
                     ? (normalize(position - cameraPos) * maxDistance / n)
                     : (position - cameraPos) / n;
@@ -375,11 +388,11 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     if (light.castShadow != 0)
         if (light.lightType == POINT || light.lightType == SPOT) {
             shadow = pointShadow(position, light);
-            // outScreenVolume+=PointVolume(position,cameraInfo.transform.position,light);
+            outScreenVolume+=PointVolume(position,cameraInfo.transform.position,light);
         } else if (light.lightType == DIRECTION) {
             shadow = directionShadow(position, N, light);
-            outScreenVolume +=
-                DirectionVolume(position, cameraInfo.transform.position, light);
+            // outScreenVolume +=
+            //     DirectionVolume(position, cameraInfo.transform.position, light);
         }
 
     // color tranform
