@@ -31,6 +31,7 @@ public:
     void RotateByDelta(const float deltaX, const float deltaY);
 
     void Pan() {}
+    void Zoom(float offset);
 
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
@@ -51,6 +52,9 @@ private:
     glm::mat4 m_View;
 
     Transform m_Transform;
+
+    glm::vec3 m_Position;
+    glm::vec3 m_Target;
 };
 
 #endif

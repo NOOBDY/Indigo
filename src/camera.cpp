@@ -4,10 +4,8 @@
 
 Camera::Camera(float fov, float aspectRatio, float nearClip, float farClip)
     : m_FOV(fov), m_AspectRatio(aspectRatio), m_NearClip(nearClip),
-      m_FarClip(farClip) {
+      m_FarClip(farClip), m_Position({0, 500, 500}), m_Target({0, 0, 0}) {
 
-    glm::vec3 initPos = {0, 500, 500};
-    m_Transform.SetPosition(initPos);
     UpdateProjection();
     UpdateView();
 }
@@ -19,8 +17,8 @@ void Camera::UpdateProjection() {
 
 /// @brief update look direction
 void Camera::UpdateView() {
-    m_View = glm::lookAt(m_Transform.GetPosition(),
-                         -1.0f * m_Transform.GetPosition(), glm::vec3(0, 1, 0));
+    m_Transform.SetPosition(m_Position);
+    m_View = glm::lookAt(m_Position, m_Target, glm::vec3(0, 1, 0));
     // glm::lookAt(m_Position, glm::vec3(0.0f), glm::vec3(0, 1, 0));
 }
 
@@ -68,10 +66,15 @@ void Camera::RotateByDelta(const float deltaX, const float deltaY) {
         // This uses the rotated vertical axis
         glm::rotate(glm::mat4(1.0f), deltaY,
                     glm::vec3(rightVec.x, 0, rightVec.z)) *
-        glm::translate(glm::mat4(1.0f), m_Transform.GetPosition());
+        glm::translate(glm::mat4(1.0f), m_Position);
 
-    m_Transform.SetPosition(glm::vec3(cameraMat[3]));
+    m_Position = glm::vec3(cameraMat[3]);
 }
+
+void Camera::Zoom(float offset) {
+    m_Position += 20 * offset * glm::normalize(m_Position - m_Target);
+}
+
 CameraData Camera::GetCameraData() {
     UpdateProjection();
     UpdateView();

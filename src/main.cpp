@@ -197,10 +197,7 @@ int main(int argc, char **argv) {
         pipeline.Render(scene);
 
         if (!io.WantCaptureMouse) {
-            activeCamera->GetTransform().SetPosition(
-                activeCamera->GetTransform().GetPosition() +
-                20 * window.GetScrollOffset().y *
-                    glm::normalize(activeCamera->GetTransform().GetPosition()));
+            activeCamera->Zoom(window.GetScrollOffset().y);
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
                 activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
