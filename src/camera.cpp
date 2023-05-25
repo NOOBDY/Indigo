@@ -31,6 +31,11 @@ void Camera::SetViewportSize(float width, float height) {
     UpdateProjection();
 }
 
+void Camera::Reset() {
+    m_Position = {0, 500, 500};
+    m_Target = {0, 0, 0};
+}
+
 /**
  * TODO: Refactor this in the future
  *
@@ -39,7 +44,7 @@ void Camera::SetViewportSize(float width, float height) {
  * This solution hard codes a transformation matrix that rotates the
  * current direction by 90 degrees as the vertical rotational axis
  */
-void Camera::RotateByDelta(const float deltaX, const float deltaY) {
+void Camera::Rotate(const float deltaX, const float deltaY) {
 
     // Since the camera will always point at (0, 0, 0), normalizing the
     // position vector can be used as the direction
@@ -71,8 +76,18 @@ void Camera::RotateByDelta(const float deltaX, const float deltaY) {
     m_Position = glm::vec3(cameraMat[3]);
 }
 
-void Camera::Zoom(float offset) {
-    m_Position += 20 * offset * glm::normalize(m_Position - m_Target);
+void Camera::Zoom(float amount) {
+    m_Position += amount * glm::normalize(m_Position - m_Target);
+}
+
+void Camera::Pan(float deltaX, float deltaY) {
+    glm::vec3 right = glm::vec3(m_View[0][0], m_View[1][0], m_View[2][0]);
+    glm::vec3 up = glm::vec3(m_View[0][1], m_View[1][1], m_View[2][1]);
+
+    m_Position += right * deltaX;
+    m_Position += up * deltaY;
+    m_Target += right * deltaX;
+    m_Target += up * deltaY;
 }
 
 CameraData Camera::GetCameraData() {

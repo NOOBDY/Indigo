@@ -178,7 +178,9 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
+
     scene.SetEnvironmentMap(reflectMap);
+
     do {
         auto &io = ImGui::GetIO();
         glm::vec2 delta = window.GetCursorDelta();
@@ -196,12 +198,20 @@ int main(int argc, char **argv) {
         // texMainColor->Bind(Pipeline::ALBEDO);
         pipeline.Render(scene);
 
+        if (window.GetKey(GLFW_KEY_R)) {
+            activeCamera->Reset();
+        }
+
         if (!io.WantCaptureMouse) {
-            activeCamera->Zoom(window.GetScrollOffset().y);
+            activeCamera->Zoom(20 * window.GetScrollOffset().y);
+
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+                activeCamera->Pan(delta.x * -0.5f, delta.y * 0.5f);
+            }
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-                activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                            delta.y * -2 / window.GetHeight());
+                activeCamera->Rotate(delta.x * -2 / window.GetWidth(),
+                                     delta.y * -2 / window.GetHeight());
             }
         }
 

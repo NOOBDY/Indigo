@@ -28,10 +28,11 @@ public:
 
     void SetViewportSize(float width, float height);
 
-    void RotateByDelta(const float deltaX, const float deltaY);
+    void Reset();
 
-    void Pan() {}
-    void Zoom(float offset);
+    void Rotate(const float deltaX, const float deltaY);
+    void Pan(float deltaX, float deltaY);
+    void Zoom(float amount);
 
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
