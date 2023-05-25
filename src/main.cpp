@@ -55,9 +55,10 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
+        glm::vec3{0, 500, 500}, 45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
 
     Scene scene(mainCamera);
+
     try {
         auto model = std::make_shared<Model>(                            //
             "Main",                                                      //
@@ -186,36 +187,34 @@ int main(int argc, char **argv) {
         glm::vec2 delta = window.GetCursorDelta();
         window.UpdateCursorPosition();
 
-        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT) &&
-            !io.WantCaptureMouse) {
-            unsigned int id = pipeline.GetIdByPosition(window.GetCursorPos());
-            scene.SetActiveSceneObject(id);
-        }
-
         const std::shared_ptr<Camera> activeCamera = scene.GetActiveCamera();
 
-        // texMainColor->Bind(Pipeline::ALBEDO);
-        pipeline.Render(scene);
-
-        if (window.GetKey(GLFW_KEY_R)) {
-            activeCamera->Reset();
-        }
-
+        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
         if (!io.WantCaptureMouse) {
             activeCamera->Zoom(20 * window.GetScrollOffset().y);
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
-                activeCamera->Pan(delta.x * -0.5f, delta.y * 0.5f);
+                activeCamera->Rotate(delta.x * 0.1f, delta.y * 0.1f);
             }
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-                activeCamera->Rotate(delta.x * -2 / window.GetWidth(),
-                                     delta.y * -2 / window.GetHeight());
+                activeCamera->Pan(delta.x * -0.5f, delta.y * 0.5f);
+            }
+
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE)) {
+                const glm::vec2 pos =
+                    glm::min(window.GetCursorPos(),
+                             glm::vec2{window.GetWidth(), window.GetHeight()});
+
+                const unsigned int id = pipeline.GetIdByPosition(pos);
+
+                scene.SetActiveSceneObject(id);
             }
         }
 
         activeCamera->UpdateView();
+
+        pipeline.Render(scene);
 
 #pragma region GUI
         Renderer::DisableDepthTest();

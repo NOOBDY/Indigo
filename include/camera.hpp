@@ -20,15 +20,13 @@ struct CameraData {
 };
 class Camera {
 public:
-    Camera(float fov, float aspectRatio, float nearClip = 10.0f,
-           float farClip = 1500.0f);
+    Camera(glm::vec3 position, float fov, float aspectRatio,
+           float nearClip = 10.0f, float farClip = 1500.0f);
 
     void UpdateProjection();
     void UpdateView();
 
     void SetViewportSize(float width, float height);
-
-    void Reset();
 
     void Rotate(const float deltaX, const float deltaY);
     void Pan(float deltaX, float deltaY);
