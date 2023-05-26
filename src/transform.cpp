@@ -1,5 +1,7 @@
 #include "transform.hpp"
 
+#include <glm/gtx/matrix_decompose.hpp>
+
 #include "log.hpp"
 
 Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
@@ -7,44 +9,14 @@ Transform::Transform(glm::vec3 position, glm::vec3 rotation, glm::vec3 scale)
 
 void Transform::SetTransform(glm::mat4 transform) {
     m_Transform = transform;
-    // position
-    m_Position.x = transform[0][3];
-    m_Position.y = transform[1][3];
-    m_Position.z = transform[2][3];
-    // scale
-    m_Scale.x = transform[0][0];
-    m_Scale.y = transform[1][1];
-    m_Scale.z = transform[2][2];
 
-    // rotation is bitch form
-    // https://www.reddit.com/r/opengl/comments/sih6lc/4x4_matrix_to_position_rotation_and_scale/
-    const glm::vec3 left =
-        glm::normalize(glm::vec3(transform[0])); // Normalized left axis
-    const glm::vec3 up =
-        glm::normalize(glm::vec3(transform[1])); // Normalized up axis
-    const glm::vec3 forward =
-        glm::normalize(glm::vec3(transform[2])); // Normalized forward axis
+    glm::quat rot;         // convert from quaternion to euler angles later
+    glm::vec3 skew;        // unused
+    glm::vec4 perspective; // unused
 
-    // Obtain the "unscaled" transform matrix
-    glm::mat4 m(0.0f);
-    m[0][0] = left.x;
-    m[0][1] = left.y;
-    m[0][2] = left.z;
+    glm::decompose(m_Transform, m_Scale, rot, m_Position, skew, perspective);
 
-    m[1][0] = up.x;
-    m[1][1] = up.y;
-    m[1][2] = up.z;
-
-    m[2][0] = forward.x;
-    m[2][1] = forward.y;
-    m[2][2] = forward.z;
-
-    glm::vec3 rot;
-    rot.x = atan2f(m[1][2], m[2][2]);
-    rot.y = atan2f(-m[0][2], sqrtf(m[1][2] * m[1][2] + m[2][2] * m[2][2]));
-    rot.z = atan2f(m[0][1], m[0][0]);
-    rot = glm::degrees(rot); // Convert to degrees, or you could multiply it by
-    m_Rotation = rot;
+    m_Rotation = glm::eulerAngles(rot);
 }
 
 void Transform::UpdateMat() {
