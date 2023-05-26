@@ -66,9 +66,9 @@ layout(std140, binding = 4) uniform PipelineUniform {
     PipelineData pipelineInfo;
 };
 #define PI 3.1415926
-vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
-    const int MAX_LENGTH = 4;
-    const int MAX_ROUND = 4;
+vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord, int MAX_LENGTH,int MAX_ROUND) {
+    // const int MAX_LENGTH = 4;
+    // const int MAX_ROUND = 4;
     float blurWidth = blurStrength;
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
@@ -143,18 +143,19 @@ vec4 displayPass(int i) {
     case 10:
         return texture(screenLight, UV);
     case 11:
-        return texture(screenVolume, UV);
+        return gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
     case 15:
         // return texture(screenLight, UV);
-        // return gaussianBlur(screenVolume, 10, UV).xyzx*0.5;
-        return texture(screenLight, UV) +gaussianBlur(screenVolume, 10, UV).xyzx;
+        // return texture(screenLight, UV) +gaussianBlur(screenVolume, 10, UV).xyzx;
+        return gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
+        return texture(screenLight, UV) +gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
         // return texture(screenLight, UV) + texture(screenVolume, UV);
         return vec4(texture(screenVolume, UV).xyz, 1);
         // return vec4(texture(screenVolume, UV).wxx,0);
         // return mix(texture(screenLight, UV),texture(screenVolume,
         // UV).xyzw,texture(screenVolume, UV).w);
         return texture(screenLight, UV) +
-               vec4(gaussianBlur(screenVolume, 10, UV), 0.0);
+               vec4(gaussianBlur(screenVolume, 10, UV,3,3), 0.0);
     default:
         return vec4(1);
     }
