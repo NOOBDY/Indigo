@@ -143,17 +143,16 @@ vec4 displayPass(int i) {
     case 10:
         return texture(screenLight, UV);
     case 11:
-        return gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
+        return texture(screenVolume,UV);
     case 15:
+        // return gaussianBlur(screenVolume, 15, UV,3,3).xyzx;
         // return texture(screenLight, UV);
         // return texture(screenLight, UV) +gaussianBlur(screenVolume, 10, UV).xyzx;
-        return gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
-        return texture(screenLight, UV) +gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
-        // return texture(screenLight, UV) + texture(screenVolume, UV);
+        
+        // return gaussianBlur(screenVolume, 10, UV,4,4).xyzx;
+        // return texture(screenVolume,UV);
+        return texture(screenLight, UV) +gaussianBlur(screenVolume, 10, UV,1,4).xyzx;
         return vec4(texture(screenVolume, UV).xyz, 1);
-        // return vec4(texture(screenVolume, UV).wxx,0);
-        // return mix(texture(screenLight, UV),texture(screenVolume,
-        // UV).xyzw,texture(screenVolume, UV).w);
         return texture(screenLight, UV) +
                vec4(gaussianBlur(screenVolume, 10, UV,3,3), 0.0);
     default:

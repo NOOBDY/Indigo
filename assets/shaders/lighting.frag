@@ -192,15 +192,6 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
 
     return shadow;
 }
-float SPhase(float k,vec3 viewDir, vec3 lightDir) {
-
-    float k2 = k * k;
-    float numerator = 1.0 - k2;
-    float denominator = pow(1.0 - k * dot(viewDir, lightDir), 2.0);
-
-    return numerator / denominator / (4.0 * PI);
-}
-
 vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
     mat4 ditherPattern = {{0.0f, 0.5f, 0.125f, 0.625f},
                           {0.75f, 0.22f, 0.875f, 0.375f},
@@ -208,56 +199,35 @@ vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
                           {0.9375f, 0.4375f, 0.8125f, 0.3125}};
 
     const int n = 64;
-    const float sigma_a = 0.3;
+    const float sigma_a = 0.1;
     const float bias = 0.001;
-    const float absorptionCoef=0.15;
-    const float scatteringCoef=0.24;
-    const float inScatteringCoef=20;
-    const float lightCoef=0.7;
-    const float kmToM = 1000.0;
-    const float extinctionCoef = (absorptionCoef + scatteringCoef) * kmToM;
-    const float density = 0.9;
-    const float Kcoef=0.7;
-    float transmittance=1;
-    float absorbtion = 0.0;
-    vec3 inScattering = vec3(0.0);
-    vec3 illumination = vec3(0);
-
+    // float maxDistance = 1000;
     float maxDistance=light.radius;
     vec3 view = (length(position - cameraPos) > maxDistance)
                     ? (normalize(position - cameraPos) * maxDistance / n)
                     : (position - cameraPos) / n;
-    vec3 viewDir=normalize(view);
     vec3 samplePos = cameraPos;
+    float transmittance = 1;
+    vec3 illumination = vec3(0);
     for (int i = 0; i < n; i++) {
         samplePos += view;
-        // vec3 lightDir=light.transform.position-samplePos;
         vec4 lightSpace = light.lightProjections[0] * vec4(samplePos, 1.0);
         vec3 projCoords = lightSpace.xyz / lightSpace.w;
         projCoords = projCoords * 0.5 + 0.5;
         float currentDepth = projCoords.z;
         float closestDepth = texture(directionShadowMap, projCoords.xy).r;
-        bool shadow=true;
+        float currentDensity = 0.2;
         if (currentDepth - bias < closestDepth) {
-            //no in shadow
-            shadow=false;
+            transmittance *= exp(-(currentDensity)*sigma_a);
+            illumination += transmittance * light.lightColor;
         }
-        absorbtion=extinctionCoef*density;
-        transmittance *= exp(-(absorbtion)/n);
-        inScattering=light.lightColor*SPhase(Kcoef,viewDir,light.transform.direction);
-        illumination += transmittance * inScattering*density*scatteringCoef*kmToM /n;
-            
     }
 
-    // float temp=dot(normalize(position - cameraPos),-normalize(position-light.transform.position));
-    
-    // illumination = illumination *vec3(1.0, 1.0, 1.0)/ n*light.power;
-    // illumination*=HGPhase(normalize(-view),normalize(light.transform.position-position));
-    // illumination=vec3(1.0)*temp;
+    illumination = illumination / n;
     // transmittance = clamp(0, 1, transmittance);
     // return vec4(smoothstep(vec3(0.8), vec3(1.5), illumination), transmittance);
     // return vec4(vec3(v/n)*0.5,transmittance);
-    return vec4(vec3(illumination),1-transmittance);
+    return vec4(vec3(illumination),transmittance);
 }
 vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
     const int n = 64;
@@ -285,7 +255,7 @@ vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
         }
     }
     illumination = illumination * light.power / n;
-    transmittance = clamp(0, 1, transmittance);
+    // transmittance = clamp(0, 1, transmittance);
     return vec4(illumination, transmittance);
 }
 vec2 panoramaUV(vec3 nuv) {

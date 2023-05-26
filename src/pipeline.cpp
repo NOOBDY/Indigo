@@ -147,7 +147,8 @@ void Pipeline::Init() {
 
 #pragma region ssao
     m_SSAOPassFBO.Bind();
-    m_Passes[SSAO] = std::make_shared<Texture>(m_Width, m_Height, Texture::R);
+    m_Passes[SSAO] =
+        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::R);
     m_SSAOPassFBO.AttachTexture(m_Passes[SSAO]->GetTextureID(), attachments[0]);
     glDrawBuffers(1, attachments);
     m_SSAOPassFBO.Unbind();
@@ -156,11 +157,11 @@ void Pipeline::Init() {
 #pragma region lighting pass texture
     m_LightPassFBO.Bind();
     m_Passes[LIGHTING] =
-        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::RGBA);
     m_LightPassFBO.AttachTexture(m_Passes[LIGHTING]->GetTextureID(),
                                  attachments[0]);
     m_Passes[VOLUME] =
-        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
+        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::RGBA);
     m_LightPassFBO.AttachTexture(m_Passes[VOLUME]->GetTextureID(),
                                  attachments[1]);
     glDrawBuffers(2, attachments);
@@ -168,7 +169,8 @@ void Pipeline::Init() {
     GLuint rbo1;
 
     glCreateRenderbuffers(1, &rbo1);
-    glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, m_Width, m_Height);
+    glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, m_Width / 2,
+                               m_Height / 2);
 
     glNamedFramebufferRenderbuffer(m_LightPassFBO.GetBufferID(),
                                    GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
@@ -233,6 +235,7 @@ void Pipeline::ShadowPass(const Scene &scene) {
 
         m_ShadowFBO.Unbind();
         m_PointLightShadow.Unbind();
+        glGenerateTextureMipmap(light->GetShadowTexture()->GetTextureID());
     }
 
     Renderer::EnableCullFace();
@@ -297,7 +300,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
     m_SSAOPassFBO.Bind();
     m_SSAO.Bind();
 
-    glViewport(0, 0, m_Width, m_Height);
+    glViewport(0, 0, m_Width / 2, m_Height / 2);
 
     Renderer::DisableDepthTest();
     Renderer::Clear();
@@ -315,6 +318,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
     m_Screen.Bind();
     // glTextureBarrier();
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+    glGenerateTextureMipmap(m_Passes[SSAO]->GetTextureID());
 
     m_SSAO.Unbind();
     m_SSAOPassFBO.Unbind();
@@ -323,7 +327,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
 void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Bind();
     m_Light.Bind();
-    glViewport(0, 0, m_Width, m_Height);
+    glViewport(0, 0, m_Width / 2, m_Height / 2);
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
     const auto lights = scene.GetLights();
 
@@ -377,12 +381,15 @@ void Pipeline::LightPass(const Scene &scene) {
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
 
+    glGenerateTextureMipmap(m_Passes[LIGHTING]->GetTextureID());
+    glGenerateTextureMipmap(m_Passes[VOLUME]->GetTextureID());
     m_Light.Unbind();
     m_LightPassFBO.Unbind();
 }
 
 void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
+    glViewport(0, 0, m_Width, m_Height);
     m_Compositor.Bind();
 
     m_Compositor.Validate();
