@@ -311,9 +311,6 @@ int main(int argc, char **argv) {
         ImGui::Checkbox("Invert X", &invertX);
         ImGui::Checkbox("Invert Y", &invertY);
 
-        invertX = invertX ? -1 : 1;
-        invertY = invertY ? -1 : 1;
-
         ImGui::End();
 #pragma endregion
 
