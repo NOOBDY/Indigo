@@ -202,7 +202,7 @@ vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
     const float sigma_a = 0.1;
     const float bias = 0.001;
     // float maxDistance = 1000;
-    float maxDistance=light.radius;
+    float maxDistance = light.radius;
     vec3 view = (length(position - cameraPos) > maxDistance)
                     ? (normalize(position - cameraPos) * maxDistance / n)
                     : (position - cameraPos) / n;
@@ -224,10 +224,8 @@ vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
     }
 
     illumination = illumination / n;
-    // transmittance = clamp(0, 1, transmittance);
-    // return vec4(smoothstep(vec3(0.8), vec3(1.5), illumination), transmittance);
-    // return vec4(vec3(v/n)*0.5,transmittance);
-    return vec4(vec3(illumination),transmittance);
+    transmittance = clamp(0, 1, transmittance);
+    return vec4(vec3(illumination), transmittance);
 }
 vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
     const int n = 64;
