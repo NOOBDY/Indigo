@@ -55,10 +55,11 @@ int main(int argc, char **argv) {
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
+        glm::vec3{0, 500, 500}, 45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
 
     mainCamera->GetTransform().SetPosition({270, 200, 100});
     Scene scene(mainCamera);
+
     try {
         auto models =
             Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
@@ -119,55 +120,65 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
-    scene.SetEnvironmentMap(reflectMap);
-    do {
-        auto &io = ImGui::GetIO();
-        glm::vec2 delta = window.GetCursorDelta();
-        window.UpdateCursorPosition();
 
-        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT) &&
-            !io.WantCaptureMouse) {
-            unsigned int id = pipeline.GetIdByPosition(window.GetCursorPos());
-            scene.SetActiveSceneObject(id);
-        }
+    scene.SetEnvironmentMap(reflectMap);
+
+    do {
+        static bool invertX = false;
+        static bool invertY = false;
+
+        const auto &io = ImGui::GetIO();
+        const glm::vec2 delta = window.GetCursorDelta();
+        window.UpdateCursorPosition();
 
         const std::shared_ptr<Camera> activeCamera = scene.GetActiveCamera();
 
-        // texMainColor->Bind(Pipeline::ALBEDO);
-        pipeline.Render(scene);
-
+        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
         if (!io.WantCaptureMouse) {
-            activeCamera->GetTransform().SetPosition(
-                activeCamera->GetTransform().GetPosition() +
-                20 * window.GetScrollOffset().y *
-                    glm::normalize(activeCamera->GetTransform().GetPosition()));
+            activeCamera->Zoom(20 * window.GetScrollOffset().y);
+
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+                activeCamera->Rotate((invertX ? -1 : 1) * delta.x * 0.1f,
+                                     (invertY ? -1 : 1) * delta.y * 0.1f);
+            }
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-                activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                            delta.y * -2 / window.GetHeight());
+                activeCamera->Pan(delta.x * -0.5f, delta.y * 0.5f);
+            }
+
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE)) {
+                const glm::vec2 pos =
+                    glm::min(window.GetCursorPos(),
+                             glm::vec2{window.GetWidth(), window.GetHeight()});
+
+                const unsigned int id = pipeline.GetIdByPosition(pos);
+
+                scene.SetActiveSceneObject(id);
             }
         }
 
         activeCamera->UpdateView();
 
-#pragma region GUI
+        pipeline.Render(scene);
+
         Renderer::DisableDepthTest();
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        float framerate = ImGui::GetIO().Framerate;
-
+#pragma region Debug Info UI
         ImGui::Begin("Debug Info");
         ImGui::SetWindowPos({SCREEN_WIDTH - 110, 10});
         ImGui::SetWindowSize({100, 85});
-        ImGui::Text("%.1f FPS", framerate);
+        ImGui::Text("%.1f FPS", io.Framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
         ImGui::Text("(%d, %d)", (int)window.GetScrollOffset().x,
                     (int)window.GetScrollOffset().y);
         ImGui::End();
+#pragma endregion
 
+#pragma region Objects UI
         ImGui::Begin("Objects");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 100});
         ImGui::SetWindowSize({130, 200});
@@ -179,7 +190,9 @@ int main(int argc, char **argv) {
             }
         }
         ImGui::End();
+#pragma endregion
 
+#pragma region Pipeline UI
         ImGui::Begin("Pipeline");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
         ImGui::SetWindowSize({130, 150});
@@ -229,7 +242,20 @@ int main(int argc, char **argv) {
             pipeline.SetUseHDRI(useHDRI);
         }
         ImGui::End();
+#pragma endregion
 
+#pragma region Camera UI
+        ImGui::Begin("Camera");
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 460});
+        ImGui::SetWindowSize({130, 80});
+
+        ImGui::Checkbox("Invert X", &invertX);
+        ImGui::Checkbox("Invert Y", &invertY);
+
+        ImGui::End();
+#pragma endregion
+
+#pragma region Active Object UI
         auto activeObject = scene.GetActiveSceneObject();
 
         if (activeObject) {
