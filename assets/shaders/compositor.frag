@@ -32,7 +32,10 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int pad0;
+    int useVolume;
+
+    vec3 volumeColor;
+    float desity;
 };
 
 struct TransformData {

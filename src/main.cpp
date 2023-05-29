@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
 #pragma region Pipeline UI
         ImGui::Begin("Pipeline");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
-        ImGui::SetWindowSize({130, 150});
+        ImGui::SetWindowSize({130, 200});
         // ImGui::BeginCombo("Pass", "");
         const std::map<Pipeline::Pass, std::string> passes{
             {Pipeline::Pass::ALBEDO, "Albedo"},
@@ -232,21 +232,35 @@ int main(int argc, char **argv) {
             bool useSSAO = pipeline.GetUseSSAO();
             bool useOutline = pipeline.GetUseOutline();
             bool useHDRI = pipeline.GetUseHDRI();
+            bool useVolume = pipeline.GetUseVolume();
+            auto volumeColor = pipeline.GetUseVolumeColor();
+            auto volumeDesity = pipeline.GetVolumeDesity();
 
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
             ImGui::Checkbox("HDRI", &useHDRI);
+            ImGui::Checkbox("Volume", &useVolume);
+
+            ImGui::BeginDisabled(!useVolume);
+            ImGui::DragFloat("Volume Desity", &volumeDesity, 0.05f, 0.0f, 1.0f,
+                             "%.2f");
+            ImGui::ColorEdit3("Volume Color", &volumeColor[0]);
+            ImGui::EndDisabled();
 
             pipeline.SetUseSSAO(useSSAO);
             pipeline.SetUseOutline(useOutline);
             pipeline.SetUseHDRI(useHDRI);
+            pipeline.SetUseVolume(useVolume);
+
+            pipeline.SetVolumeDesity(volumeDesity);
+            pipeline.SetUseVolumeColor(volumeColor);
         }
         ImGui::End();
 #pragma endregion
 
 #pragma region Camera UI
         ImGui::Begin("Camera");
-        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 460});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 510});
         ImGui::SetWindowSize({130, 80});
 
         ImGui::Checkbox("Invert X", &invertX);

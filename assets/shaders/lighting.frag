@@ -12,10 +12,14 @@ struct PipelineData {
     float time;
     float detiaTime;
     int selectPass;
+
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int pad0;
+    int useVolume;
+
+    vec3 volumeColor;
+    float desity;
 };
 
 struct TransformData {
@@ -211,14 +215,15 @@ vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
         projCoords = projCoords * 0.5 + 0.5;
         float currentDepth = projCoords.z;
         float closestDepth = texture(directionShadowMap, projCoords.xy).r;
-        float currentDensity = 0.2;
+        float currentDensity = pipelineInfo.desity;
         if (currentDepth - bias < closestDepth) {
             transmittance *= exp(-(currentDensity)*sigma_a);
             illumination += transmittance * light.lightColor;
         }
     }
 
-    illumination = illumination / n;
+    illumination =
+        (pipelineInfo.volumeColor * light.lightColor) * illumination / n;
     transmittance = clamp(0, 1, transmittance);
     return vec4(vec3(illumination), transmittance);
 }
@@ -241,13 +246,14 @@ vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
         vec3 lightDir = light.transform.position - samplePos;
         float closestDepth = texture(pointShadowMap, -normalize(lightDir)).r;
         closestDepth *= light.farPlane;
-        float currentDensity = 0.02;
+        float currentDensity = pipelineInfo.desity;
         transmittance *= exp(-(currentDensity)*sigma_a);
         if (length(lightDir) - bias < closestDepth) {
-            illumination += transmittance * light.lightColor;
+            illumination += transmittance;
         }
     }
-    illumination = illumination * light.power / n;
+    illumination = (pipelineInfo.volumeColor * light.lightColor) *
+                   illumination * light.power / n;
     // transmittance = clamp(0, 1, transmittance);
     return vec4(illumination, transmittance);
 }
@@ -369,11 +375,13 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     if (light.castShadow != 0)
         if (light.lightType == POINT || light.lightType == SPOT) {
             shadow = pointShadow(position, light);
+            // if(pipelineInfo.useVolume==1)
             // outScreenVolume+=PointVolume(position,cameraInfo.transform.position,light);
         } else if (light.lightType == DIRECTION) {
             shadow = directionShadow(position, N, light);
-            outScreenVolume +=
-                DirectionVolume(position, cameraInfo.transform.position, light);
+            if (pipelineInfo.useVolume == 1)
+                outScreenVolume += DirectionVolume(
+                    position, cameraInfo.transform.position, light);
         }
 
     // color tranform
