@@ -56,7 +56,6 @@ Pipeline::Pipeline(int width, int height)
     m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
     m_Light.SetInt("LUT", LUT);
     m_Light.SetInt("ssao", SSAO);
-    m_Light.SetInt("noise", NOISE);
 
     m_Compositor.Bind();
     m_Compositor.SetInt("screenAlbedo", ALBEDO);
@@ -350,7 +349,6 @@ void Pipeline::LightPass(const Scene &scene) {
     m_Passes[VOLUME]->Bind(VOLUME);
     m_Passes[LUT]->Bind(LUT);
     m_Passes[SSAO]->Bind(SSAO);
-    m_Passes[NOISE]->Bind(NOISE);
 
     m_Light.Validate();
 

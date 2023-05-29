@@ -54,10 +54,10 @@ int main(int argc, char **argv) {
     std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
-    std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        glm::vec3{0, 500, 500}, 45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
-
-    mainCamera->GetTransform().SetPosition({270, 200, 100});
+    std::shared_ptr<Camera> mainCamera =
+        std::make_shared<Camera>(glm::vec3{350, 200, 100}, 45.0f,
+                                 window.GetAspectRatio(), 10.0f, 5000.0f);
+    // mainCamera->GetTransform().SetPosition({270, 200, 100});
     Scene scene(mainCamera);
 
     try {
