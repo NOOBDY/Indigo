@@ -52,7 +52,10 @@ public:
         int useSSAO;
         int useOutline;
         int useHDRI;
-        int pad0;
+        int useVolume;
+
+        glm::vec3 volumeColor;
+        float density;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
     };
@@ -72,6 +75,13 @@ public:
     void SetUseSSAO(bool useSSAO) { m_UseSSAO = useSSAO; }
     void SetUseOutline(bool useOutline) { m_UseOutline = useOutline; }
     void SetUseHDRI(bool useHDRI) { m_UseHDRI = useHDRI; }
+    void SetUseVolume(bool useVolume) { m_UseVolume = useVolume; }
+
+    void SetVolumeDensity(float density) { m_VolumeDensity = density; }
+
+    void SetUseVolumeColor(glm::vec3 volumeColor) {
+        m_VolumeColor = volumeColor;
+    }
 
     unsigned int GetIdByPosition(glm::vec2 pos);
     PipelineData GetPipelineData(const Scene &scene);
@@ -81,6 +91,11 @@ public:
     bool GetUseSSAO() const { return m_UseSSAO; }
     bool GetUseOutline() const { return m_UseOutline; }
     bool GetUseHDRI() const { return m_UseHDRI; }
+    bool GetUseVolume() const { return m_UseVolume; }
+
+    float GetVolumeDensity() const { return m_VolumeDensity; }
+
+    glm::vec3 GetUseVolumeColor() const { return m_VolumeColor; }
 
 private:
     void ShadowPass(const Scene &scene);
@@ -115,5 +130,11 @@ private:
     bool m_UseSSAO;
     bool m_UseOutline;
     bool m_UseHDRI;
+    bool m_UseVolume;
+
+    float m_VolumeDensity;
+
+    glm::vec3 m_VolumeColor;
+    // glm::vec3 tem;
 };
 #endif

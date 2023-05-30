@@ -20,7 +20,8 @@ Pipeline::Pipeline(int width, int height)
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
-      m_UseOutline(true), m_UseHDRI(true) {
+      m_UseOutline(true), m_UseHDRI(true), m_UseVolume(true),
+      m_VolumeDensity(0.2), m_VolumeColor({1, 1, 1}) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
@@ -146,7 +147,8 @@ void Pipeline::Init() {
 
 #pragma region ssao
     m_SSAOPassFBO.Bind();
-    m_Passes[SSAO] = std::make_shared<Texture>(m_Width, m_Height, Texture::R);
+    m_Passes[SSAO] =
+        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::R);
     m_SSAOPassFBO.AttachTexture(m_Passes[SSAO]->GetTextureID(), attachments[0]);
     glDrawBuffers(1, attachments);
     m_SSAOPassFBO.Unbind();
@@ -232,6 +234,7 @@ void Pipeline::ShadowPass(const Scene &scene) {
 
         m_ShadowFBO.Unbind();
         m_PointLightShadow.Unbind();
+        glGenerateTextureMipmap(light->GetShadowTexture()->GetTextureID());
     }
 
     Renderer::EnableCullFace();
@@ -296,7 +299,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
     m_SSAOPassFBO.Bind();
     m_SSAO.Bind();
 
-    glViewport(0, 0, m_Width, m_Height);
+    glViewport(0, 0, m_Width / 2, m_Height / 2);
 
     Renderer::DisableDepthTest();
     Renderer::Clear();
@@ -314,6 +317,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
     m_Screen.Bind();
     // glTextureBarrier();
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+    glGenerateTextureMipmap(m_Passes[SSAO]->GetTextureID());
 
     m_SSAO.Unbind();
     m_SSAOPassFBO.Unbind();
@@ -375,12 +379,15 @@ void Pipeline::LightPass(const Scene &scene) {
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
 
+    glGenerateTextureMipmap(m_Passes[LIGHTING]->GetTextureID());
+    glGenerateTextureMipmap(m_Passes[VOLUME]->GetTextureID());
     m_Light.Unbind();
     m_LightPassFBO.Unbind();
 }
 
 void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
+    glViewport(0, 0, m_Width, m_Height);
     m_Compositor.Bind();
 
     m_Compositor.Validate();
@@ -449,6 +456,8 @@ Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
         m_UseSSAO,
         m_UseOutline,
         m_UseHDRI,
-        {},
+        m_UseVolume,
+        m_VolumeColor,
+        m_VolumeDensity,
     };
 }

@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     Renderer::Init();
-    Renderer::ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    Renderer::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     Controller::InitGUI(window);
 
     Pipeline pipeline(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -54,90 +54,31 @@ int main(int argc, char **argv) {
     std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
         "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
-    std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        glm::vec3{0, 500, 500}, 45.0f, window.GetAspectRatio(), 50.0f, 5000.0f);
-
+    std::shared_ptr<Camera> mainCamera =
+        std::make_shared<Camera>(glm::vec3{350, 200, 100}, 45.0f,
+                                 window.GetAspectRatio(), 10.0f, 5000.0f);
+    // mainCamera->GetTransform().SetPosition({270, 200, 100});
     Scene scene(mainCamera);
 
     try {
-        auto model = std::make_shared<Model>(                            //
-            "Main",                                                      //
-            Importer::LoadFile("../assets/models/little_city/main.glb"), //
-            Transform({0, 0, 0},                                         //
-                      {180, 180, 180},                                   //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texMainColor);
-        model->SetUseAlbedoTexture(true);
-        model->SetRoughness(1.0f);
-        model->SetMetallic(0.0f);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                                //
-            "Interior",                                                      //
-            Importer::LoadFile("../assets/models/little_city/interior.glb"), //
-            Transform({0, 0, 0},                                             //
-                      {180, 180, 180},                                       //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texInterior);
-        model->SetUseAlbedoTexture(true);
-        model->SetNormalTexture(wallNormalMap);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                            //
-            "Misc",                                                      //
-            Importer::LoadFile("../assets/models/little_city/misc.glb"), //
-            Transform({0, 0.1, 0},                                       //
-                      {180, 180, 180},                                   //
-                      {1, 1, 1}));
-
-        model->SetAlbedoTexture(texMisc);
-        model->SetUseAlbedoTexture(true);
-        model->SetRoughness(1.0f);
-        model->SetMetallic(0.0f);
-
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
-        auto model = std::make_shared<Model>(                               //
-            "Outline",                                                      //
-            Importer::LoadFile("../assets/models/little_city/outline.glb"), //
-            Transform({0, 0, 0},                                            //
-                      {180, 180, 180},                                      //
-                      {1, 1, 1}));
-
-        model->SetAlbedoColor({0, 0, 0});
-        model->SetUseAlbedoTexture(false);
-        model->SetVisible(false);
-        model->SetCastShadows(false);
-
-        scene.AddModel(model);
+        auto models =
+            Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
+        for (auto &i : models) {
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
+            scene.AddModel(i);
+        }
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
 
     try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
-            "point light",                                       //
+            "Point Light",                                       //
             Light::POINT,                                        //
-            Transform({-150, 250, 150},                          //
+            Transform({5, 10, 20},                               //
                       {0, 0, 0},                                 //
-                      {20, 20, 20}),
-            0.5, 1000, glm::vec3(1.0f));
+                      {5, 5, 5}),
+            1, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
         light1->SetShadowSize(512);
 
@@ -148,14 +89,14 @@ int main(int argc, char **argv) {
 
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
-            "direction light",                                   //
+            "Direction Light",                                   //
             Light::DIRECTION,                                    //
             Transform({0, 500, 0},                               //
-                      {20, 20, 0},                               //
-                      {20, 20, 20}),
+                      {30, 180, 0},                              //
+                      {5, 5, 5}),
             2, 1000, glm::vec3(1.0f));
 
-        light2->SetShadowSize(2048);
+        light2->SetShadowSize(1024);
         light2->SetColorTexture(reflectMap);
 
         scene.AddLight(light2);
@@ -164,11 +105,11 @@ int main(int argc, char **argv) {
     }
     try {
         std::shared_ptr<Light> light3 = std::make_shared<Light>( //
-            "ambient light",                                     //
+            "Ambient Light",                                     //
             Light::AMBIENT,                                      //
-            Transform({0, 30, -150},                             //
+            Transform({0.0, 30, 0},                              //
                       {0, 0, 0},                                 //
-                      {20, 20, 20}),
+                      {5, 5, 5}),
             1, 1000, glm::vec3(1.0f), false);
 
         // light3->SetShadowSize(2048);
@@ -254,7 +195,7 @@ int main(int argc, char **argv) {
 #pragma region Pipeline UI
         ImGui::Begin("Pipeline");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
-        ImGui::SetWindowSize({130, 150});
+        ImGui::SetWindowSize({130, 200});
         // ImGui::BeginCombo("Pass", "");
         const std::map<Pipeline::Pass, std::string> passes{
             {Pipeline::Pass::ALBEDO, "Albedo"},
@@ -291,21 +232,35 @@ int main(int argc, char **argv) {
             bool useSSAO = pipeline.GetUseSSAO();
             bool useOutline = pipeline.GetUseOutline();
             bool useHDRI = pipeline.GetUseHDRI();
+            bool useVolume = pipeline.GetUseVolume();
+            auto volumeColor = pipeline.GetUseVolumeColor();
+            auto volumeDensity = pipeline.GetVolumeDensity();
 
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
             ImGui::Checkbox("HDRI", &useHDRI);
+            ImGui::Checkbox("Volume", &useVolume);
+
+            ImGui::BeginDisabled(!useVolume);
+            ImGui::DragFloat("Volume Desity", &volumeDensity, 0.05f, 0.0f, 1.0f,
+                             "%.2f");
+            ImGui::ColorEdit3("Volume Color", &volumeColor[0]);
+            ImGui::EndDisabled();
 
             pipeline.SetUseSSAO(useSSAO);
             pipeline.SetUseOutline(useOutline);
             pipeline.SetUseHDRI(useHDRI);
+            pipeline.SetUseVolume(useVolume);
+
+            pipeline.SetVolumeDensity(volumeDensity);
+            pipeline.SetUseVolumeColor(volumeColor);
         }
         ImGui::End();
 #pragma endregion
 
 #pragma region Camera UI
         ImGui::Begin("Camera");
-        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 460});
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 510});
         ImGui::SetWindowSize({130, 80});
 
         ImGui::Checkbox("Invert X", &invertX);

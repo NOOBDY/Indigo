@@ -32,7 +32,10 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int pad0;
+    int useVolume;
+
+    vec3 volumeColor;
+    float density;
 };
 
 struct TransformData {
@@ -66,9 +69,8 @@ layout(std140, binding = 4) uniform PipelineUniform {
     PipelineData pipelineInfo;
 };
 #define PI 3.1415926
-vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord) {
-    const int MAX_LENGTH = 8;
-    const int MAX_ROUND = 4;
+vec3 gaussianBlur(sampler2D sampleTexture, float blurStrength, vec2 texCoord,
+                  int MAX_LENGTH, int MAX_ROUND) {
     float blurWidth = blurStrength;
     vec4 blurColor = vec4(texture(sampleTexture, texCoord).xyz, 1.0);
     for (int i = 1; i <= MAX_LENGTH; ++i) {
@@ -145,9 +147,8 @@ vec4 displayPass(int i) {
     case 11:
         return texture(screenVolume, UV);
     case 15:
-        // return texture(screenLight, UV);
         return texture(screenLight, UV) +
-               vec4(gaussianBlur(screenVolume, 10, UV), 0.0);
+               vec4(gaussianBlur(screenVolume, 10, UV, 1, 4), 0.0);
     default:
         return vec4(1);
     }
@@ -168,8 +169,8 @@ void main() {
     // environment
     if (pipelineInfo.useHDRI != 0) {
         vec3 dir = viewDirection(cameraInfo.projection, cameraInfo.view, UV);
-        col.xyz = mix(col.xyz, texture(reflectMap, panoramaUV(dir)).xyz,
-                      float(texture(screenID, UV).w == 1.0));
+        col.xyz += texture(reflectMap, panoramaUV(dir)).xyz *
+                   float(texture(screenID, UV).w == 0.0);
     }
 
     if (pipelineInfo.useOutline != 0) {
@@ -178,8 +179,4 @@ void main() {
     }
 
     FragColor = vec4(col.xyz, 1.0);
-
-    // using "fake" ambient for better viewing experience
-    // FragColor = 0.3 * texture(screenAlbedo, UV) * texture(ssao, UV).r;
-    // FragColor = vec4(texture(ssao, UV).r);
 }

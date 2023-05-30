@@ -1,3 +1,4 @@
 #include "scene_object.hpp"
 
-unsigned int SceneObject::idCount = 0;
+// default id is zero so object id start with 1
+unsigned int SceneObject::idCount = 1;
