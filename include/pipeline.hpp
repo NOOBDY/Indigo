@@ -55,7 +55,7 @@ public:
         int useVolume;
 
         glm::vec3 volumeColor;
-        float desity;
+        float density;
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
     };
@@ -77,7 +77,7 @@ public:
     void SetUseHDRI(bool useHDRI) { m_UseHDRI = useHDRI; }
     void SetUseVolume(bool useVolume) { m_UseVolume = useVolume; }
 
-    void SetVolumeDesity(float desity) { m_VolumeDesity = desity; }
+    void SetVolumeDensity(float density) { m_VolumeDensity = density; }
 
     void SetUseVolumeColor(glm::vec3 volumeColor) {
         m_VolumeColor = volumeColor;
@@ -93,7 +93,7 @@ public:
     bool GetUseHDRI() const { return m_UseHDRI; }
     bool GetUseVolume() const { return m_UseVolume; }
 
-    float GetVolumeDesity() const { return m_VolumeDesity; }
+    float GetVolumeDensity() const { return m_VolumeDensity; }
 
     glm::vec3 GetUseVolumeColor() const { return m_VolumeColor; }
 
@@ -132,7 +132,7 @@ private:
     bool m_UseHDRI;
     bool m_UseVolume;
 
-    float m_VolumeDesity;
+    float m_VolumeDensity;
 
     glm::vec3 m_VolumeColor;
     // glm::vec3 tem;

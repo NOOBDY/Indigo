@@ -21,7 +21,7 @@ Pipeline::Pipeline(int width, int height)
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
       m_UseOutline(true), m_UseHDRI(true), m_UseVolume(true),
-      m_VolumeDesity(0.2), m_VolumeColor({1, 1, 1}) {
+      m_VolumeDensity(0.2), m_VolumeColor({1, 1, 1}) {
     m_Passes[LUT] =
         std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
@@ -459,6 +459,6 @@ Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
         m_UseHDRI,
         m_UseVolume,
         m_VolumeColor,
-        m_VolumeDesity,
+        m_VolumeDensity,
     };
 }

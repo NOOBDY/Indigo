@@ -19,7 +19,7 @@ struct PipelineData {
     int useVolume;
 
     vec3 volumeColor;
-    float desity;
+    float density;
 };
 
 struct TransformData {
@@ -215,7 +215,7 @@ vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
         projCoords = projCoords * 0.5 + 0.5;
         float currentDepth = projCoords.z;
         float closestDepth = texture(directionShadowMap, projCoords.xy).r;
-        float currentDensity = pipelineInfo.desity;
+        float currentDensity = pipelineInfo.density;
         if (currentDepth - bias < closestDepth) {
             transmittance *= exp(-(currentDensity)*sigma_a);
             illumination += transmittance * light.lightColor;
@@ -246,7 +246,7 @@ vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
         vec3 lightDir = light.transform.position - samplePos;
         float closestDepth = texture(pointShadowMap, -normalize(lightDir)).r;
         closestDepth *= light.farPlane;
-        float currentDensity = pipelineInfo.desity;
+        float currentDensity = pipelineInfo.density;
         transmittance *= exp(-(currentDensity)*sigma_a);
         if (length(lightDir) - bias < closestDepth) {
             illumination += transmittance;

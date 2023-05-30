@@ -35,7 +35,7 @@ struct PipelineData {
     int useVolume;
 
     vec3 volumeColor;
-    float desity;
+    float density;
 };
 
 struct TransformData {

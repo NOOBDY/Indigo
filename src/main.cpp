@@ -234,7 +234,7 @@ int main(int argc, char **argv) {
             bool useHDRI = pipeline.GetUseHDRI();
             bool useVolume = pipeline.GetUseVolume();
             auto volumeColor = pipeline.GetUseVolumeColor();
-            auto volumeDesity = pipeline.GetVolumeDesity();
+            auto volumeDensity = pipeline.GetVolumeDensity();
 
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
@@ -242,7 +242,7 @@ int main(int argc, char **argv) {
             ImGui::Checkbox("Volume", &useVolume);
 
             ImGui::BeginDisabled(!useVolume);
-            ImGui::DragFloat("Volume Desity", &volumeDesity, 0.05f, 0.0f, 1.0f,
+            ImGui::DragFloat("Volume Desity", &volumeDensity, 0.05f, 0.0f, 1.0f,
                              "%.2f");
             ImGui::ColorEdit3("Volume Color", &volumeColor[0]);
             ImGui::EndDisabled();
@@ -252,7 +252,7 @@ int main(int argc, char **argv) {
             pipeline.SetUseHDRI(useHDRI);
             pipeline.SetUseVolume(useVolume);
 
-            pipeline.SetVolumeDesity(volumeDesity);
+            pipeline.SetVolumeDensity(volumeDensity);
             pipeline.SetUseVolumeColor(volumeColor);
         }
         ImGui::End();
