@@ -157,11 +157,11 @@ void Pipeline::Init() {
 #pragma region lighting pass texture
     m_LightPassFBO.Bind();
     m_Passes[LIGHTING] =
-        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::RGBA);
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
     m_LightPassFBO.AttachTexture(m_Passes[LIGHTING]->GetTextureID(),
                                  attachments[0]);
     m_Passes[VOLUME] =
-        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::RGBA);
+        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
     m_LightPassFBO.AttachTexture(m_Passes[VOLUME]->GetTextureID(),
                                  attachments[1]);
     glDrawBuffers(2, attachments);
@@ -169,8 +169,7 @@ void Pipeline::Init() {
     GLuint rbo1;
 
     glCreateRenderbuffers(1, &rbo1);
-    glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, m_Width / 2,
-                               m_Height / 2);
+    glNamedRenderbufferStorage(rbo1, GL_DEPTH24_STENCIL8, m_Width, m_Height);
 
     glNamedFramebufferRenderbuffer(m_LightPassFBO.GetBufferID(),
                                    GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER,
@@ -327,7 +326,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
 void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Bind();
     m_Light.Bind();
-    glViewport(0, 0, m_Width / 2, m_Height / 2);
+    glViewport(0, 0, m_Width, m_Height);
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
     const auto lights = scene.GetLights();
 
