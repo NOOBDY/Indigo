@@ -16,7 +16,7 @@ Model::Model(const std::string &label, const Mesh &mesh, Transform transform)
     m_Visible = true;
 
     m_AlbedoColor = glm::vec3(1, 1, 1);
-    m_EmissionColor = glm::vec3(0, 1, 1);
+    m_EmissionColor = glm::vec3(0, 0, 0);
     m_ARM = glm::vec3(1, 0.9, 0.1);
 }
 

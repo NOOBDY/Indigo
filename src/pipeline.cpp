@@ -17,13 +17,13 @@ Pipeline::Pipeline(int width, int height)
              "../assets/shaders/ssao.frag"),
       m_Light("../assets/shaders/frame_screen.vert",
               "../assets/shaders/lighting.frag"),
+      m_LensFlare("../assets/shaders/frame_screen.vert",
+                  "../assets/shaders/lens_flare.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
       m_UseOutline(true), m_UseHDRI(true), m_UseVolume(true),
       m_VolumeDensity(0.2), m_VolumeColor({1, 1, 1}) {
-    m_Passes[LUT] =
-        std::make_shared<Texture>("../assets/textures/brdf_lut.png");
     m_Passes[NOISE] =
         std::make_shared<Texture>("../assets/textures/perlin_noise.png");
 
@@ -55,7 +55,6 @@ Pipeline::Pipeline(int width, int height)
 
     m_Light.SetInt("pointShadowMap", POINT_SHADOW);
     m_Light.SetInt("directionShadowMap", DIRECTION_SHADOW);
-    m_Light.SetInt("LUT", LUT);
     m_Light.SetInt("ssao", SSAO);
 
     m_Compositor.Bind();
@@ -72,7 +71,6 @@ Pipeline::Pipeline(int width, int height)
     m_Compositor.SetInt("reflectMap", REFLECT);
     m_Compositor.SetInt("screenLight", LIGHTING);
     m_Compositor.SetInt("screenVolume", VOLUME);
-    m_Compositor.SetInt("LUT", LUT);
 
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(MVP), 0));
     m_UBOs.push_back(std::make_shared<UniformBuffer>(sizeof(ModelData), 1));
@@ -299,6 +297,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
     m_SSAOPassFBO.Bind();
     m_SSAO.Bind();
 
+    // half sample
     glViewport(0, 0, m_Width / 2, m_Height / 2);
 
     Renderer::DisableDepthTest();
@@ -347,7 +346,6 @@ void Pipeline::LightPass(const Scene &scene) {
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
     m_Passes[VOLUME]->Bind(VOLUME);
-    m_Passes[LUT]->Bind(LUT);
     m_Passes[SSAO]->Bind(SSAO);
 
     m_Light.Validate();
@@ -385,6 +383,9 @@ void Pipeline::LightPass(const Scene &scene) {
     m_LightPassFBO.Unbind();
 }
 
+void Pipeline::LensFlarePass(const Scene &scene) {
+    glViewport(0, 0, m_Width / 2, m_Height / 2);
+}
 void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
     glViewport(0, 0, m_Width, m_Height);
