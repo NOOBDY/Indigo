@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     Window window(SCREEN_WIDTH, SCREEN_HEIGHT);
 
     Renderer::Init();
-    Renderer::ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    Renderer::ClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     Controller::InitGUI(window);
 
     Pipeline pipeline(SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -44,53 +44,31 @@ int main(int argc, char **argv) {
     std::shared_ptr<Texture> reflectMap =
         std::make_shared<Texture>("../assets/textures/vestibule_2k.hdr");
 
-    std::shared_ptr<Camera> mainCamera = std::make_shared<Camera>(
-        45.0f, window.GetAspectRatio(), 10.0f, 3000.0f);
-    mainCamera->GetTransform().SetPosition({200, 90, 0});
-
+    std::shared_ptr<Camera> mainCamera =
+        std::make_shared<Camera>(glm::vec3{350, 200, 100}, 45.0f,
+                                 window.GetAspectRatio(), 10.0f, 5000.0f);
+    // mainCamera->GetTransform().SetPosition({270, 200, 100});
     Scene scene(mainCamera);
 
     try {
-        std::vector<std::shared_ptr<Model>> models =
+        auto models =
             Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
-
-        for (auto &model : models) {
-            model->SetTransform({
-                {0.0f, 0.0f, 0.0f},
-                {0.0f, 0.0f, 0.0f},
-                {0.3f, 0.3f, 0.3f},
-            });
-            model->SetRoughness(1.0f);
-            model->SetMetallic(0.0f);
-            scene.AddModel(model);
+        for (auto &i : models) {
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
+            scene.AddModel(i);
         }
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
 
     try {
-        auto model = Importer::LoadFileModel("../assets/models/sphere.obj");
-        model->SetTransform({
-            {0.0f, 15.0f, 0.0f},
-            {0.0f, 0.0f, 0.0f},
-            {5.0f, 5.0f, 5.0f},
-        });
-
-        model->SetRoughness(1.0f);
-        model->SetMetallic(0.0f);
-        scene.AddModel(model);
-    } catch (std::exception &e) {
-        LOG_ERROR("{}", e.what());
-    }
-
-    try {
         std::shared_ptr<Light> light1 = std::make_shared<Light>( //
-            "point light",                                       //
+            "Point Light",                                       //
             Light::POINT,                                        //
-            Transform({10, 50, 100},                             //
+            Transform({5, 10, 20},                               //
                       {0, 0, 0},                                 //
                       {5, 5, 5}),
-            0.5, 1000, glm::vec3(1.0f));
+            1, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
         light1->SetShadowSize(512);
 
@@ -101,14 +79,14 @@ int main(int argc, char **argv) {
 
     try {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
-            "direction light",                                   //
+            "Direction Light",                                   //
             Light::DIRECTION,                                    //
             Transform({0, 500, 0},                               //
-                      {20, 90, 0},                               //
+                      {30, 180, 0},                              //
                       {5, 5, 5}),
             2, 1000, glm::vec3(1.0f));
 
-        light2->SetShadowSize(2048);
+        light2->SetShadowSize(1024);
         light2->SetColorTexture(reflectMap);
 
         scene.AddLight(light2);
@@ -117,11 +95,11 @@ int main(int argc, char **argv) {
     }
     try {
         std::shared_ptr<Light> light3 = std::make_shared<Light>( //
-            "ambient light",                                     //
+            "Ambient Light",                                     //
             Light::AMBIENT,                                      //
-            Transform({0, 30, 0},                                //
+            Transform({0.0, 30, 0},                              //
                       {0, 0, 0},                                 //
-                      {0, 0, 0}),
+                      {5, 5, 5}),
             1, 1000, glm::vec3(1.0f), false);
 
         // light3->SetShadowSize(2048);
@@ -132,55 +110,65 @@ int main(int argc, char **argv) {
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }
-    scene.SetEnvironmentMap(reflectMap);
-    do {
-        auto &io = ImGui::GetIO();
-        glm::vec2 delta = window.GetCursorDelta();
-        window.UpdateCursorPosition();
 
-        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
-        if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT) &&
-            !io.WantCaptureMouse) {
-            unsigned int id = pipeline.GetIdByPosition(window.GetCursorPos());
-            scene.SetActiveSceneObject(id);
-        }
+    scene.SetEnvironmentMap(reflectMap);
+
+    do {
+        static bool invertX = false;
+        static bool invertY = false;
+
+        const auto &io = ImGui::GetIO();
+        const glm::vec2 delta = window.GetCursorDelta();
+        window.UpdateCursorPosition();
 
         const std::shared_ptr<Camera> activeCamera = scene.GetActiveCamera();
 
-        // texMainColor->Bind(Pipeline::ALBEDO);
-        pipeline.Render(scene);
-
+        // `io.WantCaptureMouse` shows if the cursor is on any `ImGui` window
         if (!io.WantCaptureMouse) {
-            activeCamera->GetTransform().SetPosition(
-                activeCamera->GetTransform().GetPosition() +
-                20 * window.GetScrollOffset().y *
-                    glm::normalize(activeCamera->GetTransform().GetPosition()));
+            activeCamera->Zoom(20 * window.GetScrollOffset().y);
+
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_LEFT)) {
+                activeCamera->Rotate((invertX ? -1 : 1) * delta.x * 0.1f,
+                                     (invertY ? -1 : 1) * delta.y * 0.1f);
+            }
 
             if (window.GetMouseButton(GLFW_MOUSE_BUTTON_RIGHT)) {
-                activeCamera->RotateByDelta(delta.x * -2 / window.GetWidth(),
-                                            delta.y * -2 / window.GetHeight());
+                activeCamera->Pan(delta.x * -0.5f, delta.y * 0.5f);
+            }
+
+            if (window.GetMouseButton(GLFW_MOUSE_BUTTON_MIDDLE)) {
+                const glm::vec2 pos =
+                    glm::min(window.GetCursorPos(),
+                             glm::vec2{window.GetWidth(), window.GetHeight()});
+
+                const unsigned int id = pipeline.GetIdByPosition(pos);
+
+                scene.SetActiveSceneObject(id);
             }
         }
 
         activeCamera->UpdateView();
 
-#pragma region GUI
+        pipeline.Render(scene);
+
         Renderer::DisableDepthTest();
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        float framerate = ImGui::GetIO().Framerate;
-
+#pragma region Debug Info UI
         ImGui::Begin("Debug Info");
         ImGui::SetWindowPos({SCREEN_WIDTH - 110, 10});
         ImGui::SetWindowSize({100, 85});
-        ImGui::Text("%.1f FPS", framerate);
+        ImGui::Text("%.1f FPS", io.Framerate);
         ImGui::Text("(%d, %d)", (int)delta.x, (int)delta.y);
         ImGui::Text("(%d, %d)", (int)window.GetScrollOffset().x,
                     (int)window.GetScrollOffset().y);
         ImGui::End();
+#pragma endregion
 
+#pragma region Objects UI
         ImGui::Begin("Objects");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 100});
         ImGui::SetWindowSize({130, 200});
@@ -192,10 +180,12 @@ int main(int argc, char **argv) {
             }
         }
         ImGui::End();
+#pragma endregion
 
+#pragma region Pipeline UI
         ImGui::Begin("Pipeline");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
-        ImGui::SetWindowSize({130, 150});
+        ImGui::SetWindowSize({130, 200});
         // ImGui::BeginCombo("Pass", "");
         const std::map<Pipeline::Pass, std::string> passes{
             {Pipeline::Pass::ALBEDO, "Albedo"},
@@ -233,19 +223,45 @@ int main(int argc, char **argv) {
             bool useOutline = pipeline.GetUseOutline();
             bool useHDRI = pipeline.GetUseHDRI();
             bool useToneMap = pipeline.GetUseToneMap();
+            bool useVolume = pipeline.GetUseVolume();
+            auto volumeColor = pipeline.GetUseVolumeColor();
+            auto volumeDensity = pipeline.GetVolumeDensity();
 
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
             ImGui::Checkbox("HDRI", &useHDRI);
             ImGui::Checkbox("Tone Mapping", &useToneMap);
+            ImGui::Checkbox("Volume", &useVolume);
+
+            ImGui::BeginDisabled(!useVolume);
+            ImGui::DragFloat("Volume Desity", &volumeDensity, 0.05f, 0.0f, 1.0f,
+                             "%.2f");
+            ImGui::ColorEdit3("Volume Color", &volumeColor[0]);
+            ImGui::EndDisabled();
 
             pipeline.SetUseSSAO(useSSAO);
             pipeline.SetUseOutline(useOutline);
             pipeline.SetUseHDRI(useHDRI);
             pipeline.SetUseToneMap(useToneMap);
+            pipeline.SetUseVolume(useVolume);
+            pipeline.SetVolumeDensity(volumeDensity);
+            pipeline.SetUseVolumeColor(volumeColor);
         }
         ImGui::End();
+#pragma endregion
 
+#pragma region Camera UI
+        ImGui::Begin("Camera");
+        ImGui::SetWindowPos({SCREEN_WIDTH - 140, 510});
+        ImGui::SetWindowSize({130, 80});
+
+        ImGui::Checkbox("Invert X", &invertX);
+        ImGui::Checkbox("Invert Y", &invertY);
+
+        ImGui::End();
+#pragma endregion
+
+#pragma region Active Object UI
         auto activeObject = scene.GetActiveSceneObject();
 
         if (activeObject) {

@@ -116,23 +116,31 @@ void LightAttributeGUI(std::shared_ptr<Light> light) {
     auto radius = light->GetRadius();
     auto lightColor = light->GetColor();
     auto useColorTexture = light->GetUseColorTexture();
+    auto castShadow = light->GetCastShadow();
+    auto hasShadowTexture = light->GetShadowTexture() != nullptr;
     // auto haveColorTexture = light->GetColorTexture() != nullptr;
-
     ImGui::Begin("Light Attributes");
     ImGui::SetWindowPos({10, 115});
-    ImGui::SetWindowSize({270, 125});
-
+    ImGui::SetWindowSize({270, 150});
     ImGui::BeginDisabled(useColorTexture);
     ImGui::ColorEdit3("Light Color", &lightColor[0]);
     ImGui::EndDisabled();
-
     ImGui::DragFloat("Power", &power, 0.05f, 0.0f, 10.0f, "%.2f");
     ImGui::DragFloat("Radius", &radius, 5, 1, 5000.0f, "%.1f");
+    ImGui::BeginDisabled(!hasShadowTexture);
+    ImGui::Checkbox("Cast Shadow", &castShadow);
+    ImGui::EndDisabled();
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
+        !hasShadowTexture) {
+        ImGui::SetTooltip("No shadow texture");
+    }
     ImGui::End();
 
     light->SetPower(power);
     light->SetRadius(radius);
     light->SetLightColor(lightColor);
+    light->SetCastShadow(castShadow);
+    // light->SetUseColorTexture(useColorTexture);
 }
 
 } // namespace Controller

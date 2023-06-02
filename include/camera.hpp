@@ -20,17 +20,17 @@ struct CameraData {
 };
 class Camera {
 public:
-    Camera(float fov, float aspectRatio, float nearClip = 10.0f,
-           float farClip = 1500.0f);
+    Camera(glm::vec3 position, float fov, float aspectRatio,
+           float nearClip = 10.0f, float farClip = 1500.0f);
 
     void UpdateProjection();
     void UpdateView();
 
     void SetViewportSize(float width, float height);
 
-    void RotateByDelta(const float deltaX, const float deltaY);
-
-    void Pan() {}
+    void Rotate(const float deltaX, const float deltaY);
+    void Pan(float deltaX, float deltaY);
+    void Zoom(float amount);
 
     glm::mat4 GetView() const { return m_View; };
     glm::mat4 GetViewProjection() const { return m_Projection * m_View; }
@@ -51,6 +51,9 @@ private:
     glm::mat4 m_View;
 
     Transform m_Transform;
+
+    glm::vec3 m_Position;
+    glm::vec3 m_Target;
 };
 
 #endif
