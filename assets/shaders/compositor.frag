@@ -10,6 +10,7 @@ uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
 uniform sampler2D screenID;
 uniform sampler2D screenDepth;
+uniform sampler2D screenLensFlare;
 
 uniform sampler2D ssao;
 
@@ -145,10 +146,14 @@ vec4 displayPass(int i) {
         return texture(screenLight, UV);
     case 11:
         return texture(screenVolume, UV);
+    case 14:
+        return texture(screenLensFlare, UV);
     case 15:
+        return texture(screenLensFlare, UV);
         return texture(screenLight, UV) +
             vec4(gaussianBlur(screenVolume, 10, UV, 1, 4), 0.0)+
-            vec4(gaussianBlur(screenEmission, 15, UV, 4, 8), 0.0);
+            vec4(gaussianBlur(screenEmission, 15, UV, 4, 8), 0.0)+
+            texture(screenLensFlare, UV);
     default:
         return vec4(1);
     }
