@@ -277,9 +277,5 @@ void main() {
         col.xyz = ACESFitted(col.xyz);
     }
 
-    vec3 hsv = RGBtoHSV(col.xyz);
-
-    col.xyz = HSVtoRGB(hsv);
-
     FragColor = vec4(col.xyz, 1.0);
 }
