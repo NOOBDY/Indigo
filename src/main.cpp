@@ -61,12 +61,12 @@ int main(int argc, char **argv) {
     Scene scene(mainCamera);
 
     try {
-        // auto models =
-        //     Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
-        // for (auto &i : models) {
-        //     i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
-        //     scene.AddModel(i);
-        // }
+        auto models =
+            Importer::LoadFileScene("../assets/models/sponza/Sponza.gltf");
+        for (auto &i : models) {
+            i->SetTransform(Transform({0, 0, 0}, {0, 0, 0}, {.3, .3, .3}));
+            scene.AddModel(i);
+        }
     } catch (std::exception &e) {
         LOG_ERROR("{}", e.what());
     }

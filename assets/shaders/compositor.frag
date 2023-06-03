@@ -22,7 +22,6 @@ uniform samplerCube pointShadowMap;
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
 
-
 struct PipelineData {
     int ID;
     float time;
@@ -149,11 +148,10 @@ vec4 displayPass(int i) {
     case 14:
         return texture(screenLensFlare, UV);
     case 15:
-        return texture(screenLensFlare, UV);
         return texture(screenLight, UV) +
-            vec4(gaussianBlur(screenVolume, 10, UV, 1, 4), 0.0)+
-            vec4(gaussianBlur(screenEmission, 15, UV, 4, 8), 0.0)+
-            texture(screenLensFlare, UV);
+               vec4(gaussianBlur(screenVolume, 10, UV, 2, 4), 0.0) +
+               vec4(gaussianBlur(screenEmission, 15, UV, 3, 8), 0.0) +
+               texture(screenLensFlare, UV);
     default:
         return vec4(1);
     }

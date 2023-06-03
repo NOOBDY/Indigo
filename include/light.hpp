@@ -112,7 +112,6 @@ struct LightData {
 
     float power;
     int type;
-
     float innerCone;
     float outerCone;
 
@@ -120,7 +119,6 @@ struct LightData {
 
     float nearPlane;
     float farPlane;
-    // lazy to fix padding issues
     int castShadow;
     int useColorTexture;
 };

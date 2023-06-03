@@ -22,7 +22,7 @@ Pipeline::Pipeline(int width, int height)
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
-      m_UseOutline(true), m_UseHDRI(false), m_UseVolume(true),
+      m_UseOutline(true), m_UseHDRI(true), m_UseVolume(false),
       m_VolumeDensity(0.2), m_VolumeColor({1, 1, 1}) {
     m_Passes[NOISE] =
         std::make_shared<Texture>("../assets/textures/perlin_noise.png");
@@ -49,7 +49,6 @@ Pipeline::Pipeline(int width, int height)
     m_Light.SetInt("screenDepth", DEPTH);
 
     m_Light.SetInt("screenLight", LIGHTING);
-    m_Light.SetInt("screenVolume", VOLUME);
 
     m_Light.SetInt("reflectMap", REFLECT);
 
@@ -60,6 +59,11 @@ Pipeline::Pipeline(int width, int height)
     m_LensFlare.Bind();
     m_LensFlare.SetInt("noise", NOISE);
     m_LensFlare.SetInt("screenEmission", EMISSION);
+    m_LensFlare.SetInt("screenDepth", DEPTH);
+    m_LensFlare.SetInt("pointShadowMap", POINT_SHADOW);
+    m_LensFlare.SetInt("directionShadowMap", DIRECTION_SHADOW);
+
+    m_LensFlare.SetInt("screenVolume", VOLUME);
     m_LensFlare.SetInt("screenLensFlare", LENS_FLARE);
 
     m_Compositor.Bind();
@@ -160,10 +164,14 @@ void Pipeline::Init() {
 #pragma region lensFlare
     m_LensFlareFBO.Bind();
     m_Passes[LENS_FLARE] =
-        std::make_shared<Texture>(m_Width / 4, m_Height / 4, Texture::RGB);
+        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::RGB);
     m_LensFlareFBO.AttachTexture(m_Passes[LENS_FLARE]->GetTextureID(),
                                  attachments[0]);
-    glDrawBuffers(1, attachments);
+    m_Passes[VOLUME] =
+        std::make_shared<Texture>(m_Width / 2, m_Height / 2, Texture::RGBA);
+    m_LensFlareFBO.AttachTexture(m_Passes[VOLUME]->GetTextureID(),
+                                 attachments[1]);
+    glDrawBuffers(2, attachments);
     m_LensFlareFBO.Unbind();
 #pragma endregion
 
@@ -173,11 +181,7 @@ void Pipeline::Init() {
         std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
     m_LightPassFBO.AttachTexture(m_Passes[LIGHTING]->GetTextureID(),
                                  attachments[0]);
-    m_Passes[VOLUME] =
-        std::make_shared<Texture>(m_Width, m_Height, Texture::RGBA);
-    m_LightPassFBO.AttachTexture(m_Passes[VOLUME]->GetTextureID(),
-                                 attachments[1]);
-    glDrawBuffers(2, attachments);
+    glDrawBuffers(1, attachments);
 
     // GLuint rbo1;
 
@@ -293,6 +297,7 @@ void Pipeline::BasePass(const Scene &scene) {
         model->Draw();
     }
 
+    glDepthMask(GL_FALSE);
     // mesh of light
     for (const auto &light : scene.GetLights()) {
         modelMVP.model = light->GetTransform().GetTransformMatrix();
@@ -305,6 +310,7 @@ void Pipeline::BasePass(const Scene &scene) {
         light->Draw();
     }
 
+    glDepthMask(GL_TRUE);
     m_Basic.Unbind();
     m_BasicPassFBO.Unbind();
 }
@@ -359,9 +365,7 @@ void Pipeline::LightPass(const Scene &scene) {
     m_Passes[ID]->Bind(ID);
     m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[LIGHTING]->Bind(LIGHTING);
-    m_Passes[VOLUME]->Bind(VOLUME);
     m_Passes[SSAO]->Bind(SSAO);
-    m_Passes[LENS_FLARE]->Bind(LENS_FLARE);
 
     m_Light.Validate();
 
@@ -391,23 +395,25 @@ void Pipeline::LightPass(const Scene &scene) {
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
 
-    glGenerateTextureMipmap(m_Passes[LIGHTING]->GetTextureID());
-    glGenerateTextureMipmap(m_Passes[VOLUME]->GetTextureID());
+    // glGenerateTextureMipmap(m_Passes[LIGHTING]->GetTextureID());
     m_Light.Unbind();
     m_LightPassFBO.Unbind();
 }
 
 void Pipeline::LensFlarePass(const Scene &scene) {
-    glViewport(0, 0, m_Width / 4, m_Height / 4);
-    Renderer::DisableDepthTest();
-    Renderer::Clear();
     m_LensFlareFBO.Bind();
     m_LensFlare.Bind();
     m_LensFlare.Validate();
+    glViewport(0, 0, m_Width / 2, m_Height / 2);
+    Renderer::DisableDepthTest();
+    Renderer::Clear();
 
     m_Passes[EMISSION]->Bind(EMISSION);
-    m_Passes[LENS_FLARE]->Bind(LENS_FLARE);
+    m_Passes[DEPTH]->Bind(DEPTH);
     m_Passes[NOISE]->Bind(NOISE);
+
+    m_Passes[VOLUME]->Bind(VOLUME);
+    m_Passes[LENS_FLARE]->Bind(LENS_FLARE);
 
     m_Screen.Bind();
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
@@ -416,13 +422,22 @@ void Pipeline::LensFlarePass(const Scene &scene) {
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
 
     for (const auto &light : scene.GetLights()) {
-        if (light->GetType() != Light::DIRECTION)
-            continue;
+        if (light->GetCastShadow()) {
+            if (light->GetType() == Light::POINT ||
+                light->GetType() == Light::SPOT) {
+                light->GetShadowTexture()->Bind(POINT_SHADOW);
+
+            } else if (light->GetType() == Light::DIRECTION)
+                light->GetShadowTexture()->Bind(DIRECTION_SHADOW);
+        }
         LightData lightInfo = light->GetLightData();
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
+
+        glTextureBarrier();
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
     glGenerateTextureMipmap(m_Passes[LENS_FLARE]->GetTextureID());
+    glGenerateTextureMipmap(m_Passes[VOLUME]->GetTextureID());
     m_LensFlare.Unbind();
     m_LensFlareFBO.Unbind();
 }
