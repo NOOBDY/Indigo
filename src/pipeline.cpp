@@ -297,6 +297,7 @@ void Pipeline::BasePass(const Scene &scene) {
         model->Draw();
     }
 
+    // avoid light mesh write depth texture
     glDepthMask(GL_FALSE);
     // mesh of light
     for (const auto &light : scene.GetLights()) {

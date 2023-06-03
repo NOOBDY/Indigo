@@ -146,7 +146,7 @@ float noise(in vec3 x) {
                textureLod(noiseTexture, uv2, 0.0).x, fract(z)) -
            0.5;
 }
-vec3 lensflare(vec2 uv, vec2 pos) {
+vec3 lensflare(vec2 uv, vec2 pos, float z) {
     vec2 main = uv - pos;
     vec2 uvd = uv * (length(uv));
 
@@ -196,7 +196,9 @@ vec3 lensflare(vec2 uv, vec2 pos) {
     c.g += f22 + f42 + f52 + f62;
     c.b += f23 + f43 + f53 + f63;
     c = c * 1.3 - vec3(length(uvd) * .05);
-    // f0=smoothstep(0.5,1.0,f0);
+    // float pix=0.1*z;
+    // float radius=max(0.5,0.7);
+    // c+=smoothstep(radius+pix,radius-pix,dist);
     // c+=vec3(f0);
 
     return c;
@@ -283,8 +285,13 @@ void main() {
 
     // if light is not in shadow
     if (projCoords.z + 0.5 < texture(screenDepth, projCoords.xy + 0.5).r) {
+        vec2 size = textureSize(screenLensFlare, 0);
+        size /= size.y;
+
         outScreenLensFlare.xyz +=
-            lensflare(UV - 0.5, 2.7 * vec2(projCoords.xy));
+            lensflare((UV - 0.5) * size, projCoords.xy * size,
+                      projCoords.z + 0.5) *
+            light.power;
     }
     if (pipelineInfo.useVolume == 1)
         if (light.lightType == DIRECTION)
