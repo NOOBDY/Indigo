@@ -16,9 +16,11 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int useVolume;
+    int useToneMap;
 
+    int useVolume;
     vec3 volumeColor;
+
     float density;
 };
 
