@@ -18,7 +18,7 @@ Pipeline::Pipeline(int width, int height)
       m_Light("../assets/shaders/frame_screen.vert",
               "../assets/shaders/lighting.frag"),
       m_LensFlare("../assets/shaders/frame_screen.vert",
-                  "../assets/shaders/lens_flare.frag"),
+                  "../assets/shaders/lens_flare_and_volume.frag"),
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
