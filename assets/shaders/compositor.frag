@@ -112,11 +112,10 @@ float idBorder(sampler2D idPass, int id) {
     // edge detction
     float kernel[9] = float[](-1, -1, -1, -1, 8, -1, -1, -1, -1);
 
-    float sampleTex[9];
     float v = 0;
     for (int i = 0; i < 9; i++) {
-        sampleTex[i] = float(texture(idPass, UV + offsets[i]).a * 255 == id);
-        v += sampleTex[i] * kernel[i];
+        float temp = float(int(texture(idPass, UV + offsets[i]).a * 255) == id);
+        v += temp * kernel[i];
     }
     return floor(abs(v) * 0.4);
 }
