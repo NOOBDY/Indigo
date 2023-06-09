@@ -34,10 +34,11 @@ struct PipelineData {
     int useHDRI;
     int useToneMap;
 
-    int useVolume;
     vec3 volumeColor;
+    int useVolume;
 
     float density;
+    vec3 pad;
 };
 
 struct TransformData {
@@ -273,7 +274,8 @@ void main() {
             mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
     }
 
-    if (pipelineInfo.useToneMap != 0) {
+    // if (pipelineInfo.useToneMap != 0) {
+    if (true) {
         col.xyz = ACESFitted(col.xyz);
     }
 

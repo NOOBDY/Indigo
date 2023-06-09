@@ -54,10 +54,11 @@ public:
         int useHDRI;
         int useToneMap;
 
-        int useVolume;
         glm::vec3 volumeColor;
+        int useVolume;
 
         float density;
+        glm::vec3 pad;
 
         // glm::vec3 tem;
         // glm::vec2 mousePosition;
