@@ -31,10 +31,13 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int useVolume;
+    int useToneMap;
 
     vec3 volumeColor;
+    int useVolume;
+
     float density;
+    vec3 pad;
 };
 
 struct TransformData {
@@ -166,6 +169,99 @@ vec3 viewDirection(mat4 projection, mat4 view, vec2 uv) {
     vec4 worldPosition = invert_view_projection * sPos;
     return normalize(worldPosition.xyz);
 }
+
+// Based on
+// https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ACES.hlsl
+const mat3 ACESInput = {
+    {0.59719, 0.35458, 0.04823},
+    {0.07600, 0.90834, 0.01566},
+    {0.02840, 0.13383, 0.83777},
+};
+
+const mat3 ACESOutput = {
+    {1.60475, -0.53108, -0.07367},
+    {-0.10208, 1.10813, -0.00605},
+    {-0.00327, -0.07276, 1.07602},
+};
+
+vec3 RRTAndODTFit(vec3 v) {
+    vec3 a = v * (v + 0.0245786) - 0.000090537;
+    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
+    return a / b;
+}
+
+// This is meant to be paired with sRGB
+vec3 ACESFitted(vec3 color) {
+    color = color * ACESInput;
+
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = color * ACESOutput;
+
+    return color;
+}
+
+float max3(float a, float b, float c) {
+    return max(max(a, b), c);
+}
+
+float max3(vec3 vec) {
+    return max(max(vec.x, vec.y), vec.z);
+}
+
+float min3(float a, float b, float c) {
+    return min(min(a, b), c);
+}
+
+float min3(vec3 vec) {
+    return min(min(vec.x, vec.y), vec.z);
+}
+
+vec3 RGBtoHSV(vec3 rgb) {
+    float h, s, v;
+
+    float cmax = max3(rgb);
+    float cmin = min3(rgb);
+    float delta = cmax - cmin;
+
+    if (cmax == rgb.r)
+        h = 0 + (rgb.g - rgb.b) / delta;
+
+    if (cmax == rgb.g)
+        h = 2 + (rgb.b - rgb.r) / delta;
+
+    if (cmax == rgb.b)
+        h = 4 + (rgb.r - rgb.g) / delta;
+
+    h = fract(h / 6);
+
+    if (cmax == 0)
+        s = 0;
+    else
+        s = delta / cmax;
+
+    v = cmax;
+
+    return vec3(h, s, v);
+}
+
+vec3 HSVtoRGB(vec3 hsv) {
+    vec3 rgb;
+
+    float h = fract(hsv.x);
+    rgb.r = abs(h * 6 - 3) - 1;
+    rgb.g = 2 - abs(h * 6 - 2);
+    rgb.b = 2 - abs(h * 6 - 4);
+
+    rgb = clamp(rgb, vec3(0.0), vec3(1.0));
+
+    rgb = mix(vec3(1.0), rgb, hsv.y);
+    rgb *= hsv.z;
+
+    return rgb;
+}
+
 void main() {
     vec4 col = displayPass(pipelineInfo.selectPass);
 
@@ -179,6 +275,11 @@ void main() {
     if (pipelineInfo.useOutline != 0) {
         col.xyz =
             mix(col.xyz, vec3(0, 1, 0), idBorder(screenID, pipelineInfo.ID));
+    }
+
+    // if (pipelineInfo.useToneMap != 0) {
+    if (true) {
+        col.xyz = ACESFitted(col.xyz);
     }
 
     FragColor = vec4(col.xyz, 1.0);

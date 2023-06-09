@@ -16,10 +16,13 @@ struct PipelineData {
     int useSSAO;
     int useOutline;
     int useHDRI;
-    int useVolume;
+    int useToneMap;
 
     vec3 volumeColor;
+    int useVolume;
+
     float density;
+    vec3 pad;
 };
 
 struct TransformData {

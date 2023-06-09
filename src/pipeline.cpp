@@ -22,8 +22,8 @@ Pipeline::Pipeline(int width, int height)
       m_Compositor("../assets/shaders/frame_screen.vert",
                    "../assets/shaders/compositor.frag"),
       m_Width(width), m_Height(height), m_ActivePass(SCREEN), m_UseSSAO(true),
-      m_UseOutline(true), m_UseHDRI(true), m_UseVolume(false),
-      m_VolumeDensity(0.2), m_VolumeColor({1, 1, 1}) {
+      m_UseOutline(true), m_UseHDRI(true), m_UseToneMap(true),
+      m_UseVolume(true), m_VolumeDensity(0.2), m_VolumeColor({1, 1, 1}) {
     m_Passes[NOISE] =
         std::make_shared<Texture>("../assets/textures/perlin_noise.png");
 
@@ -444,6 +444,9 @@ void Pipeline::LensFlarePass(const Scene &scene) {
 }
 void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
+    if (m_UseToneMap)
+        glEnable(GL_FRAMEBUFFER_SRGB);
+
     glViewport(0, 0, m_Width, m_Height);
     m_Compositor.Bind();
 
@@ -466,6 +469,9 @@ void Pipeline::CompositorPass(const Scene &scene) {
     PipelineData pipelineInfo = GetPipelineData(scene);
     m_UBOs[4]->SetData(0, sizeof(PipelineData), &pipelineInfo);
     Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
+
+    if (m_UseToneMap)
+        glDisable(GL_FRAMEBUFFER_SRGB);
 
     m_Compositor.Unbind();
 }
@@ -513,8 +519,10 @@ Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
         m_UseSSAO,
         m_UseOutline,
         m_UseHDRI,
-        m_UseVolume,
+        m_UseToneMap,
         m_VolumeColor,
+        m_UseVolume,
         m_VolumeDensity,
+        glm::vec3(),
     };
 }

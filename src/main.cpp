@@ -41,18 +41,8 @@ int main(int argc, char **argv) {
 
     pipeline.Init();
 
-    std::shared_ptr<Texture> texMainColor = std::make_shared<Texture>(
-        "../assets/textures/little_city/main_color.jpg");
-    std::shared_ptr<Texture> texInterior = std::make_shared<Texture>(
-        "../assets/textures/little_city/interior.jpg");
-    std::shared_ptr<Texture> texMisc =
-        std::make_shared<Texture>("../assets/textures/little_city/misc.png");
     std::shared_ptr<Texture> reflectMap =
         std::make_shared<Texture>("../assets/textures/vestibule_2k.hdr");
-    std::shared_ptr<Texture> wallNormalMap = std::make_shared<Texture>(
-        "../assets/textures/T_Wall_Damaged_2x1_A_N.png");
-    std::shared_ptr<Texture> wallAOMap = std::make_shared<Texture>(
-        "../assets/textures/T_Wall_Damaged_2x1_A_AO.png");
 
     std::shared_ptr<Camera> mainCamera =
         std::make_shared<Camera>(glm::vec3{350, 200, 100}, 45.0f,
@@ -233,6 +223,7 @@ int main(int argc, char **argv) {
             bool useSSAO = pipeline.GetUseSSAO();
             bool useOutline = pipeline.GetUseOutline();
             bool useHDRI = pipeline.GetUseHDRI();
+            bool useToneMap = pipeline.GetUseToneMap();
             bool useVolume = pipeline.GetUseVolume();
             auto volumeColor = pipeline.GetUseVolumeColor();
             auto volumeDensity = pipeline.GetVolumeDensity();
@@ -240,6 +231,7 @@ int main(int argc, char **argv) {
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
             ImGui::Checkbox("HDRI", &useHDRI);
+            ImGui::Checkbox("Tone Mapping", &useToneMap);
             ImGui::Checkbox("Volume", &useVolume);
 
             ImGui::BeginDisabled(!useVolume);
@@ -251,8 +243,8 @@ int main(int argc, char **argv) {
             pipeline.SetUseSSAO(useSSAO);
             pipeline.SetUseOutline(useOutline);
             pipeline.SetUseHDRI(useHDRI);
+            pipeline.SetUseToneMap(useToneMap);
             pipeline.SetUseVolume(useVolume);
-
             pipeline.SetVolumeDensity(volumeDensity);
             pipeline.SetUseVolumeColor(volumeColor);
         }
