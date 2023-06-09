@@ -290,15 +290,17 @@ void main() {
     if (projCoords.z + 0.5 < texture(screenDepth, projCoords.xy + 0.5).r) {
         vec2 size = textureSize(screenLensFlare, 0);
         size /= size.y;
-        size*=2;
+        size *= 2;
 
         // if(light.lightType==DIRECTION)
 
-        if(light.lightType==DIRECTION)
+        if (light.lightType == DIRECTION)
             outScreenLensFlare.xyz +=
                 lensflare((UV - 0.5) * size, projCoords.xy * size,
-                        projCoords.z + 0.5) *
-                light.power*fade(light.transform.position,cameraInfo.transform.position,light.radius);
+                          projCoords.z + 0.5) *
+                light.power *
+                fade(light.transform.position, cameraInfo.transform.position,
+                     light.radius);
     }
     if (pipelineInfo.useVolume == 1)
         if (light.lightType == DIRECTION)
