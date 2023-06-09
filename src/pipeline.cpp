@@ -463,8 +463,9 @@ Pipeline::PipelineData Pipeline::GetPipelineData(const Scene &scene) {
         m_UseOutline,
         m_UseHDRI,
         m_UseToneMap,
-        m_UseVolume,
         m_VolumeColor,
+        m_UseVolume,
         m_VolumeDensity,
+        glm::vec3(),
     };
 }

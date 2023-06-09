@@ -18,10 +18,11 @@ struct PipelineData {
     int useHDRI;
     int useToneMap;
 
-    int useVolume;
     vec3 volumeColor;
+    int useVolume;
 
     float density;
+    vec3 pad;
 };
 
 struct TransformData {
