@@ -435,6 +435,7 @@ void Pipeline::LensFlarePass(const Scene &scene) {
         m_UBOs[2]->SetData(0, sizeof(LightData), &lightInfo);
 
         glTextureBarrier();
+        glFinish();
         Renderer::Draw(m_Screen.GetIndexBuffer()->GetCount());
     }
     glGenerateTextureMipmap(m_Passes[LENS_FLARE]->GetTextureID());

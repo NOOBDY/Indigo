@@ -151,7 +151,7 @@ vec4 displayPass(int i) {
         return texture(screenLensFlare, UV);
     case 15:
         return texture(screenLight, UV) +
-               vec4(gaussianBlur(screenVolume, 10, UV, 1, 4), 0.0) +
+               vec4(gaussianBlur(screenVolume, 10, UV, 2, 4), 0.0) +
                //    vec4(gaussianBlur(screenEmission, 15, UV, 3, 4), 0.0) +
                texture(screenLensFlare, UV);
     default:
