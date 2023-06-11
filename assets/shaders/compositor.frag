@@ -10,6 +10,7 @@ uniform sampler2D screenEmission;
 uniform sampler2D screenARM;
 uniform sampler2D screenID;
 uniform sampler2D screenDepth;
+uniform sampler2D screenLensFlare;
 
 uniform sampler2D ssao;
 
@@ -20,8 +21,6 @@ uniform samplerCube pointShadowMap;
 
 uniform sampler2D screenLight;
 uniform sampler2D screenVolume;
-
-uniform sampler2D LUT;
 
 struct PipelineData {
     int ID;
@@ -113,11 +112,10 @@ float idBorder(sampler2D idPass, int id) {
     // edge detction
     float kernel[9] = float[](-1, -1, -1, -1, 8, -1, -1, -1, -1);
 
-    float sampleTex[9];
     float v = 0;
     for (int i = 0; i < 9; i++) {
-        sampleTex[i] = float(texture(idPass, UV + offsets[i]).a * 255 == id);
-        v += sampleTex[i] * kernel[i];
+        float temp = float(int(texture(idPass, UV + offsets[i]).a * 255) == id);
+        v += temp * kernel[i];
     }
     return floor(abs(v) * 0.4);
 }
@@ -149,9 +147,13 @@ vec4 displayPass(int i) {
         return texture(screenLight, UV);
     case 11:
         return texture(screenVolume, UV);
+    case 14:
+        return texture(screenLensFlare, UV);
     case 15:
         return texture(screenLight, UV) +
-               vec4(gaussianBlur(screenVolume, 10, UV, 1, 4), 0.0);
+               vec4(gaussianBlur(screenVolume, 10, UV, 2, 4), 0.0) +
+               //    vec4(gaussianBlur(screenEmission, 15, UV, 3, 4), 0.0) +
+               texture(screenLensFlare, UV);
     default:
         return vec4(1);
     }

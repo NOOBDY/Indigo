@@ -137,9 +137,9 @@ ModelData Light::GetModelData() {
      */
     return ModelData{
         m_Transform.GetTransformData(), //
-        {1, 1, 1},                      // Albedo
+        m_Color,                        // Albedo
         static_cast<int>(false),        //
-        {0, 0, 0},                      // Emission
+        m_Color,                        // Emission
         static_cast<int>(false),        //
         {1, 0.5, 0.1},                  // ARM
         static_cast<int>(false),        //

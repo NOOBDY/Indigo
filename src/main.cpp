@@ -198,6 +198,7 @@ int main(int argc, char **argv) {
             {Pipeline::Pass::SSAO, "SSAO"},
             {Pipeline::Pass::LIGHTING, "Lighting"},
             {Pipeline::Pass::VOLUME, "Volume"},
+            {Pipeline::Pass::LENS_FLARE, "Lens Flare"},
             {Pipeline::Pass::SCREEN, "Screen"},
         };
 

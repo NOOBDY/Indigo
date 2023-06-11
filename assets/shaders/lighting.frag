@@ -98,7 +98,6 @@ layout(location = 0) in vec2 UV;
 // in vec2 UV;
 
 layout(location = 0) out vec4 outScreenLight;
-layout(location = 1) out vec4 outScreenVolume;
 
 uniform sampler2D screenAlbedo;
 uniform sampler2D screenNormal;
@@ -109,14 +108,12 @@ uniform sampler2D screenID;
 uniform sampler2D screenDepth;
 
 uniform sampler2D screenLight;
-uniform sampler2D screenVolume;
 
 uniform sampler2D reflectMap;
 
 uniform sampler2D directionShadowMap;
 uniform samplerCube pointShadowMap;
 
-uniform sampler2D LUT;
 uniform sampler2D ssao;
 
 // uniform samplerCube shadowMap[LIGHT_NUMBER]; // frame buffer texture
@@ -197,68 +194,6 @@ float directionShadow(vec3 position, vec3 normal, LightData light) {
     shadow /= 9.0;
 
     return shadow;
-}
-vec4 DirectionVolume(vec3 position, vec3 cameraPos, LightData light) {
-
-    const int n = 64;
-    const float sigma_a = 0.1;
-    const float bias = 0.001;
-    // float maxDistance = 1000;
-    float maxDistance = light.radius;
-    vec3 view = (length(position - cameraPos) > maxDistance)
-                    ? (normalize(position - cameraPos) * maxDistance / n)
-                    : (position - cameraPos) / n;
-    vec3 samplePos = cameraPos;
-    float transmittance = 1;
-    vec3 illumination = vec3(0);
-    for (int i = 0; i < n; i++) {
-        samplePos += view;
-        vec4 lightSpace = light.lightProjections[0] * vec4(samplePos, 1.0);
-        vec3 projCoords = lightSpace.xyz / lightSpace.w;
-        projCoords = projCoords * 0.5 + 0.5;
-        float currentDepth = projCoords.z;
-        float closestDepth = texture(directionShadowMap, projCoords.xy).r;
-        float currentDensity = pipelineInfo.density;
-        if (currentDepth - bias < closestDepth) {
-            transmittance *= exp(-(currentDensity)*sigma_a);
-            illumination += transmittance * light.lightColor;
-        }
-    }
-
-    illumination =
-        (pipelineInfo.volumeColor * light.lightColor) * illumination / n;
-    transmittance = clamp(0, 1, transmittance);
-    return vec4(vec3(illumination), transmittance);
-}
-vec4 PointVolume(vec3 position, vec3 cameraPos, LightData light) {
-    const int n = 64;
-    // float maxDistance = 1000;
-    const float sigma_a = 0.1;
-    const float bias = 1.5;
-    // clamp distance
-    float maxDistance = light.radius;
-    vec3 view = (length(position - cameraPos) > maxDistance)
-                    ? (normalize(position - cameraPos) * maxDistance / n)
-                    : (position - cameraPos) / n;
-    vec3 samplePos = cameraPos;
-    float transmittance = 1;
-    vec3 illumination = vec3(0);
-
-    for (int i = 0; i < n; i++) {
-        samplePos += view;
-        vec3 lightDir = light.transform.position - samplePos;
-        float closestDepth = texture(pointShadowMap, -normalize(lightDir)).r;
-        closestDepth *= light.farPlane;
-        float currentDensity = pipelineInfo.density;
-        transmittance *= exp(-(currentDensity)*sigma_a);
-        if (length(lightDir) - bias < closestDepth) {
-            illumination += transmittance;
-        }
-    }
-    illumination = (pipelineInfo.volumeColor * light.lightColor) *
-                   illumination * light.power / n;
-    // transmittance = clamp(0, 1, transmittance);
-    return vec4(illumination, transmittance);
 }
 vec2 panoramaUV(vec3 nuv) {
     vec2 uv = vec2(0.0);
@@ -378,13 +313,8 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
     if (light.castShadow != 0)
         if (light.lightType == POINT || light.lightType == SPOT) {
             shadow = pointShadow(position, light);
-            // if(pipelineInfo.useVolume==1)
-            // outScreenVolume+=PointVolume(position,cameraInfo.transform.position,light);
         } else if (light.lightType == DIRECTION) {
             shadow = directionShadow(position, N, light);
-            if (pipelineInfo.useVolume == 1)
-                outScreenVolume += DirectionVolume(
-                    position, cameraInfo.transform.position, light);
         }
 
     // color tranform
@@ -410,7 +340,6 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         if (light.useColorTexture != 1)
             Lo = albedo * lightColor * light.power * ao * fadeOut;
         else {
-            // vec2 brdf = texture(LUT, vec2(dotNV,roughness-0.03)).rg;
             // vec3 diffuse = albedo*texture(reflectMap, panoramaUV(N)).xyz;
             vec3 diffuse = albedo * SHIrradiance(N);
             vec3 env = texture(reflectMap, panoramaUV(R)).xyz;
@@ -418,7 +347,6 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
             specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
 
             Lo = (kD * diffuse * ao + specular) * light.power * fadeOut;
-            // outScreenVolume.xyz += specular * light.power * fadeOut;
         }
 
     } else {
@@ -428,7 +356,6 @@ vec4 lighting(vec3 cameraPosition, DeferredData deferredInfo, LightData light,
         specular *= pow(dotNV + ao, roughness * roughness) - 1.0 + ao;
         Lo = (kD * ao * diffuse / PI + specular) * dotNL * lightColor *
              (1 - shadow) * light.power * fadeOut * spot;
-        // outScreenVolume.xyz += specular * light.power * fadeOut;
     }
     return vec4(Lo, 1);
 }
@@ -439,7 +366,6 @@ vec4 allLight(DeferredData deferredInfo, CameraData cameraInfo,
         LightData light = lights[i];
         if (light.lightType == 0)
             continue;
-        // color3 = light.lightColor;
         color4 +=
             lighting(cameraInfo.transform.position, deferredInfo, light, i) /
             LIGHT_NUMBER;
@@ -461,7 +387,6 @@ void main() {
     baseInfo.position = depth2position(baseInfo.depth.x, cameraInfo.projection,
                                        cameraInfo.view);
 
-    outScreenVolume = texture(screenVolume, UV);
     outScreenLight =
         texture(screenLight, UV) + allLight(baseInfo, cameraInfo, lights);
 }

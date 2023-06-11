@@ -35,7 +35,8 @@ public:
         // shadow
         POINT_SHADOW,
         DIRECTION_SHADOW,
-        LUT,
+
+        LENS_FLARE,
 
         SCREEN
     };
@@ -104,6 +105,7 @@ private:
     void BasePass(const Scene &scene);
     void SSAOPass(const Scene &scene);
     void LightPass(const Scene &scene);
+    void LensFlarePass(const Scene &scene);
     void CompositorPass(const Scene &scene);
 
 private:
@@ -113,12 +115,14 @@ private:
     Program m_Basic;
     Program m_SSAO;
     Program m_Light;
+    Program m_LensFlare;
     Program m_Compositor;
 
     FrameBuffer m_ShadowFBO;
     FrameBuffer m_BasicPassFBO;
     FrameBuffer m_SSAOPassFBO;
     FrameBuffer m_LightPassFBO;
+    FrameBuffer m_LensFlareFBO;
     FrameBuffer m_CompositorFBO;
 
     std::vector<std::shared_ptr<UniformBuffer>> m_UBOs;
