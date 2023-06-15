@@ -212,7 +212,7 @@ void Pipeline::ShadowPass(const Scene &scene) {
     LightData lightInfo;
 
     Renderer::EnableDepthTest();
-    Renderer::DisableCullFace();
+    Renderer::EnableCullFace();
 
     // every light
     for (const auto &light : scene.GetLights()) {
