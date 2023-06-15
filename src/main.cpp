@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
                       {5, 5, 5}),
             1, 1000, glm::vec3(1.0f));
         // bigger texture size for direction shadow
-        light1->SetShadowSize(512);
+        light1->SetShadowSize(512 * 2);
 
         scene.AddLight(light1);
     } catch (std::exception &e) {
@@ -81,12 +81,12 @@ int main(int argc, char **argv) {
         std::shared_ptr<Light> light2 = std::make_shared<Light>( //
             "Direction Light",                                   //
             Light::DIRECTION,                                    //
-            Transform({0, 500, 0},                               //
-                      {30, 180, 0},                              //
+            Transform({0, 800, 0},                               //
+                      {30, 10, 0},                               //
                       {5, 5, 5}),
-            2, 1000, glm::vec3(1.0f));
+            8, 2000, glm::vec3(1.0f));
 
-        light2->SetShadowSize(1024);
+        light2->SetShadowSize(1024 * 8);
         light2->SetColorTexture(reflectMap);
 
         scene.AddLight(light2);
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
             Transform({0.0, 30, 0},                              //
                       {0, 0, 0},                                 //
                       {5, 5, 5}),
-            1, 1000, glm::vec3(1.0f), false);
+            0.5f, 1000, glm::vec3(1.0f), false);
 
         // light3->SetShadowSize(2048);
         light3->SetColorTexture(reflectMap);
@@ -186,7 +186,8 @@ int main(int argc, char **argv) {
         ImGui::Begin("Pipeline");
         ImGui::SetWindowPos({SCREEN_WIDTH - 140, 305});
         ImGui::SetWindowSize({130, 200});
-        // ImGui::BeginCombo("Pass", "");
+
+        ImGui::PushItemWidth(-FLT_MIN);
         const std::map<Pipeline::Pass, std::string> passes{
             {Pipeline::Pass::ALBEDO, "Albedo"},
             {Pipeline::Pass::EMISSION, "Emission"},
@@ -204,7 +205,8 @@ int main(int argc, char **argv) {
 
         Pipeline::Pass selectedPass = pipeline.GetActivePass();
 
-        if (ImGui::BeginCombo("Pass", passes.at(selectedPass).c_str())) {
+        ImGui::Text("Pass");
+        if (ImGui::BeginCombo("##Pass", passes.at(selectedPass).c_str())) {
             for (const auto &pass : passes) {
                 const bool isSelected = selectedPass == pass.first;
 
@@ -226,7 +228,7 @@ int main(int argc, char **argv) {
             bool useToneMap = pipeline.GetUseToneMap();
             bool useVolume = pipeline.GetUseVolume();
             auto volumeColor = pipeline.GetUseVolumeColor();
-            auto volumeDensity = pipeline.GetVolumeDensity();
+            auto volumeDensity = 5.0f - pipeline.GetVolumeDensity();
 
             ImGui::Checkbox("SSAO", &useSSAO);
             ImGui::Checkbox("Outline", &useOutline);
@@ -235,9 +237,11 @@ int main(int argc, char **argv) {
             ImGui::Checkbox("Volume", &useVolume);
 
             ImGui::BeginDisabled(!useVolume);
-            ImGui::DragFloat("Volume Desity", &volumeDensity, 0.05f, 0.0f, 1.0f,
-                             "%.2f");
-            ImGui::ColorEdit3("Volume Color", &volumeColor[0]);
+            ImGui::Text("Volume Density");
+            ImGui::DragFloat("##Volume Density", &volumeDensity, 0.05f, 0.0f,
+                             5.0f, "%.2f");
+            ImGui::Text("Volume Color");
+            ImGui::ColorEdit3("##Volume Color", &volumeColor[0]);
             ImGui::EndDisabled();
 
             pipeline.SetUseSSAO(useSSAO);
@@ -245,9 +249,11 @@ int main(int argc, char **argv) {
             pipeline.SetUseHDRI(useHDRI);
             pipeline.SetUseToneMap(useToneMap);
             pipeline.SetUseVolume(useVolume);
-            pipeline.SetVolumeDensity(volumeDensity);
+            pipeline.SetVolumeDensity(5.0f - volumeDensity);
             pipeline.SetUseVolumeColor(volumeColor);
         }
+
+        ImGui::PopItemWidth();
         ImGui::End();
 #pragma endregion
 
