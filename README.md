@@ -2,6 +2,8 @@
 
 [![build](https://github.com/NOOBDY/Indigo/actions/workflows/build.yml/badge.svg)](https://github.com/NOOBDY/Indigo/actions/workflows/build.yml) 
 
+![](https://cdn.discordapp.com/attachments/973063566993268826/1214435063035469885/image.png?ex=65f919ca&is=65e6a4ca&hm=8ffd7fd5a650e1d856e7d70897e127b80f891e593efa23472c52c2e9c0046a51&)
+
 As of now, this project's structure and code in heavily referenced from [opengl-tutorial](http://www.opengl-tutorial.org/), [Learn OpenGL](https://learnopengl.com/) and the [Hazel Engine](https://github.com/TheCherno/Hazel) from the Cherno.
 
 ## Cloning

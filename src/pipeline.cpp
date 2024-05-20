@@ -224,8 +224,9 @@ void Pipeline::ShadowPass(const Scene &scene) {
             lightMVP.viewProjection = light->GetLightOrth();
 
         } else if (light->GetType() == Light::POINT ||
-                   light->GetType() == Light::SPOT)
+                   light->GetType() == Light::SPOT) {
             m_PointLightShadow.Bind();
+        }
 
         lightInfo = light->GetLightData();
 
@@ -254,8 +255,6 @@ void Pipeline::ShadowPass(const Scene &scene) {
         m_PointLightShadow.Unbind();
         glGenerateTextureMipmap(light->GetShadowTexture()->GetTextureID());
     }
-
-    Renderer::EnableCullFace();
 }
 
 void Pipeline::BasePass(const Scene &scene) {
@@ -264,6 +263,7 @@ void Pipeline::BasePass(const Scene &scene) {
 
     glViewport(0, 0, m_Width, m_Height);
 
+    Renderer::EnableCullFace();
     Renderer::EnableDepthTest();
     Renderer::Clear();
 
@@ -324,6 +324,7 @@ void Pipeline::SSAOPass(const Scene &scene) {
     glViewport(0, 0, m_Width / 2, m_Height / 2);
 
     Renderer::DisableDepthTest();
+    Renderer::EnableCullFace();
     Renderer::Clear();
 
     CameraData camData = scene.GetActiveCamera()->GetCameraData();
@@ -356,6 +357,7 @@ void Pipeline::LightPass(const Scene &scene) {
         m_Passes[i]->Bind(i);
 
     Renderer::DisableDepthTest(); // direct render texture no need depth
+    Renderer::EnableCullFace();
     Renderer::Clear();
 
     m_Passes[ALBEDO]->Bind(ALBEDO);
@@ -407,6 +409,7 @@ void Pipeline::LensFlarePass(const Scene &scene) {
     m_LensFlare.Validate();
     glViewport(0, 0, m_Width / 2, m_Height / 2);
     Renderer::DisableDepthTest();
+    Renderer::EnableCullFace();
     Renderer::Clear();
 
     m_Passes[EMISSION]->Bind(EMISSION);
@@ -445,6 +448,7 @@ void Pipeline::LensFlarePass(const Scene &scene) {
 }
 void Pipeline::CompositorPass(const Scene &scene) {
     Renderer::DisableDepthTest(); // direct render texture no need depth
+    Renderer::EnableCullFace();
     if (m_UseToneMap)
         glEnable(GL_FRAMEBUFFER_SRGB);
 
