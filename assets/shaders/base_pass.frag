@@ -120,6 +120,10 @@ uint Hash32(uint x) {
 void main() {
     vec3 color3 = vec3(0.);
     float maxDepth = 600.0;
+
+    if (texture(albedoMap, UV).a < 0.5)
+        discard;
+
     screenAlbedo =
         vec4((modelInfo.useAlbedoTexture == 1) ? texture(albedoMap, UV).xyz
                                                : modelInfo.albedoColor,
